@@ -3,6 +3,8 @@ import { EditorView, basicSetup } from "codemirror";
 import { javascript } from "@codemirror/lang-javascript";
 import { oneDark } from "@codemirror/theme-one-dark";
 import { EditorState } from "@codemirror/state";
+import { keymap } from "@codemirror/view";
+import { indentWithTab } from "@codemirror/commands";
 import {
   runCode,
   preloadPyodide,
@@ -50,6 +52,7 @@ export default function CodeEditor({
 
       const extensions = [
         basicSetup,
+        keymap.of([indentWithTab]),
         oneDark,
         EditorView.theme({
           "&": { fontSize: "13px", height: "100%" },
