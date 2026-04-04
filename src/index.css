@@ -192,3 +192,31 @@
 .memo-cell-read {
   animation: cacheFlash 0.6s ease-out both;
 }
+
+/* ===== Complexity Chart ===== */
+
+/* Bars grow upward from baseline */
+@keyframes barGrow {
+  from {
+    transform: scaleY(0);
+    opacity: 0;
+  }
+  to {
+    transform: scaleY(1);
+    opacity: 1;
+  }
+}
+
+.chart-bar-grow {
+  animation: barGrow 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+/* Labels fade in after bars */
+@keyframes labelFade {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.chart-label-fade {
+  animation: labelFade 0.3s ease-out both;
+}

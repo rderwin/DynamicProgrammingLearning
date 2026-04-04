@@ -1,10 +1,12 @@
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import RecursionTree from "./RecursionTree";
 import MemoTable from "./MemoTable";
 import ConceptCallout from "./ConceptCallout";
 import CodePanel from "./CodePanel";
 import CodeEditor from "./CodeEditor";
+import ComplexityChart from "./ComplexityChart";
 import type { TestCase } from "../engine/runCode";
+import { computeStatsRange } from "../engine/computeStats";
 
 // Generic tree node shared by all problems
 export interface TreeNode {
@@ -200,6 +202,18 @@ export default function TreeLesson({ config }: { config: ProblemConfig }) {
 
   const hasStarted = stepIndex >= 0;
   const isComplete = stepIndex === totalSteps - 1;
+
+  // Track if user has ever completed a run (latch — stays true)
+  const [hasEverCompleted, setHasEverCompleted] = useState(false);
+  useEffect(() => {
+    if (isComplete) setHasEverCompleted(true);
+  }, [isComplete]);
+
+  // Compute stats for complexity chart (only when needed)
+  const chartStats = useMemo(
+    () => hasEverCompleted ? computeStatsRange(config, n, config.nRange) : [],
+    [hasEverCompleted, config, n, config.nRange]
+  );
   const progressPercent = totalSteps > 0 ? ((stepIndex + 1) / totalSteps) * 100 : 0;
 
   return (
@@ -313,6 +327,11 @@ export default function TreeLesson({ config }: { config: ProblemConfig }) {
           {config.concepts.memoWins(totalNodes, n + 1)}
         </ConceptCallout>
       </div>
+
+      {/* Complexity comparison chart */}
+      {hasEverCompleted && chartStats.length > 0 && (
+        <ComplexityChart stats={chartStats} currentN={n} />
+      )}
 
       <CodeEditor functionName={config.functionName} testCases={config.testCases} starterJS={config.starterJS} starterPython={config.starterPython} />
     </div>
