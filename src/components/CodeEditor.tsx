@@ -1,10 +1,12 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import { EditorView, basicSetup } from "codemirror";
 import { javascript } from "@codemirror/lang-javascript";
+import { python } from "@codemirror/lang-python";
 import { oneDark } from "@codemirror/theme-one-dark";
 import { EditorState } from "@codemirror/state";
 import { keymap } from "@codemirror/view";
 import { indentWithTab } from "@codemirror/commands";
+import { autocompletion, type CompletionContext, type CompletionResult } from "@codemirror/autocomplete";
 import {
   runCode,
   preloadPyodide,
@@ -13,6 +15,42 @@ import {
   type RunResult,
   type Language,
 } from "../engine/runCode";
+
+/** Custom DP-related completions for both languages */
+function dpCompletions(lang: Language) {
+  return (context: CompletionContext): CompletionResult | null => {
+    const word = context.matchBefore(/\w*/);
+    if (!word || (word.from === word.to && !context.explicit)) return null;
+
+    const jsSnippets = [
+      { label: "memo", detail: "memoization object", apply: "const memo = {};" },
+      { label: "if (n in memo)", detail: "cache check", apply: "if (n in memo) return memo[n];" },
+      { label: "memo[n] =", detail: "cache store", apply: "memo[n] = result;" },
+      { label: "Math.min", detail: "minimum", apply: "Math.min(a, b)" },
+      { label: "Math.max", detail: "maximum", apply: "Math.max(a, b)" },
+      { label: "Infinity", detail: "positive infinity" },
+      { label: "dp array", detail: "DP table", apply: "const dp = new Array(n + 1).fill(0);" },
+      { label: "for loop", detail: "bottom-up loop", apply: "for (let i = 0; i <= n; i++) {\n  \n}" },
+    ];
+
+    const pySnippets = [
+      { label: "memo", detail: "memoization dict", apply: "memo = {}" },
+      { label: "if n in memo", detail: "cache check", apply: "if n in memo:\n        return memo[n]" },
+      { label: "memo[n]", detail: "cache store", apply: "memo[n] = result" },
+      { label: "min(", detail: "minimum", apply: "min(a, b)" },
+      { label: "max(", detail: "maximum", apply: "max(a, b)" },
+      { label: "float('inf')", detail: "positive infinity", apply: "float('inf')" },
+      { label: "dp list", detail: "DP table", apply: "dp = [0] * (n + 1)" },
+      { label: "for range", detail: "bottom-up loop", apply: "for i in range(n + 1):\n        " },
+      { label: "functools.lru_cache", detail: "auto memoize decorator", apply: "@functools.lru_cache(maxsize=None)" },
+    ];
+
+    return {
+      from: word.from,
+      options: lang === "javascript" ? jsSnippets : pySnippets,
+    };
+  };
+}
 
 interface Props {
   testCases: TestCase[];
@@ -62,8 +100,27 @@ export default function CodeEditor({
             backgroundColor: "transparent",
             borderRight: "1px solid #313244",
           },
+          ".cm-tooltip.cm-tooltip-autocomplete": {
+            backgroundColor: "#1e1e2e",
+            border: "1px solid #313244",
+            borderRadius: "8px",
+            fontSize: "12px",
+          },
+          ".cm-tooltip-autocomplete .cm-completionLabel": {
+            color: "#cdd6f4",
+          },
+          ".cm-tooltip-autocomplete .cm-completionDetail": {
+            color: "#6c7086",
+            fontStyle: "normal",
+          },
+          ".cm-tooltip-autocomplete > ul > li[aria-selected]": {
+            backgroundColor: "#313244",
+          },
         }),
-        ...(lang === "javascript" ? [javascript()] : []),
+        lang === "javascript" ? javascript() : python(),
+        autocompletion({
+          override: [dpCompletions(lang)],
+        }),
       ];
 
       const state = EditorState.create({
