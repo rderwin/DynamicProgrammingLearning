@@ -1,19 +1,26 @@
 import { useState } from "react";
-import FibonacciLesson from "./components/FibonacciLesson";
 import IntroScreen from "./components/IntroScreen";
+import TreeLesson from "./components/TreeLesson";
+import { fibonacciConfig } from "./problems/configs/fibonacci";
+import { climbingStairsConfig } from "./problems/configs/climbingStairs";
+import { gridPathsConfig } from "./problems/configs/gridPaths";
+import { coinChangeConfig } from "./problems/configs/coinChange";
+import { knapsackConfig } from "./problems/configs/knapsack";
 
-type View = "intro" | "fibonacci";
+type View = "intro" | "fibonacci" | "stairs" | "grid" | "coins" | "knapsack";
 
-const problems = [
-  { id: "fibonacci", label: "Fibonacci", available: true },
-  { id: "stairs", label: "Climbing Stairs", available: false },
-  { id: "grid", label: "Grid Paths", available: false },
-  { id: "coins", label: "Coin Change", available: false },
-  { id: "knapsack", label: "Knapsack", available: false },
+const problems: { id: View; label: string; config: typeof fibonacciConfig }[] = [
+  { id: "fibonacci", label: "Fibonacci", config: fibonacciConfig },
+  { id: "stairs", label: "Climbing Stairs", config: climbingStairsConfig },
+  { id: "grid", label: "Grid Paths", config: gridPathsConfig },
+  { id: "coins", label: "Coin Change", config: coinChangeConfig },
+  { id: "knapsack", label: "Knapsack", config: knapsackConfig },
 ];
 
 function App() {
   const [view, setView] = useState<View>("intro");
+
+  const currentProblem = problems.find((p) => p.id === view);
 
   return (
     <div className="min-h-screen bg-slate-50 font-sans">
@@ -30,12 +37,8 @@ function App() {
               </svg>
             </div>
             <div className="text-left">
-              <h1 className="text-sm font-bold text-slate-800 leading-tight">
-                DP Learning Lab
-              </h1>
-              <p className="text-[11px] text-slate-400 leading-tight">
-                Zero to interview-ready
-              </p>
+              <h1 className="text-sm font-bold text-slate-800 leading-tight">DP Learning Lab</h1>
+              <p className="text-[11px] text-slate-400 leading-tight">Zero to interview-ready</p>
             </div>
           </button>
 
@@ -44,22 +47,14 @@ function App() {
               {problems.map((p) => (
                 <button
                   key={p.id}
-                  onClick={() => p.available && setView(p.id as View)}
-                  disabled={!p.available}
+                  onClick={() => setView(p.id)}
                   className={`px-3 py-1.5 rounded-md font-medium transition-all duration-200 ${
                     view === p.id
                       ? "bg-white text-slate-800 shadow-sm"
-                      : p.available
-                        ? "text-slate-500 hover:text-slate-700 hover:bg-white/50"
-                        : "text-slate-300 cursor-not-allowed"
+                      : "text-slate-500 hover:text-slate-700 hover:bg-white/50"
                   }`}
                 >
                   {p.label}
-                  {!p.available && (
-                    <span className="ml-1 text-[9px] text-slate-300">
-                      soon
-                    </span>
-                  )}
                 </button>
               ))}
             </nav>
@@ -72,7 +67,9 @@ function App() {
         {view === "intro" && (
           <IntroScreen onStart={() => setView("fibonacci")} />
         )}
-        {view === "fibonacci" && <FibonacciLesson />}
+        {currentProblem && (
+          <TreeLesson key={currentProblem.id} config={currentProblem.config} />
+        )}
       </main>
     </div>
   );
