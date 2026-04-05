@@ -15,7 +15,7 @@ export default function IntroScreen({ onStart }: Props) {
         <h1 className="text-5xl sm:text-6xl font-extrabold text-slate-900 tracking-tight leading-tight mb-6">
           Dynamic Programming
           <br />
-          <span className="bg-gradient-to-r from-blue-600 to-violet-600 bg-clip-text text-transparent">
+          <span className="bg-gradient-to-r from-blue-600 via-violet-600 to-blue-600 bg-clip-text text-transparent gradient-animate">
             is not that hard.
           </span>
         </h1>

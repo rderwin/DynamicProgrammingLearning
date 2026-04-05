@@ -26,29 +26,20 @@ export interface ProblemConfig {
   totalProblems: number;
   difficulty: string;
   description: React.ReactNode;
-  /** Build the full recursion tree for value n */
   buildTree: (n: number) => TreeNode;
-  /** Reset the internal node counter before building */
   resetIds: () => void;
-  /** Collect post-order evaluation */
   collectEvalOrder: (tree: TreeNode) => TreeNode[];
-  /** Count total nodes */
   countNodes: (tree: TreeNode) => number;
-  /** Slider range [min, max] */
   nRange: [number, number];
   nDefault: number;
   nLabel?: string;
-  /** Code panel config */
   codeBruteForce: CodeLine[];
   codeMemo: CodeLine[];
-  /** Map a step node to a line number in the code */
   getActiveLine: (phase: Phase, node: TreeNode | null, isCacheHit: boolean) => number | null;
-  /** User code challenge */
   functionName: string;
   testCases: TestCase[];
   starterJS: string;
   starterPython: string;
-  /** Concept callout content — keyed by concept name */
   concepts: {
     optimalSubstructure: React.ReactNode;
     overlappingSubproblems: (duplicateCount: number, totalNodes: number, n: number) => React.ReactNode;
@@ -67,7 +58,10 @@ export default function TreeLesson({ config }: { config: ProblemConfig }) {
   const [phase, setPhase] = useState<Phase>("brute");
   const [stepIndex, setStepIndex] = useState(-1);
   const [isPlaying, setIsPlaying] = useState(false);
+  const [speed, setSpeed] = useState(250); // ms per step
   const playRef = useRef(false);
+  const speedRef = useRef(speed);
+  speedRef.current = speed;
 
   const [tree, setTree] = useState<TreeNode | null>(null);
   const [evalOrder, setEvalOrder] = useState<TreeNode[]>([]);
@@ -190,12 +184,17 @@ export default function TreeLesson({ config }: { config: ProblemConfig }) {
     function tick() {
       if (!playRef.current) return;
       setStepIndex((prev) => {
-        if (prev < totalSteps - 1) { setTimeout(tick, 250); return prev + 1; }
+        if (prev < totalSteps - 1) { setTimeout(tick, speedRef.current); return prev + 1; }
         setIsPlaying(false); playRef.current = false; return prev;
       });
     }
     tick();
   }, [totalSteps]);
+
+  const pause = useCallback(() => {
+    setIsPlaying(false);
+    playRef.current = false;
+  }, []);
 
   const reset = () => { setStepIndex(-1); setIsPlaying(false); playRef.current = false; };
   const showAll = () => { setStepIndex(totalSteps - 1); setIsPlaying(false); playRef.current = false; };
@@ -203,18 +202,43 @@ export default function TreeLesson({ config }: { config: ProblemConfig }) {
   const hasStarted = stepIndex >= 0;
   const isComplete = stepIndex === totalSteps - 1;
 
-  // Track if user has ever completed a run (latch — stays true)
+  // Keyboard shortcuts
+  useEffect(() => {
+    function handleKey(e: KeyboardEvent) {
+      // Don't intercept when typing in an input/textarea/editor
+      const tag = (e.target as HTMLElement)?.tagName;
+      if (tag === "INPUT" || tag === "TEXTAREA" || (e.target as HTMLElement)?.closest?.(".cm-editor")) return;
+
+      if (e.code === "Space") {
+        e.preventDefault();
+        if (isComplete) return;
+        if (isPlaying) { pause(); } else { play(); }
+      } else if (e.code === "ArrowRight") {
+        e.preventDefault();
+        if (!isPlaying && !isComplete) step();
+      } else if (e.code === "KeyR" && !e.metaKey && !e.ctrlKey) {
+        e.preventDefault();
+        reset();
+      }
+    }
+    window.addEventListener("keydown", handleKey);
+    return () => window.removeEventListener("keydown", handleKey);
+  }, [isPlaying, isComplete, play, pause, step]);
+
+  // Track if user has ever completed a run
   const [hasEverCompleted, setHasEverCompleted] = useState(false);
   useEffect(() => {
     if (isComplete) setHasEverCompleted(true);
   }, [isComplete]);
 
-  // Compute stats for complexity chart (only when needed)
   const chartStats = useMemo(
     () => hasEverCompleted ? computeStatsRange(config, n, config.nRange) : [],
     [hasEverCompleted, config, n, config.nRange]
   );
   const progressPercent = totalSteps > 0 ? ((stepIndex + 1) / totalSteps) * 100 : 0;
+
+  // Speed labels
+  const speedLabel = speed <= 80 ? "Fast" : speed <= 200 ? "Normal" : speed <= 400 ? "Slow" : "Very Slow";
 
   return (
     <div className="flex flex-col gap-6 animate-fade-in">
@@ -245,8 +269,11 @@ export default function TreeLesson({ config }: { config: ProblemConfig }) {
           </div>
           <div className="w-px h-8 bg-slate-200" />
           <div className="flex gap-2">
-            <button onClick={step} disabled={isPlaying || isComplete} className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-blue-500 text-white rounded-lg text-sm font-medium hover:bg-blue-600 disabled:opacity-40 disabled:cursor-not-allowed transition-all duration-200 shadow-sm shadow-blue-500/20">Step</button>
-            <button onClick={isPlaying ? () => { setIsPlaying(false); playRef.current = false; } : play} disabled={isComplete} className={`inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-sm font-medium transition-all duration-200 shadow-sm disabled:opacity-40 disabled:cursor-not-allowed ${isPlaying ? "bg-amber-500 text-white hover:bg-amber-600 shadow-amber-500/20" : "bg-emerald-500 text-white hover:bg-emerald-600 shadow-emerald-500/20"}`}>
+            <button onClick={step} disabled={isPlaying || isComplete} className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-blue-500 text-white rounded-lg text-sm font-medium hover:bg-blue-600 disabled:opacity-40 disabled:cursor-not-allowed transition-all duration-200 shadow-sm shadow-blue-500/20" title="Step (Right Arrow)">
+              <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M3 8.689c0-.864.933-1.406 1.683-.977l7.108 4.061a1.125 1.125 0 010 1.954l-7.108 4.061A1.125 1.125 0 013 16.811V8.69zM12.75 8.689c0-.864.933-1.406 1.683-.977l7.108 4.061a1.125 1.125 0 010 1.954l-7.108 4.061a1.125 1.125 0 01-1.683-.977V8.69z" /></svg>
+              Step
+            </button>
+            <button onClick={isPlaying ? pause : play} disabled={isComplete} className={`inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-sm font-medium transition-all duration-200 shadow-sm disabled:opacity-40 disabled:cursor-not-allowed ${isPlaying ? "bg-amber-500 text-white hover:bg-amber-600 shadow-amber-500/20" : "bg-emerald-500 text-white hover:bg-emerald-600 shadow-emerald-500/20"}`} title="Play/Pause (Space)">
               {isPlaying ? (
                 <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24"><path d="M6 4h4v16H6V4zm8 0h4v16h-4V4z" /></svg>
               ) : (
@@ -255,36 +282,82 @@ export default function TreeLesson({ config }: { config: ProblemConfig }) {
               {isPlaying ? "Pause" : "Play"}
             </button>
             <button onClick={showAll} disabled={isComplete} className="px-3.5 py-2 bg-slate-100 text-slate-600 rounded-lg text-sm font-medium hover:bg-slate-200 disabled:opacity-40 disabled:cursor-not-allowed transition-all duration-200">Show All</button>
-            <button onClick={reset} className="px-3.5 py-2 bg-slate-100 text-slate-600 rounded-lg text-sm font-medium hover:bg-slate-200 transition-all duration-200">Reset</button>
+            <button onClick={reset} className="px-3.5 py-2 bg-slate-100 text-slate-600 rounded-lg text-sm font-medium hover:bg-slate-200 transition-all duration-200" title="Reset (R)">Reset</button>
           </div>
+          <div className="w-px h-8 bg-slate-200" />
+          {/* Speed control */}
+          <label className="flex items-center gap-2 text-xs text-slate-500">
+            <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 13.5l10.5-11.25L12 10.5h8.25L9.75 21.75 12 13.5H3.75z" />
+            </svg>
+            <input type="range" min={50} max={600} step={10} value={650 - speed} onChange={(e) => setSpeed(650 - Number(e.target.value))} className="w-16 accent-violet-500" />
+            <span className="text-[10px] font-medium text-slate-400 w-12">{speedLabel}</span>
+          </label>
         </div>
+
+        {/* Progress + stats */}
         {hasStarted && (
           <div className="mt-4 flex items-center gap-4">
-            <div className="flex-1 bg-slate-100 rounded-full h-1.5 overflow-hidden">
-              <div className="h-full bg-gradient-to-r from-blue-500 to-violet-500 rounded-full transition-all duration-300 ease-out" style={{ width: `${progressPercent}%` }} />
+            <div className="flex-1 bg-slate-100 rounded-full h-2 overflow-hidden">
+              <div
+                className="h-full rounded-full transition-all duration-300 ease-out progress-bar-glow"
+                style={{
+                  width: `${progressPercent}%`,
+                  background: isComplete
+                    ? "linear-gradient(90deg, #22c55e, #10b981)"
+                    : "linear-gradient(90deg, #3b82f6, #8b5cf6)",
+                }}
+              />
             </div>
             <div className="flex gap-4 text-xs text-slate-500 flex-shrink-0">
-              <span>Step <span className="font-mono font-bold text-slate-700">{stepIndex + 1}</span>/{totalSteps}</span>
-              {phase === "brute" && duplicateCount > 0 && <span>Duplicates: <span className="font-mono font-bold text-red-500">{duplicateCount}</span></span>}
-              {phase === "memo" && <span>Cache hits: <span className="font-mono font-bold text-green-600">{evalOrder.slice(0, stepIndex + 1).filter((nd) => nd.duplicate && memo.has(nd.n)).length}</span></span>}
+              <span>
+                Step <span className="font-mono font-bold text-slate-700 tabular-nums">{stepIndex + 1}</span>
+                <span className="text-slate-300">/{totalSteps}</span>
+              </span>
+              {phase === "brute" && duplicateCount > 0 && (
+                <span>
+                  Duplicates: <span className="font-mono font-bold text-red-500 tabular-nums">{duplicateCount}</span>
+                </span>
+              )}
+              {phase === "memo" && (
+                <span>
+                  Cache hits: <span className="font-mono font-bold text-green-600 tabular-nums">
+                    {evalOrder.slice(0, stepIndex + 1).filter((nd) => nd.duplicate && memo.has(nd.n)).length}
+                  </span>
+                </span>
+              )}
+              {isComplete && (
+                <span className="text-emerald-600 font-semibold animate-fade-in">Done!</span>
+              )}
             </div>
+          </div>
+        )}
+
+        {/* Keyboard hints */}
+        {!hasStarted && (
+          <div className="mt-3 flex gap-3 text-[10px] text-slate-400">
+            <span><kbd className="kbd-hint">Space</kbd> play/pause</span>
+            <span><kbd className="kbd-hint">→</kbd> step</span>
+            <span><kbd className="kbd-hint">R</kbd> reset</span>
           </div>
         )}
       </div>
 
       {/* Tree + Code */}
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-4">
-        <div className="lg:col-span-3 bg-white border border-slate-200 rounded-xl p-6 min-h-[350px] flex items-center justify-center shadow-sm">
+        <div className="lg:col-span-3 bg-white border border-slate-200 rounded-xl p-6 min-h-[350px] flex items-center justify-center shadow-sm relative overflow-hidden">
           {tree && stepIndex >= 0 ? (
             <RecursionTree tree={tree} revealedIds={revealedIds} memoizedNs={memoizedNs} prunedIds={prunedIds} currentNodeId={currentNode?.id ?? null} />
           ) : (
             <div className="flex flex-col items-center gap-4 text-slate-400">
-              <svg className="w-16 h-16 text-slate-200" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6zM3.75 15.75A2.25 2.25 0 016 13.5h2.25a2.25 2.25 0 012.25 2.25V18a2.25 2.25 0 01-2.25 2.25H6A2.25 2.25 0 013.75 18v-2.25zM13.5 6a2.25 2.25 0 012.25-2.25H18A2.25 2.25 0 0120.25 6v2.25A2.25 2.25 0 0118 10.5h-2.25a2.25 2.25 0 01-2.25-2.25V6zM13.5 15.75a2.25 2.25 0 012.25-2.25H18a2.25 2.25 0 012.25 2.25V18A2.25 2.25 0 0118 20.25h-2.25A2.25 2.25 0 0113.5 18v-2.25z" />
-              </svg>
+              <div className="empty-state-icon">
+                <svg className="w-16 h-16 text-slate-200" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6zM3.75 15.75A2.25 2.25 0 016 13.5h2.25a2.25 2.25 0 012.25 2.25V18a2.25 2.25 0 01-2.25 2.25H6A2.25 2.25 0 013.75 18v-2.25zM13.5 6a2.25 2.25 0 012.25-2.25H18A2.25 2.25 0 0120.25 6v2.25A2.25 2.25 0 0118 10.5h-2.25a2.25 2.25 0 01-2.25-2.25V6zM13.5 15.75a2.25 2.25 0 012.25-2.25H18a2.25 2.25 0 012.25 2.25V18A2.25 2.25 0 0118 20.25h-2.25A2.25 2.25 0 0113.5 18v-2.25z" />
+                </svg>
+              </div>
               <div className="text-center">
                 <p className="text-lg font-medium text-slate-300">Ready to visualize</p>
-                <p className="text-sm mt-1">Press <strong className="text-slate-500">Play</strong> or <strong className="text-slate-500">Step</strong> to begin</p>
+                <p className="text-sm mt-1">Press <kbd className="kbd-hint">Space</kbd> or click <strong className="text-slate-500">Play</strong> to begin</p>
               </div>
             </div>
           )}
@@ -328,7 +401,6 @@ export default function TreeLesson({ config }: { config: ProblemConfig }) {
         </ConceptCallout>
       </div>
 
-      {/* Complexity comparison chart */}
       {hasEverCompleted && chartStats.length > 0 && (
         <ComplexityChart stats={chartStats} currentN={n} />
       )}

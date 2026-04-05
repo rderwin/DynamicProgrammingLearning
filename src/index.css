@@ -6,16 +6,11 @@
   --font-mono: 'JetBrains Mono', ui-monospace, monospace;
 }
 
-/* Smooth fade-in for concept callouts and sections */
+/* ===== Core Animations ===== */
+
 @keyframes fadeInUp {
-  from {
-    opacity: 0;
-    transform: translateY(12px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 @keyframes fadeIn {
@@ -24,60 +19,28 @@
 }
 
 @keyframes slideDown {
-  from {
-    opacity: 0;
-    transform: translateY(-8px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-@keyframes pulse-glow {
-  0%, 100% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.3); }
-  50% { box-shadow: 0 0 0 6px rgba(59, 130, 246, 0); }
+  from { opacity: 0; transform: translateY(-8px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 @keyframes scaleIn {
-  from {
-    opacity: 0;
-    transform: scale(0.95);
-  }
-  to {
-    opacity: 1;
-    transform: scale(1);
-  }
+  from { opacity: 0; transform: scale(0.95); }
+  to { opacity: 1; transform: scale(1); }
 }
 
-.animate-fade-in-up {
-  animation: fadeInUp 0.4s ease-out both;
-}
+.animate-fade-in-up { animation: fadeInUp 0.4s ease-out both; }
+.animate-fade-in { animation: fadeIn 0.3s ease-out both; }
+.animate-slide-down { animation: slideDown 0.3s ease-out both; }
+.animate-scale-in { animation: scaleIn 0.3s ease-out both; }
 
-.animate-fade-in {
-  animation: fadeIn 0.3s ease-out both;
-}
-
-.animate-slide-down {
-  animation: slideDown 0.3s ease-out both;
-}
-
-.animate-scale-in {
-  animation: scaleIn 0.3s ease-out both;
-}
-
-.animate-pulse-glow {
-  animation: pulse-glow 2s ease-in-out infinite;
-}
-
-/* Stagger delays */
 .delay-100 { animation-delay: 100ms; }
 .delay-200 { animation-delay: 200ms; }
 .delay-300 { animation-delay: 300ms; }
 .delay-400 { animation-delay: 400ms; }
 .delay-500 { animation-delay: 500ms; }
 
-/* Code panel line highlight */
+/* ===== Code Panel ===== */
+
 .code-line-active {
   background: rgba(59, 130, 246, 0.15);
   border-left: 3px solid #3b82f6;
@@ -96,122 +59,108 @@
   margin-left: -3px;
 }
 
-/* Smooth scrollbar */
-::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+/* ===== Keyboard Hint Badges ===== */
+
+.kbd-hint {
+  display: inline-block;
+  padding: 1px 5px;
+  font-size: 10px;
+  font-family: 'Inter', system-ui, sans-serif;
+  font-weight: 600;
+  color: #64748b;
+  background: #f1f5f9;
+  border: 1px solid #e2e8f0;
+  border-radius: 4px;
+  box-shadow: 0 1px 0 #e2e8f0;
 }
 
-::-webkit-scrollbar-track {
-  background: transparent;
+/* ===== Progress Bar ===== */
+
+@keyframes progressShimmer {
+  from { background-position: 200% center; }
+  to { background-position: -200% center; }
 }
 
-::-webkit-scrollbar-thumb {
-  background: #cbd5e1;
-  border-radius: 3px;
+.progress-bar-glow {
+  background-size: 200% auto;
+  position: relative;
 }
 
-::-webkit-scrollbar-thumb:hover {
-  background: #94a3b8;
+.progress-bar-glow::after {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.3) 50%, transparent 100%);
+  background-size: 200% 100%;
+  animation: progressShimmer 2s ease-in-out infinite;
+  border-radius: inherit;
 }
 
-/* Selection color */
-::selection {
-  background: rgba(59, 130, 246, 0.2);
+/* ===== Empty State ===== */
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
+}
+
+.empty-state-icon {
+  animation: float 3s ease-in-out infinite;
 }
 
 /* ===== SVG Tree Animations ===== */
 
-/* Node pops in with a spring-like overshoot */
 @keyframes nodePopIn {
-  0% {
-    opacity: 0;
-    transform: scale(0);
-  }
-  60% {
-    opacity: 1;
-    transform: scale(1.15);
-  }
-  100% {
-    opacity: 1;
-    transform: scale(1);
-  }
+  0% { opacity: 0; transform: scale(0); }
+  60% { opacity: 1; transform: scale(1.12); }
+  100% { opacity: 1; transform: scale(1); }
 }
 
-/* Edge draws itself from parent to child */
 @keyframes edgeDraw {
-  from {
-    stroke-dashoffset: var(--path-len, 100);
-    opacity: 0.3;
-  }
-  to {
-    stroke-dashoffset: 0;
-    opacity: 1;
-  }
-}
-
-/* Slow ping for current node ring */
-.animate-ping-slow {
-  animation: pingSlow 1.5s cubic-bezier(0, 0, 0.2, 1) infinite;
+  from { stroke-dashoffset: var(--path-len, 100); opacity: 0.3; }
+  to { stroke-dashoffset: 0; opacity: 1; }
 }
 
 @keyframes pingSlow {
-  0% {
-    transform: scale(1);
-    opacity: 0.4;
-  }
-  50% {
-    transform: scale(1.3);
-    opacity: 0;
-  }
-  100% {
-    transform: scale(1.3);
-    opacity: 0;
-  }
+  0% { transform: scale(1); opacity: 0.4; }
+  50% { transform: scale(1.4); opacity: 0; }
+  100% { transform: scale(1.4); opacity: 0; }
 }
 
-/* Memo table cell bounce when value written */
+/* ===== Memo Table ===== */
+
 @keyframes cellBounce {
   0% { transform: scale(1); }
-  30% { transform: scale(1.15); }
-  60% { transform: scale(0.95); }
+  25% { transform: scale(1.18); }
+  50% { transform: scale(0.95); }
+  75% { transform: scale(1.05); }
   100% { transform: scale(1); }
 }
 
 .memo-cell-written {
-  animation: cellBounce 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+  animation: cellBounce 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) both;
 }
 
-/* Cache hit flash */
 @keyframes cacheFlash {
-  0% { box-shadow: 0 0 0 0 rgba(251, 191, 36, 0.5); }
-  50% { box-shadow: 0 0 12px 4px rgba(251, 191, 36, 0.3); }
+  0% { box-shadow: 0 0 0 0 rgba(251, 191, 36, 0.6); }
+  30% { box-shadow: 0 0 16px 6px rgba(251, 191, 36, 0.3); }
   100% { box-shadow: 0 0 0 0 rgba(251, 191, 36, 0); }
 }
 
 .memo-cell-read {
-  animation: cacheFlash 0.6s ease-out both;
+  animation: cacheFlash 0.7s ease-out both;
 }
 
 /* ===== Complexity Chart ===== */
 
-/* Bars grow upward from baseline */
 @keyframes barGrow {
-  from {
-    transform: scaleY(0);
-    opacity: 0;
-  }
-  to {
-    transform: scaleY(1);
-    opacity: 1;
-  }
+  from { transform: scaleY(0); opacity: 0; }
+  to { transform: scaleY(1); opacity: 1; }
 }
 
 .chart-bar-grow {
   animation: barGrow 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) both;
 }
 
-/* Labels fade in after bars */
 @keyframes labelFade {
   from { opacity: 0; }
   to { opacity: 1; }
@@ -220,3 +169,33 @@
 .chart-label-fade {
   animation: labelFade 0.3s ease-out both;
 }
+
+/* ===== Intro Screen ===== */
+
+@keyframes gradientShift {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+
+.gradient-animate {
+  background-size: 200% 200%;
+  animation: gradientShift 4s ease-in-out infinite;
+}
+
+@keyframes breathe {
+  0%, 100% { opacity: 0.6; transform: scale(1); }
+  50% { opacity: 1; transform: scale(1.02); }
+}
+
+.breathe {
+  animation: breathe 3s ease-in-out infinite;
+}
+
+/* ===== Scrollbar ===== */
+
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+
+::selection { background: rgba(59, 130, 246, 0.2); }
