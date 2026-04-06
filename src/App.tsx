@@ -1,29 +1,26 @@
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import IntroScreen from "./components/IntroScreen";
 import TreeLesson from "./components/TreeLesson";
 import TransitionLesson from "./components/TransitionLesson";
 import CompletionScreen from "./components/CompletionScreen";
+import PracticeHub from "./components/PracticeHub";
+import PracticeProblemView from "./components/PracticeProblemView";
 import { fibonacciConfig } from "./problems/configs/fibonacci";
 import { climbingStairsConfig } from "./problems/configs/climbingStairs";
 import { gridPathsConfig } from "./problems/configs/gridPaths";
 import { coinChangeConfig } from "./problems/configs/coinChange";
 import { knapsackConfig } from "./problems/configs/knapsack";
 import { fibToStairs, stairsToGrid, gridToCoins, coinsToKnapsack } from "./content/transitions";
+import { practiceProblems } from "./practice/problems";
 import type { TransitionContent } from "./components/TransitionLesson";
 
-type View =
-  | "intro"
-  | "fibonacci" | "t-fib-stairs"
-  | "stairs" | "t-stairs-grid"
-  | "grid" | "t-grid-coins"
-  | "coins" | "t-coins-knapsack"
-  | "knapsack" | "complete";
+type View = string; // flexible — includes problem IDs, transitions, practice, etc.
 
 interface ProblemEntry {
-  id: View;
+  id: string;
   label: string;
   config: typeof fibonacciConfig;
-  transitionAfter?: { viewId: View; content: TransitionContent; nextView: View };
+  transitionAfter?: { viewId: string; content: TransitionContent; nextView: string };
 }
 
 const problems: ProblemEntry[] = [
@@ -34,29 +31,47 @@ const problems: ProblemEntry[] = [
   { id: "knapsack", label: "Knapsack", config: knapsackConfig },
 ];
 
+// localStorage for practice completion
+function loadCompleted(): Set<string> {
+  try {
+    const saved = localStorage.getItem("dp-practice-completed");
+    return saved ? new Set(JSON.parse(saved)) : new Set();
+  } catch { return new Set(); }
+}
+
+function saveCompleted(ids: Set<string>) {
+  localStorage.setItem("dp-practice-completed", JSON.stringify([...ids]));
+}
+
 function App() {
   const [view, setView] = useState<View>("intro");
+  const [completedIds, setCompletedIds] = useState<Set<string>>(loadCompleted);
 
-  // Find current problem (transitions aren't in the problems list)
+  // Persist completions
+  useEffect(() => { saveCompleted(completedIds); }, [completedIds]);
+
+  const markComplete = useCallback((id: string) => {
+    setCompletedIds((prev) => {
+      const next = new Set(prev);
+      next.add(id);
+      return next;
+    });
+  }, []);
+
+  // Current problem / transition
   const currentProblemIdx = problems.findIndex((p) => p.id === view);
   const currentProblem = currentProblemIdx >= 0 ? problems[currentProblemIdx] : null;
-  const nextProblem = currentProblemIdx >= 0 && currentProblemIdx < problems.length - 1 ? problems[currentProblemIdx + 1] : null;
-
-  // Find if we're in a transition
   const currentTransition = problems.find((p) => p.transitionAfter?.viewId === view)?.transitionAfter;
 
-  // Is this a non-problem view?
-  const isTransition = !!currentTransition;
-  const isComplete = view === "complete";
+  // Practice views
+  const isPracticeHub = view === "practice";
+  const practiceProblemId = view.startsWith("practice-") ? view.slice("practice-".length) : null;
+  const practiceProblem = practiceProblemId ? practiceProblems.find((p) => p.id === practiceProblemId) : null;
+
   const isIntro = view === "intro";
+  const isComplete = view === "complete";
   const showNav = !isIntro;
 
-  // Figure out which nav tab to highlight during transitions
-  const activeNavProblem = currentProblem?.id
-    ?? (currentTransition ? problems.find((p) => p.transitionAfter?.viewId === view)?.id : null)
-    ?? null;
-
-  // "Next problem" from a lesson goes to transition (if exists) or completion
   function handleNextFromLesson() {
     if (currentProblem?.transitionAfter) {
       setView(currentProblem.transitionAfter.viewId);
@@ -64,6 +79,13 @@ function App() {
       setView("complete");
     }
   }
+
+  // Highlight the right nav tab
+  const activeNavProblem = currentProblem?.id
+    ?? (currentTransition ? problems.find((p) => p.transitionAfter?.viewId === view)?.id : null)
+    ?? null;
+
+  const completedPracticeCount = practiceProblems.filter((p) => completedIds.has(p.id)).length;
 
   return (
     <div className="min-h-screen bg-slate-50 font-sans">
@@ -92,7 +114,7 @@ function App() {
                   key={p.id}
                   onClick={() => setView(p.id)}
                   className={`px-3 py-1.5 rounded-md font-medium transition-all duration-200 ${
-                    p.id === activeNavProblem || p.id === view
+                    p.id === activeNavProblem
                       ? "bg-white text-slate-800 shadow-sm"
                       : "text-slate-400 hover:text-slate-600 hover:bg-white/50"
                   }`}
@@ -100,6 +122,22 @@ function App() {
                   {p.label}
                 </button>
               ))}
+              <div className="w-px bg-slate-300 mx-0.5" />
+              <button
+                onClick={() => setView("practice")}
+                className={`px-3 py-1.5 rounded-md font-medium transition-all duration-200 ${
+                  isPracticeHub || practiceProblem
+                    ? "bg-white text-slate-800 shadow-sm"
+                    : "text-slate-400 hover:text-slate-600 hover:bg-white/50"
+                }`}
+              >
+                Practice
+                {completedPracticeCount > 0 && (
+                  <span className="ml-1 text-[9px] bg-emerald-100 text-emerald-700 px-1.5 py-0.5 rounded-full font-bold">
+                    {completedPracticeCount}/{practiceProblems.length}
+                  </span>
+                )}
+              </button>
             </nav>
           )}
         </div>
@@ -107,9 +145,7 @@ function App() {
 
       {/* Main content */}
       <main className="max-w-6xl mx-auto px-6 py-8">
-        {isIntro && (
-          <IntroScreen onStart={() => setView("fibonacci")} />
-        )}
+        {isIntro && <IntroScreen onStart={() => setView("fibonacci")} />}
 
         {currentProblem && (
           <TreeLesson
@@ -120,13 +156,13 @@ function App() {
                 ? currentProblem.transitionAfter.content.toLabel
                 : currentProblemIdx === problems.length - 1
                   ? null
-                  : nextProblem?.label ?? null
+                  : null
             }
             onNextProblem={handleNextFromLesson}
           />
         )}
 
-        {isTransition && currentTransition && (
+        {currentTransition && (
           <TransitionLesson
             key={view}
             content={currentTransition.content}
@@ -134,7 +170,25 @@ function App() {
           />
         )}
 
-        {isComplete && <CompletionScreen />}
+        {isComplete && <CompletionScreen onPractice={() => setView("practice")} />}
+
+        {isPracticeHub && (
+          <PracticeHub
+            problems={practiceProblems}
+            completedIds={completedIds}
+            onSelectProblem={(id) => setView(`practice-${id}`)}
+          />
+        )}
+
+        {practiceProblem && (
+          <PracticeProblemView
+            key={practiceProblem.id}
+            problem={practiceProblem}
+            onBack={() => setView("practice")}
+            onComplete={markComplete}
+            isCompleted={completedIds.has(practiceProblem.id)}
+          />
+        )}
       </main>
     </div>
   );

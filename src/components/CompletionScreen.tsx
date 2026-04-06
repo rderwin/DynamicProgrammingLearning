@@ -1,6 +1,10 @@
 import { completionContent } from "../content/transitions";
 
-export default function CompletionScreen() {
+interface Props {
+  onPractice: () => void;
+}
+
+export default function CompletionScreen({ onPractice }: Props) {
   const c = completionContent;
 
   return (
@@ -59,13 +63,21 @@ export default function CompletionScreen() {
       </div>
 
       {/* What's next */}
-      <div className="bg-gradient-to-br from-slate-50 to-blue-50/50 border border-slate-200 rounded-xl p-6 text-center animate-fade-in-up delay-200">
-        <h3 className="text-sm font-bold text-slate-800 mb-2">What's next?</h3>
-        <p className="text-sm text-slate-500 max-w-md mx-auto">
-          Practice on LeetCode — search for "dynamic programming" and sort by difficulty.
-          You now have the mental model to tackle Easy and Medium DP problems.
-          The pattern is always the same: find the recurrence, memoize, done.
+      <div className="bg-gradient-to-br from-blue-50 to-violet-50/50 border border-blue-200 rounded-xl p-8 text-center animate-fade-in-up delay-200">
+        <h3 className="text-lg font-bold text-slate-800 mb-2">Ready to practice?</h3>
+        <p className="text-sm text-slate-500 max-w-md mx-auto mb-5">
+          10 real interview-style problems — from Easy to Hard — covering every pattern you just learned.
+          Hints, solutions, and instant feedback included.
         </p>
+        <button
+          onClick={onPractice}
+          className="group inline-flex items-center gap-2 bg-slate-900 text-white px-6 py-3 rounded-xl text-sm font-semibold hover:bg-slate-800 transition-all duration-200 shadow-lg shadow-slate-900/20 hover:shadow-xl hover:-translate-y-0.5 active:translate-y-0"
+        >
+          Start practicing
+          <svg className="w-4 h-4 transition-transform group-hover:translate-x-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" />
+          </svg>
+        </button>
       </div>
     </div>
   );
