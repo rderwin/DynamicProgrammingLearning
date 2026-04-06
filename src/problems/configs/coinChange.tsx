@@ -77,6 +77,12 @@ export const coinChangeConfig: ProblemConfig = {
   // This one branches more than 2 ways!
 
 }`,
+  hints: [
+    "For each amount, try using every coin and pick whichever gives the fewest total coins. That's min(1 + solve(amount - coin)) for each coin.",
+    "Base case: amount === 0 needs 0 coins. If amount < 0, return Infinity (impossible).",
+    "Memoize on the amount — same pattern as before, just with min() instead of +. And return -1 at the end if the result is Infinity.",
+    "Bottom-up: dp[0]=0, then for i=1..amount: dp[i] = min(dp[i-c]+1 for each coin c where i-c>=0). If dp[amount] is still Infinity, return -1.",
+  ],
   traceInput: [[1, 2, 5], 6],
   traceInputLabel: "coinChange([1,2,5], 6)",
   starterPython: `def coinChange(coins, amount):

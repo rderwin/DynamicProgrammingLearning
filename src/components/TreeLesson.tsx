@@ -5,6 +5,7 @@ import CodePanel from "./CodePanel";
 import CodeEditor from "./CodeEditor";
 import ComplexityChart from "./ComplexityChart";
 import SolutionReplay from "./SolutionReplay";
+import Hints from "./Hints";
 import type { TestCase, Language } from "../engine/runCode";
 import { computeStatsRange } from "../engine/computeStats";
 
@@ -39,6 +40,8 @@ export interface ProblemConfig {
   testCases: TestCase[];
   starterJS: string;
   starterPython: string;
+  /** Escalating hints for the code challenge */
+  hints: string[];
   /** Small input for visualizing the user's solution */
   traceInput: unknown[];
   traceInputLabel: string;
@@ -536,6 +539,10 @@ export default function TreeLesson({ config, nextProblemLabel, onNextProblem }: 
                 <span className="text-slate-400 text-xs">The last test case is large enough that brute force will timeout.</span>
               </p>
             </div>
+          )}
+
+          {!challengePassed && config.hints.length > 0 && (
+            <Hints hints={config.hints} />
           )}
 
           <CodeEditor

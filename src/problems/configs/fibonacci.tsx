@@ -65,6 +65,12 @@ export const fibonacciConfig: ProblemConfig = {
   // Hint: brute force times out on large n — use DP!
 
 }`,
+  hints: [
+    "Think about what's being recomputed. Can you store results so you don't compute the same fib(k) twice?",
+    "Try creating an object (or Map) called memo. Before computing fib(n), check if memo[n] already exists.",
+    "The structure: if (n in memo) return memo[n]; then at the end, memo[n] = result before returning.",
+    "Full pattern: function fib(n, memo={}) { if (n in memo) return memo[n]; if (n<=1) return n; memo[n] = fib(n-1,memo) + fib(n-2,memo); return memo[n]; }",
+  ],
   traceInput: [6],
   traceInputLabel: "fib(6)",
   starterPython: `def fib(n):

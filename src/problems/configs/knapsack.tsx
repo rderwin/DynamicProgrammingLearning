@@ -78,6 +78,12 @@ export const knapsackConfig: ProblemConfig = {
   // Two choices at each step: take or skip
 
 }`,
+  hints: [
+    "For each item, you have two choices: skip it (move to next item, same capacity) or take it (add its value, reduce capacity). Try both and return the max.",
+    "Base case: if you've looked at all items (i >= length) or capacity is 0, return 0.",
+    "Your state is (item index, remaining capacity) — two variables, so memoize with a 2D key like i+','+capacity.",
+    "The recurrence: skip = solve(i+1, W); take = values[i] + solve(i+1, W-weights[i]) if it fits. Return max(skip, take).",
+  ],
   traceInput: [5, [1,2,3,5], [1,6,10,15], 0],
   traceInputLabel: "knapsack(5, [1,2,3,5], ...)",
   starterPython: `def knapsack(capacity, weights, values, i):

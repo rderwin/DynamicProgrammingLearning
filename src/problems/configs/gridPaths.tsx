@@ -74,6 +74,12 @@ export const gridPathsConfig: ProblemConfig = {
   // This is the first 2D DP problem!
 
 }`,
+  hints: [
+    "To reach cell (m,n), you must have come from either (m-1,n) or (m,n-1). So paths(m,n) = paths(m-1,n) + paths(m,n-1).",
+    "Base cases: any cell in the first row or first column has exactly 1 path (can only go straight right or straight down).",
+    "This is 2D, so your memo key needs both dimensions. Try using a string key like m+','+n.",
+    "Bottom-up: create a 2D array, fill first row and column with 1s, then dp[i][j] = dp[i-1][j] + dp[i][j-1].",
+  ],
   traceInput: [3, 3],
   traceInputLabel: "gridPaths(3,3)",
   starterPython: `def gridPaths(m, n):
