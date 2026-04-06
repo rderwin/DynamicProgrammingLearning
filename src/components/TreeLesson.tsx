@@ -228,7 +228,7 @@ export default function TreeLesson({ config }: { config: ProblemConfig }) {
   }
 
   // ─── Visibility helpers ───
-  const showTree = stage !== "intro";
+  const showTree = stage !== "intro" && stage !== "challenge";
   const showControls = stage === "brute" || stage === "memo";
   const showMemoTable = phase === "memo" && hasStarted;
 
@@ -350,7 +350,7 @@ export default function TreeLesson({ config }: { config: ProblemConfig }) {
           <div className="lg:col-span-3 bg-white border border-slate-200 rounded-xl p-6 min-h-[350px] flex items-center justify-center shadow-sm">
             {tree && hasStarted ? (
               <RecursionTree tree={tree} revealedIds={revealedIds} memoizedNs={memoizedNs} prunedIds={prunedIds} currentNodeId={currentNode?.id ?? null} />
-            ) : tree && (stage === "brute-done" || stage === "memo-intro" || stage === "memo-done" || stage === "challenge") ? (
+            ) : tree && (stage === "brute-done" || stage === "memo-intro" || stage === "memo-done") ? (
               // Show completed tree
               <RecursionTree tree={tree} revealedIds={revealedIds} memoizedNs={memoizedNs} prunedIds={prunedIds} currentNodeId={null} />
             ) : (
