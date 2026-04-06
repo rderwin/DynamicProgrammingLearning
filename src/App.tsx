@@ -1,28 +1,69 @@
 import { useState } from "react";
 import IntroScreen from "./components/IntroScreen";
 import TreeLesson from "./components/TreeLesson";
+import TransitionLesson from "./components/TransitionLesson";
+import CompletionScreen from "./components/CompletionScreen";
 import { fibonacciConfig } from "./problems/configs/fibonacci";
 import { climbingStairsConfig } from "./problems/configs/climbingStairs";
 import { gridPathsConfig } from "./problems/configs/gridPaths";
 import { coinChangeConfig } from "./problems/configs/coinChange";
 import { knapsackConfig } from "./problems/configs/knapsack";
+import { fibToStairs, stairsToGrid, gridToCoins, coinsToKnapsack } from "./content/transitions";
+import type { TransitionContent } from "./components/TransitionLesson";
 
-type View = "intro" | "fibonacci" | "stairs" | "grid" | "coins" | "knapsack";
+type View =
+  | "intro"
+  | "fibonacci" | "t-fib-stairs"
+  | "stairs" | "t-stairs-grid"
+  | "grid" | "t-grid-coins"
+  | "coins" | "t-coins-knapsack"
+  | "knapsack" | "complete";
 
-const problems: { id: View; label: string; config: typeof fibonacciConfig }[] = [
-  { id: "fibonacci", label: "Fibonacci", config: fibonacciConfig },
-  { id: "stairs", label: "Climbing Stairs", config: climbingStairsConfig },
-  { id: "grid", label: "Grid Paths", config: gridPathsConfig },
-  { id: "coins", label: "Coin Change", config: coinChangeConfig },
+interface ProblemEntry {
+  id: View;
+  label: string;
+  config: typeof fibonacciConfig;
+  transitionAfter?: { viewId: View; content: TransitionContent; nextView: View };
+}
+
+const problems: ProblemEntry[] = [
+  { id: "fibonacci", label: "Fibonacci", config: fibonacciConfig, transitionAfter: { viewId: "t-fib-stairs", content: fibToStairs, nextView: "stairs" } },
+  { id: "stairs", label: "Climbing Stairs", config: climbingStairsConfig, transitionAfter: { viewId: "t-stairs-grid", content: stairsToGrid, nextView: "grid" } },
+  { id: "grid", label: "Grid Paths", config: gridPathsConfig, transitionAfter: { viewId: "t-grid-coins", content: gridToCoins, nextView: "coins" } },
+  { id: "coins", label: "Coin Change", config: coinChangeConfig, transitionAfter: { viewId: "t-coins-knapsack", content: coinsToKnapsack, nextView: "knapsack" } },
   { id: "knapsack", label: "Knapsack", config: knapsackConfig },
 ];
 
 function App() {
   const [view, setView] = useState<View>("intro");
 
-  const currentIdx = problems.findIndex((p) => p.id === view);
-  const currentProblem = currentIdx >= 0 ? problems[currentIdx] : null;
-  const nextProblem = currentIdx >= 0 && currentIdx < problems.length - 1 ? problems[currentIdx + 1] : null;
+  // Find current problem (transitions aren't in the problems list)
+  const currentProblemIdx = problems.findIndex((p) => p.id === view);
+  const currentProblem = currentProblemIdx >= 0 ? problems[currentProblemIdx] : null;
+  const nextProblem = currentProblemIdx >= 0 && currentProblemIdx < problems.length - 1 ? problems[currentProblemIdx + 1] : null;
+
+  // Find if we're in a transition
+  const currentTransition = problems.find((p) => p.transitionAfter?.viewId === view)?.transitionAfter;
+
+  // Is this a non-problem view?
+  const isTransition = !!currentTransition;
+  const isComplete = view === "complete";
+  const isIntro = view === "intro";
+  const showNav = !isIntro;
+
+  // Figure out which nav tab to highlight during transitions
+  const activeNavProblem = currentProblem?.id
+    ?? (currentTransition ? problems.find((p) => p.transitionAfter?.viewId === view)?.id : null)
+    ?? null;
+
+  // "Next problem" from a lesson goes to transition (if exists) or completion
+  function handleNextFromLesson() {
+    if (currentProblem?.transitionAfter) {
+      setView(currentProblem.transitionAfter.viewId);
+    } else if (currentProblemIdx === problems.length - 1) {
+      setView("complete");
+    }
+  }
 
   return (
     <div className="min-h-screen bg-slate-50 font-sans">
@@ -44,18 +85,16 @@ function App() {
             </div>
           </button>
 
-          {view !== "intro" && (
+          {showNav && (
             <nav className="flex gap-1 bg-slate-100 rounded-lg p-1 text-xs animate-fade-in">
-              {problems.map((p, i) => (
+              {problems.map((p) => (
                 <button
                   key={p.id}
                   onClick={() => setView(p.id)}
                   className={`px-3 py-1.5 rounded-md font-medium transition-all duration-200 ${
-                    view === p.id
+                    p.id === activeNavProblem || p.id === view
                       ? "bg-white text-slate-800 shadow-sm"
-                      : i <= currentIdx
-                        ? "text-slate-500 hover:text-slate-700 hover:bg-white/50"
-                        : "text-slate-400 hover:text-slate-600 hover:bg-white/50"
+                      : "text-slate-400 hover:text-slate-600 hover:bg-white/50"
                   }`}
                 >
                   {p.label}
@@ -68,17 +107,34 @@ function App() {
 
       {/* Main content */}
       <main className="max-w-6xl mx-auto px-6 py-8">
-        {view === "intro" && (
+        {isIntro && (
           <IntroScreen onStart={() => setView("fibonacci")} />
         )}
+
         {currentProblem && (
           <TreeLesson
             key={currentProblem.id}
             config={currentProblem.config}
-            nextProblemLabel={nextProblem?.label ?? null}
-            onNextProblem={nextProblem ? () => setView(nextProblem.id) : undefined}
+            nextProblemLabel={
+              currentProblem.transitionAfter
+                ? currentProblem.transitionAfter.content.toLabel
+                : currentProblemIdx === problems.length - 1
+                  ? null
+                  : nextProblem?.label ?? null
+            }
+            onNextProblem={handleNextFromLesson}
           />
         )}
+
+        {isTransition && currentTransition && (
+          <TransitionLesson
+            key={view}
+            content={currentTransition.content}
+            onContinue={() => setView(currentTransition.nextView)}
+          />
+        )}
+
+        {isComplete && <CompletionScreen />}
       </main>
     </div>
   );
