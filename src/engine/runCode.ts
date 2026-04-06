@@ -30,33 +30,37 @@ function runJS(code: string, testCases: TestCase[]): Promise<RunResult> {
         const results = [];
 
         try {
-          // Create the function from user code
           const fn = new Function('return (' + code + ')')();
 
           for (const tc of testCases) {
             try {
               const actual = fn(...tc.input);
-              results.push({
+              const r = {
                 input: tc.input,
                 expected: tc.expected,
                 actual,
                 passed: JSON.stringify(actual) === JSON.stringify(tc.expected),
-              });
+              };
+              results.push(r);
+              // Post progress so main thread knows what passed before timeout
+              self.postMessage({ type: 'progress', result: r, index: results.length - 1 });
             } catch (err) {
-              results.push({
+              const r = {
                 input: tc.input,
                 expected: tc.expected,
                 actual: null,
                 passed: false,
                 error: err.message,
-              });
+              };
+              results.push(r);
+              self.postMessage({ type: 'progress', result: r, index: results.length - 1 });
             }
           }
 
           const allPassed = results.every(r => r.passed);
-          self.postMessage({ passed: allPassed, results });
+          self.postMessage({ type: 'done', passed: allPassed, results });
         } catch (err) {
-          self.postMessage({ passed: false, results: [], error: err.message });
+          self.postMessage({ type: 'done', passed: false, results: [], error: err.message });
         }
       };
     `;
@@ -65,32 +69,56 @@ function runJS(code: string, testCases: TestCase[]): Promise<RunResult> {
     const url = URL.createObjectURL(blob);
     const worker = new Worker(url);
 
+    // Track partial results for smart timeout messages
+    const partialResults: RunResult["results"] = [];
+
     const timeout = setTimeout(() => {
       worker.terminate();
       URL.revokeObjectURL(url);
-      resolve({
-        passed: false,
-        results: [],
-        error: "Time limit exceeded (5s) — do you have an infinite loop?",
-      });
+
+      const passedCount = partialResults.filter(r => r.passed).length;
+      const ranCount = partialResults.length;
+
+      let errorMsg: string;
+      if (passedCount > 0 && passedCount === ranCount) {
+        // All completed tests passed but we timed out on a later one
+        errorMsg = "Your solution is correct but too slow for the larger inputs. This is exactly why we need DP — try memoization or a bottom-up approach!";
+      } else if (passedCount > 0) {
+        errorMsg = "Some tests passed but execution timed out. Your approach might work for small inputs but needs optimization for larger ones.";
+      } else {
+        errorMsg = "Time limit exceeded (5s). Check for missing base cases or infinite recursion.";
+      }
+
+      // Fill in remaining tests as timed-out
+      for (let i = ranCount; i < testCases.length; i++) {
+        partialResults.push({
+          input: testCases[i].input,
+          expected: testCases[i].expected,
+          actual: null,
+          passed: false,
+          error: "Timed out",
+        });
+      }
+
+      resolve({ passed: false, results: partialResults, error: errorMsg });
     }, TIMEOUT_MS);
 
     worker.onmessage = (e) => {
-      clearTimeout(timeout);
-      worker.terminate();
-      URL.revokeObjectURL(url);
-      resolve(e.data);
+      if (e.data.type === "progress") {
+        partialResults[e.data.index] = e.data.result;
+      } else if (e.data.type === "done") {
+        clearTimeout(timeout);
+        worker.terminate();
+        URL.revokeObjectURL(url);
+        resolve({ passed: e.data.passed, results: e.data.results });
+      }
     };
 
     worker.onerror = (e) => {
       clearTimeout(timeout);
       worker.terminate();
       URL.revokeObjectURL(url);
-      resolve({
-        passed: false,
-        results: [],
-        error: e.message || "Unknown error",
-      });
+      resolve({ passed: false, results: [], error: e.message || "Unknown error" });
     };
 
     worker.postMessage({ code, testCases });
@@ -221,8 +249,8 @@ export interface TraceResult {
 }
 
 /**
- * Run the user's code on a single input and capture the call tree.
- * Works by wrapping their function to intercept every call.
+ * Run the user's code on a single input and capture the full call tree.
+ * Uses eval + global scope override so recursive calls go through our tracer.
  */
 export function traceExecution(
   code: string,
@@ -239,16 +267,23 @@ export function traceExecution(
       self.onmessage = function(e) {
         const { code, fnName, input } = e.data;
         let totalCalls = 0;
+        let root = null;
+        const stack = [];
 
         try {
-          // Eval user code into scope
-          const fn = new Function('return (' + code + ')')();
+          // Eval user code in global scope — creates the function as self[fnName]
+          (0, eval)(code);
 
-          // Build call tree by wrapping the function
-          const stack = [];
-          let root = null;
+          const origFn = self[fnName];
+          if (typeof origFn !== 'function') {
+            self.postMessage({ tree: null, totalCalls: 0, error: 'Could not find function ' + fnName });
+            return;
+          }
 
-          const wrapped = function(...args) {
+          // Override the global function with our tracing wrapper.
+          // When origFn recurses and calls fnName(...), it resolves
+          // through the scope chain to self[fnName] = our wrapper.
+          self[fnName] = function(...args) {
             totalCalls++;
             const node = {
               args: args.map(a => typeof a === 'object' ? JSON.parse(JSON.stringify(a)) : a),
@@ -263,30 +298,23 @@ export function traceExecution(
             } else {
               root = node;
             }
-
             stack.push(node);
 
-            // Detect memoization: measure time, if instant with children already computed
-            const t0 = performance.now();
-            const result = fn.apply(this, args);
-            const elapsed = performance.now() - t0;
+            // Call the original — its recursive calls go through self[fnName] = this wrapper
+            const result = origFn.apply(self, args);
 
             node.result = result;
-            // If the call returned nearly instantly and we expected children but got none,
-            // it was likely a cache hit. Also mark as cached if call had no children but parent did.
-            if (node.children.length === 0 && stack.length > 1 && elapsed < 0.01) {
+            // Cache hit heuristic: returned without making any child calls
+            // and not a base case (stack depth > 1)
+            if (node.children.length === 0 && stack.length > 1) {
               node.cached = true;
             }
-
             stack.pop();
             return result;
           };
 
-          // Replace the function name in scope and run
-          // We need to make the wrapped version callable by the same name
-          // Strategy: run the user code, then override and call
-          const callCode = new Function(fnName, 'return ' + fnName + '(...' + JSON.stringify(input) + ')');
-          callCode(wrapped);
+          // Run the traced function
+          self[fnName](...input);
 
           self.postMessage({ tree: root, totalCalls });
         } catch (err) {
