@@ -50,7 +50,7 @@ interface Props {
   starterJS: string;
   starterPython: string;
   functionName: string;
-  onPass?: () => void;
+  onPass?: (code: string, language: Language) => void;
 }
 
 export default function CodeEditor({ testCases, starterJS, starterPython, functionName, onPass }: Props) {
@@ -119,7 +119,7 @@ export default function CodeEditor({ testCases, starterJS, starterPython, functi
       setResult(res);
       if (res.passed) {
         setHasEverPassed(true);
-        onPass?.();
+        onPass?.(code, language);
       }
     } catch {
       setResult({ passed: false, results: [], error: "Unexpected error" });

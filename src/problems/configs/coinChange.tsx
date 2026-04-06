@@ -77,6 +77,8 @@ export const coinChangeConfig: ProblemConfig = {
   // This one branches more than 2 ways!
 
 }`,
+  traceInput: [[1, 2, 5], 6],
+  traceInputLabel: "coinChange([1,2,5], 6)",
   starterPython: `def coinChange(coins, amount):
     # Return minimum coins to make amount
     # Return -1 if impossible

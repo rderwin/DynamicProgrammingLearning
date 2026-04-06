@@ -74,6 +74,8 @@ export const gridPathsConfig: ProblemConfig = {
   // This is the first 2D DP problem!
 
 }`,
+  traceInput: [3, 3],
+  traceInputLabel: "gridPaths(3,3)",
   starterPython: `def gridPaths(m, n):
     # Count paths from top-left to bottom-right
     # of an m x n grid (only move right or down)

@@ -66,6 +66,8 @@ export const climbingStairsConfig: ProblemConfig = {
   // Hint: this is basically Fibonacci in disguise!
 
 }`,
+  traceInput: [6],
+  traceInputLabel: "climbStairs(6)",
   starterPython: `def climbStairs(n):
     # Return the number of distinct ways to climb n steps
     # You can take 1 or 2 steps at a time

@@ -4,7 +4,8 @@ import MemoTable from "./MemoTable";
 import CodePanel from "./CodePanel";
 import CodeEditor from "./CodeEditor";
 import ComplexityChart from "./ComplexityChart";
-import type { TestCase } from "../engine/runCode";
+import SolutionReplay from "./SolutionReplay";
+import type { TestCase, Language } from "../engine/runCode";
 import { computeStatsRange } from "../engine/computeStats";
 
 export interface TreeNode {
@@ -38,6 +39,9 @@ export interface ProblemConfig {
   testCases: TestCase[];
   starterJS: string;
   starterPython: string;
+  /** Small input for visualizing the user's solution */
+  traceInput: unknown[];
+  traceInputLabel: string;
   concepts: {
     optimalSubstructure: React.ReactNode;
     overlappingSubproblems: (duplicateCount: number, totalNodes: number, n: number) => React.ReactNode;
@@ -71,6 +75,8 @@ export default function TreeLesson({ config, nextProblemLabel, onNextProblem }: 
   const [n, setN] = useState(config.nDefault);
   const [stage, setStage] = useState<Stage>("intro");
   const [challengePassed, setChallengePassed] = useState(false);
+  const [passedCode, setPassedCode] = useState("");
+  const [passedLang, setPassedLang] = useState<Language>("javascript");
   const phase: Phase = (stage === "memo" || stage === "memo-done") ? "memo" : "brute";
 
   const [stepIndex, setStepIndex] = useState(-1);
@@ -537,10 +543,25 @@ export default function TreeLesson({ config, nextProblemLabel, onNextProblem }: 
             testCases={config.testCases}
             starterJS={config.starterJS}
             starterPython={config.starterPython}
-            onPass={() => setChallengePassed(true)}
+            onPass={(passedCodeStr, passedLanguage) => {
+              setChallengePassed(true);
+              setPassedCode(passedCodeStr);
+              setPassedLang(passedLanguage);
+            }}
           />
 
           {/* ── Success: next problem prompt ── */}
+          {/* Visualize your solution */}
+          {challengePassed && passedCode && passedLang === "javascript" && (
+            <SolutionReplay
+              code={passedCode}
+              language={passedLang}
+              functionName={config.functionName}
+              traceInput={config.traceInput}
+              traceInputLabel={config.traceInputLabel}
+            />
+          )}
+
           {challengePassed && (
             <div className="animate-fade-in-up">
               <div className="bg-gradient-to-br from-emerald-50 to-teal-50/50 border border-emerald-200 rounded-2xl p-8 text-center">

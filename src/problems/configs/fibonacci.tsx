@@ -65,6 +65,8 @@ export const fibonacciConfig: ProblemConfig = {
   // Hint: brute force times out on large n — use DP!
 
 }`,
+  traceInput: [6],
+  traceInputLabel: "fib(6)",
   starterPython: `def fib(n):
     # Return the nth Fibonacci number
     # fib(0) = 0, fib(1) = 1

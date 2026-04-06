@@ -78,6 +78,8 @@ export const knapsackConfig: ProblemConfig = {
   // Two choices at each step: take or skip
 
 }`,
+  traceInput: [5, [1,2,3,5], [1,6,10,15], 0],
+  traceInputLabel: "knapsack(5, [1,2,3,5], ...)",
   starterPython: `def knapsack(capacity, weights, values, i):
     # Return max value that fits in capacity
     # starting from item index i
