@@ -64,8 +64,8 @@ export const gridPathsConfig: ProblemConfig = {
     { input: [2, 2], expected: 2, label: "gridPaths(2,2) = 2" },
     { input: [3, 3], expected: 6, label: "gridPaths(3,3) = 6" },
     { input: [3, 7], expected: 28, label: "gridPaths(3,7) = 28" },
-    { input: [4, 4], expected: 20, label: "gridPaths(4,4) = 20" },
     { input: [10, 10], expected: 48620, label: "gridPaths(10,10) = 48620" },
+    { input: [18, 18], expected: 2333606220, label: "gridPaths(18,18) — needs DP!" },
   ],
   starterJS: `function gridPaths(m, n) {
   // Count paths from top-left to bottom-right

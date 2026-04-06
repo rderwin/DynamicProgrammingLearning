@@ -64,10 +64,10 @@ export const coinChangeConfig: ProblemConfig = {
   testCases: [
     { input: [[1, 2, 5], 0], expected: 0, label: "coinChange([1,2,5], 0) = 0" },
     { input: [[1, 2, 5], 1], expected: 1, label: "coinChange([1,2,5], 1) = 1" },
-    { input: [[1, 2, 5], 5], expected: 1, label: "coinChange([1,2,5], 5) = 1" },
     { input: [[1, 2, 5], 11], expected: 3, label: "coinChange([1,2,5], 11) = 3" },
     { input: [[2], 3], expected: -1, label: "coinChange([2], 3) = -1 (impossible)" },
     { input: [[1, 5, 10, 25], 30], expected: 2, label: "coinChange([1,5,10,25], 30) = 2" },
+    { input: [[1, 2, 5], 100], expected: 20, label: "coinChange([1,2,5], 100) — needs DP!" },
   ],
   starterJS: `function coinChange(coins, amount) {
   // Return minimum coins to make amount

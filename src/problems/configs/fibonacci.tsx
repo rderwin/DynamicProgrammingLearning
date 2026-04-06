@@ -56,8 +56,8 @@ export const fibonacciConfig: ProblemConfig = {
     { input: [1], expected: 1, label: "fib(1) = 1" },
     { input: [5], expected: 5, label: "fib(5) = 5" },
     { input: [10], expected: 55, label: "fib(10) = 55" },
-    { input: [20], expected: 6765, label: "fib(20) = 6765" },
     { input: [30], expected: 832040, label: "fib(30) = 832040" },
+    { input: [45], expected: 1134903170, label: "fib(45) — brute force will timeout!" },
   ],
   starterJS: `function fib(n) {
   // Return the nth Fibonacci number

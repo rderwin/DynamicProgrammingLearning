@@ -61,9 +61,16 @@ type Stage =
   | "memo-done"      // Memo finished — show comparison
   | "challenge";     // Code editor
 
-export default function TreeLesson({ config }: { config: ProblemConfig }) {
+interface LessonProps {
+  config: ProblemConfig;
+  nextProblemLabel: string | null;
+  onNextProblem?: () => void;
+}
+
+export default function TreeLesson({ config, nextProblemLabel, onNextProblem }: LessonProps) {
   const [n, setN] = useState(config.nDefault);
   const [stage, setStage] = useState<Stage>("intro");
+  const [challengePassed, setChallengePassed] = useState(false);
   const phase: Phase = (stage === "memo" || stage === "memo-done") ? "memo" : "brute";
 
   const [stepIndex, setStepIndex] = useState(-1);
@@ -507,20 +514,71 @@ export default function TreeLesson({ config }: { config: ProblemConfig }) {
       {/* ═══ STAGE: challenge ═══ */}
       {stage === "challenge" && (
         <div className="flex flex-col gap-6 animate-fade-in-up">
-          <div className="bg-gradient-to-br from-blue-50 to-slate-50 border border-blue-200 rounded-2xl p-6">
-            <div className="flex items-center gap-3 mb-1">
-              <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
-                <svg className="w-4 h-4 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M17.25 6.75L22.5 12l-5.25 5.25m-10.5 0L1.5 12l5.25-5.25m7.5-3l-4.5 16.5" />
-                </svg>
+          {!challengePassed && (
+            <div className="bg-gradient-to-br from-blue-50 to-slate-50 border border-blue-200 rounded-2xl p-6">
+              <div className="flex items-center gap-3 mb-1">
+                <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
+                  <svg className="w-4 h-4 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M17.25 6.75L22.5 12l-5.25 5.25m-10.5 0L1.5 12l5.25-5.25m7.5-3l-4.5 16.5" />
+                  </svg>
+                </div>
+                <h3 className="text-lg font-bold text-slate-800">Your turn</h3>
               </div>
-              <h3 className="text-lg font-bold text-slate-800">Your turn</h3>
+              <p className="text-sm text-slate-500">
+                You've seen how it works visually. Now implement it — use memoization or bottom-up DP.
+                <br />
+                <span className="text-slate-400 text-xs">The last test case is large enough that brute force will timeout.</span>
+              </p>
             </div>
-            <p className="text-sm text-slate-500">
-              You've seen how it works visually. Now implement it — use memoization or bottom-up DP to make it efficient.
-            </p>
-          </div>
-          <CodeEditor functionName={config.functionName} testCases={config.testCases} starterJS={config.starterJS} starterPython={config.starterPython} />
+          )}
+
+          <CodeEditor
+            functionName={config.functionName}
+            testCases={config.testCases}
+            starterJS={config.starterJS}
+            starterPython={config.starterPython}
+            onPass={() => setChallengePassed(true)}
+          />
+
+          {/* ── Success: next problem prompt ── */}
+          {challengePassed && (
+            <div className="animate-fade-in-up">
+              <div className="bg-gradient-to-br from-emerald-50 to-teal-50/50 border border-emerald-200 rounded-2xl p-8 text-center">
+                <div className="w-16 h-16 bg-emerald-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                  <svg className="w-8 h-8 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                </div>
+                <h3 className="text-lg font-bold text-slate-800 mb-1">
+                  {config.title} — complete!
+                </h3>
+                <p className="text-sm text-slate-500 mb-6">
+                  {nextProblemLabel
+                    ? `You've got the pattern. Ready for ${nextProblemLabel}?`
+                    : "You've completed all the problems. You're interview-ready for DP!"
+                  }
+                </p>
+                {onNextProblem && nextProblemLabel ? (
+                  <button
+                    onClick={onNextProblem}
+                    className="group inline-flex items-center gap-2 bg-slate-900 text-white px-6 py-3 rounded-xl text-sm font-semibold hover:bg-slate-800 transition-all duration-200 shadow-lg shadow-slate-900/20 hover:shadow-xl hover:-translate-y-0.5 active:translate-y-0"
+                  >
+                    Continue to {nextProblemLabel}
+                    <svg className="w-4 h-4 transition-transform group-hover:translate-x-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                    </svg>
+                  </button>
+                ) : (
+                  <div className="inline-flex items-center gap-2 bg-emerald-100 text-emerald-800 px-5 py-2.5 rounded-xl text-sm font-semibold">
+                    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 18.75h-9m9 0a3 3 0 013 3h-15a3 3 0 013-3m9 0v-3.375c0-.621-.503-1.125-1.125-1.125h-.871M7.5 18.75v-3.375c0-.621.504-1.125 1.125-1.125h.872m5.007 0H9.497m5.007 0a7.454 7.454 0 01-.982-3.172M9.497 14.25a7.454 7.454 0 00.981-3.172M5.25 4.236c-.982.143-1.954.317-2.916.52A6.003 6.003 0 007.73 9.728M5.25 4.236V4.5c0 2.108.966 3.99 2.48 5.228M5.25 4.236V2.721C7.456 2.41 9.71 2.25 12 2.25c2.291 0 4.545.16 6.75.47v1.516M18.75 4.236c.982.143 1.954.317 2.916.52A6.003 6.003 0 0016.27 9.728M18.75 4.236V4.5c0 2.108-.966 3.99-2.48 5.228m0 0a6.003 6.003 0 01-5.54 0" />
+                    </svg>
+                    All problems complete!
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
 
           {chartStats.length > 0 && (
             <ComplexityChart stats={chartStats} currentN={n} />

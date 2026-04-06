@@ -68,7 +68,7 @@ export const knapsackConfig: ProblemConfig = {
     { input: [3, [1,2,3,5], [1,6,10,15], 0], expected: 11, label: "knapsack(cap=3) = 11" },
     { input: [0, [1,2,3], [10,20,30], 0], expected: 0, label: "knapsack(cap=0) = 0" },
     { input: [10, [5,4,6,3], [10,40,30,50], 0], expected: 90, label: "knapsack(cap=10) = 90" },
-    { input: [7, [1,3,4,5], [1,4,5,7], 0], expected: 9, label: "knapsack(cap=7) = 9" },
+    { input: [50, [10,20,30,40,50,15,25,35,5,45], [60,100,120,140,160,90,110,130,50,150], 0], expected: 530, label: "knapsack(cap=50, 10 items) — needs DP!" },
   ],
   starterJS: `function knapsack(capacity, weights, values, i) {
   // Return max value that fits in capacity

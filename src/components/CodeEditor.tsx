@@ -50,9 +50,10 @@ interface Props {
   starterJS: string;
   starterPython: string;
   functionName: string;
+  onPass?: () => void;
 }
 
-export default function CodeEditor({ testCases, starterJS, starterPython, functionName }: Props) {
+export default function CodeEditor({ testCases, starterJS, starterPython, functionName, onPass }: Props) {
   const editorRef = useRef<HTMLDivElement>(null);
   const viewRef = useRef<EditorView | null>(null);
   const [language, setLanguage] = useState<Language>("javascript");
@@ -116,7 +117,10 @@ export default function CodeEditor({ testCases, starterJS, starterPython, functi
     try {
       const res = await runCode(code, testCases, language);
       setResult(res);
-      if (res.passed) setHasEverPassed(true);
+      if (res.passed) {
+        setHasEverPassed(true);
+        onPass?.();
+      }
     } catch {
       setResult({ passed: false, results: [], error: "Unexpected error" });
     } finally {

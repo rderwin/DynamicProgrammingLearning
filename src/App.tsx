@@ -20,7 +20,9 @@ const problems: { id: View; label: string; config: typeof fibonacciConfig }[] = 
 function App() {
   const [view, setView] = useState<View>("intro");
 
-  const currentProblem = problems.find((p) => p.id === view);
+  const currentIdx = problems.findIndex((p) => p.id === view);
+  const currentProblem = currentIdx >= 0 ? problems[currentIdx] : null;
+  const nextProblem = currentIdx >= 0 && currentIdx < problems.length - 1 ? problems[currentIdx + 1] : null;
 
   return (
     <div className="min-h-screen bg-slate-50 font-sans">
@@ -44,14 +46,16 @@ function App() {
 
           {view !== "intro" && (
             <nav className="flex gap-1 bg-slate-100 rounded-lg p-1 text-xs animate-fade-in">
-              {problems.map((p) => (
+              {problems.map((p, i) => (
                 <button
                   key={p.id}
                   onClick={() => setView(p.id)}
                   className={`px-3 py-1.5 rounded-md font-medium transition-all duration-200 ${
                     view === p.id
                       ? "bg-white text-slate-800 shadow-sm"
-                      : "text-slate-500 hover:text-slate-700 hover:bg-white/50"
+                      : i <= currentIdx
+                        ? "text-slate-500 hover:text-slate-700 hover:bg-white/50"
+                        : "text-slate-400 hover:text-slate-600 hover:bg-white/50"
                   }`}
                 >
                   {p.label}
@@ -68,7 +72,12 @@ function App() {
           <IntroScreen onStart={() => setView("fibonacci")} />
         )}
         {currentProblem && (
-          <TreeLesson key={currentProblem.id} config={currentProblem.config} />
+          <TreeLesson
+            key={currentProblem.id}
+            config={currentProblem.config}
+            nextProblemLabel={nextProblem?.label ?? null}
+            onNextProblem={nextProblem ? () => setView(nextProblem.id) : undefined}
+          />
         )}
       </main>
     </div>

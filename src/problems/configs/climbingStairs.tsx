@@ -55,10 +55,10 @@ export const climbingStairsConfig: ProblemConfig = {
   testCases: [
     { input: [1], expected: 1, label: "climbStairs(1) = 1" },
     { input: [2], expected: 2, label: "climbStairs(2) = 2" },
-    { input: [3], expected: 3, label: "climbStairs(3) = 3" },
     { input: [5], expected: 8, label: "climbStairs(5) = 8" },
     { input: [10], expected: 89, label: "climbStairs(10) = 89" },
     { input: [30], expected: 1346269, label: "climbStairs(30) = 1346269" },
+    { input: [45], expected: 1836311903, label: "climbStairs(45) — needs DP!" },
   ],
   starterJS: `function climbStairs(n) {
   // Return the number of distinct ways to climb n steps
