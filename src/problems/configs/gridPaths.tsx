@@ -76,10 +76,16 @@ export const gridPathsConfig: ProblemConfig = {
 }`,
   hints: [
     "To reach cell (m,n), you must have come from either (m-1,n) or (m,n-1). So paths(m,n) = paths(m-1,n) + paths(m,n-1).",
-    "Base cases: any cell in the first row or first column has exactly 1 path (can only go straight right or straight down).",
-    "This is 2D, so your memo key needs both dimensions. Try using a string key like m+','+n.",
-    "Bottom-up: create a 2D array, fill first row and column with 1s, then dp[i][j] = dp[i-1][j] + dp[i][j-1].",
+    "Base cases: if m === 1 or n === 1, there's only 1 path (straight line).",
+    "This is 2D — your memo key needs both dimensions. Try a string key like m+','+n.",
   ],
+  solutionJS: `function gridPaths(m, n, memo = {}) {
+  let key = m + ',' + n;
+  if (key in memo) return memo[key];
+  if (m === 1 || n === 1) return 1;
+  memo[key] = gridPaths(m - 1, n, memo) + gridPaths(m, n - 1, memo);
+  return memo[key];
+}`,
   traceInput: [3, 3],
   traceInputLabel: "gridPaths(3,3)",
   starterPython: `def gridPaths(m, n):

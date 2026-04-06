@@ -67,10 +67,15 @@ export const fibonacciConfig: ProblemConfig = {
 }`,
   hints: [
     "Think about what's being recomputed. Can you store results so you don't compute the same fib(k) twice?",
-    "Try creating an object (or Map) called memo. Before computing fib(n), check if memo[n] already exists.",
-    "The structure: if (n in memo) return memo[n]; then at the end, memo[n] = result before returning.",
-    "Full pattern: function fib(n, memo={}) { if (n in memo) return memo[n]; if (n<=1) return n; memo[n] = fib(n-1,memo) + fib(n-2,memo); return memo[n]; }",
+    "Try creating an object called memo. Before computing fib(n), check if memo[n] already exists — if so, return it immediately.",
+    "The structure: if (n in memo) return memo[n]; ... compute the result ... memo[n] = result; return memo[n];",
   ],
+  solutionJS: `function fib(n, memo = {}) {
+  if (n in memo) return memo[n];
+  if (n <= 1) return n;
+  memo[n] = fib(n - 1, memo) + fib(n - 2, memo);
+  return memo[n];
+}`,
   traceInput: [6],
   traceInputLabel: "fib(6)",
   starterPython: `def fib(n):

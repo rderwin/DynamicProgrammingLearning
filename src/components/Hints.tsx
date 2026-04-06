@@ -2,11 +2,14 @@ import { useState } from "react";
 
 interface Props {
   hints: string[];
+  solution: string;
 }
 
-export default function Hints({ hints }: Props) {
+export default function Hints({ hints, solution }: Props) {
   const [revealed, setRevealed] = useState(0);
-  const allRevealed = revealed >= hints.length;
+  const [showSolutionGate, setShowSolutionGate] = useState(false);
+  const [solutionRevealed, setSolutionRevealed] = useState(false);
+  const allHintsRevealed = revealed >= hints.length;
 
   return (
     <div className="bg-slate-50 border border-slate-200 rounded-xl overflow-hidden">
@@ -36,9 +39,24 @@ export default function Hints({ hints }: Props) {
         </div>
       )}
 
-      {/* Button */}
-      <div className={`px-4 py-3 ${revealed > 0 ? "border-t border-slate-200 bg-white" : ""}`}>
-        {!allRevealed ? (
+      {/* Solution (behind gate) */}
+      {solutionRevealed && (
+        <div className="mx-4 mb-4 animate-fade-in-up">
+          <div className="bg-[#1e1e2e] rounded-lg p-4 border border-slate-700/50">
+            <div className="flex items-center gap-2 mb-2">
+              <svg className="w-3.5 h-3.5 text-amber-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 5.25a3 3 0 013 3m3 0a6 6 0 01-7.029 5.912c-.563-.097-1.159.026-1.563.43L10.5 17.25H8.25v2.25H6v2.25H2.25v-2.818c0-.597.237-1.17.659-1.591l6.499-6.499c.404-.404.527-1 .43-1.563A6 6 0 1121.75 8.25z" />
+              </svg>
+              <span className="text-xs text-amber-400 font-semibold uppercase tracking-wider">Solution</span>
+            </div>
+            <pre className="text-sm text-slate-200 font-mono whitespace-pre-wrap leading-relaxed">{solution}</pre>
+          </div>
+        </div>
+      )}
+
+      {/* Button area */}
+      <div className={`px-4 py-3 ${revealed > 0 || solutionRevealed ? "border-t border-slate-200 bg-white" : ""}`}>
+        {!allHintsRevealed ? (
           <button
             onClick={() => setRevealed((r) => r + 1)}
             className="flex items-center gap-2 text-sm text-slate-500 hover:text-slate-700 transition-colors group"
@@ -51,9 +69,35 @@ export default function Hints({ hints }: Props) {
               : `Show hint ${revealed + 1} of ${hints.length} (more specific)`
             }
           </button>
-        ) : (
-          <p className="text-xs text-slate-400 italic">No more hints — you've got everything you need!</p>
-        )}
+        ) : !solutionRevealed && !showSolutionGate ? (
+          <button
+            onClick={() => setShowSolutionGate(true)}
+            className="flex items-center gap-2 text-sm text-red-400 hover:text-red-600 transition-colors group"
+          >
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 5.25a3 3 0 013 3m3 0a6 6 0 01-7.029 5.912c-.563-.097-1.159.026-1.563.43L10.5 17.25H8.25v2.25H6v2.25H2.25v-2.818c0-.597.237-1.17.659-1.591l6.499-6.499c.404-.404.527-1 .43-1.563A6 6 0 1121.75 8.25z" />
+            </svg>
+            Show me the full solution...
+          </button>
+        ) : showSolutionGate && !solutionRevealed ? (
+          <div className="flex items-center gap-3 animate-fade-in">
+            <span className="text-sm text-red-500 font-medium">Are you sure? You'll learn more by trying first.</span>
+            <button
+              onClick={() => { setSolutionRevealed(true); setShowSolutionGate(false); }}
+              className="px-3 py-1 bg-red-100 text-red-700 rounded-lg text-xs font-semibold hover:bg-red-200 transition-colors"
+            >
+              Yes, show me
+            </button>
+            <button
+              onClick={() => setShowSolutionGate(false)}
+              className="px-3 py-1 bg-slate-100 text-slate-600 rounded-lg text-xs font-semibold hover:bg-slate-200 transition-colors"
+            >
+              I'll keep trying
+            </button>
+          </div>
+        ) : solutionRevealed ? (
+          <p className="text-xs text-slate-400 italic">Try typing it out yourself — understanding comes from writing, not reading.</p>
+        ) : null}
       </div>
     </div>
   );

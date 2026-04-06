@@ -78,11 +78,23 @@ export const coinChangeConfig: ProblemConfig = {
 
 }`,
   hints: [
-    "For each amount, try using every coin and pick whichever gives the fewest total coins. That's min(1 + solve(amount - coin)) for each coin.",
-    "Base case: amount === 0 needs 0 coins. If amount < 0, return Infinity (impossible).",
-    "Memoize on the amount — same pattern as before, just with min() instead of +. And return -1 at the end if the result is Infinity.",
-    "Bottom-up: dp[0]=0, then for i=1..amount: dp[i] = min(dp[i-c]+1 for each coin c where i-c>=0). If dp[amount] is still Infinity, return -1.",
+    "For each amount, try every coin: the answer is min(1 + solve(amount - coin)) across all coins.",
+    "Base case: amount === 0 needs 0 coins. If no coin works, it's impossible — return -1.",
+    "Memoize on the remaining amount. Same check-before-compute pattern — just use Math.min instead of +.",
   ],
+  solutionJS: `function coinChange(coins, amount, memo = {}) {
+  if (amount in memo) return memo[amount];
+  if (amount === 0) return 0;
+  let min = Infinity;
+  for (let c of coins) {
+    if (amount - c >= 0) {
+      let res = coinChange(coins, amount - c, memo);
+      if (res !== -1) min = Math.min(min, 1 + res);
+    }
+  }
+  memo[amount] = min === Infinity ? -1 : min;
+  return memo[amount];
+}`,
   traceInput: [[1, 2, 5], 6],
   traceInputLabel: "coinChange([1,2,5], 6)",
   starterPython: `def coinChange(coins, amount):

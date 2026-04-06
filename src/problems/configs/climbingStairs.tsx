@@ -70,8 +70,13 @@ export const climbingStairsConfig: ProblemConfig = {
     "This is the same recurrence as Fibonacci: ways(n) = ways(n-1) + ways(n-2). What are the base cases?",
     "Base cases: there's 1 way to climb 0 steps (do nothing) and 1 way to climb 1 step.",
     "Add memoization exactly like Fibonacci: check memo before computing, store result after.",
-    "Or go bottom-up: dp[0]=1, dp[1]=1, then for i=2..n: dp[i] = dp[i-1] + dp[i-2]. Return dp[n].",
   ],
+  solutionJS: `function climbStairs(n, memo = {}) {
+  if (n in memo) return memo[n];
+  if (n <= 1) return 1;
+  memo[n] = climbStairs(n - 1, memo) + climbStairs(n - 2, memo);
+  return memo[n];
+}`,
   traceInput: [6],
   traceInputLabel: "climbStairs(6)",
   starterPython: `def climbStairs(n):

@@ -42,6 +42,8 @@ export interface ProblemConfig {
   starterPython: string;
   /** Escalating hints for the code challenge */
   hints: string[];
+  /** Full solution (behind confirmation gate) */
+  solutionJS: string;
   /** Small input for visualizing the user's solution */
   traceInput: unknown[];
   traceInputLabel: string;
@@ -68,6 +70,18 @@ type Stage =
   | "memo-done"      // Memo finished — show comparison
   | "challenge";     // Code editor
 
+const STAGE_ORDER: Stage[] = ["intro", "brute", "brute-done", "memo-intro", "memo", "memo-done", "challenge"];
+const STAGE_NAV: { stage: Stage; label: string; short: string }[] = [
+  { stage: "intro", label: "Setup", short: "1" },
+  { stage: "brute", label: "Brute Force", short: "2" },
+  { stage: "brute-done", label: "Insight", short: "3" },
+  { stage: "memo-intro", label: "Memo Intro", short: "4" },
+  { stage: "memo", label: "Memoization", short: "5" },
+  { stage: "memo-done", label: "Compare", short: "6" },
+  { stage: "challenge", label: "Code", short: "7" },
+];
+function stageIdx(s: Stage) { return STAGE_ORDER.indexOf(s); }
+
 interface LessonProps {
   config: ProblemConfig;
   nextProblemLabel: string | null;
@@ -77,10 +91,38 @@ interface LessonProps {
 export default function TreeLesson({ config, nextProblemLabel, onNextProblem }: LessonProps) {
   const [n, setN] = useState(config.nDefault);
   const [stage, setStage] = useState<Stage>("intro");
+  const [maxReached, setMaxReached] = useState(0); // index into STAGE_ORDER
   const [challengePassed, setChallengePassed] = useState(false);
   const [passedCode, setPassedCode] = useState("");
   const [passedLang, setPassedLang] = useState<Language>("javascript");
   const phase: Phase = (stage === "memo" || stage === "memo-done") ? "memo" : "brute";
+
+  // Track progress
+  useEffect(() => {
+    const idx = stageIdx(stage);
+    setMaxReached((prev) => Math.max(prev, idx));
+  }, [stage]);
+
+  // Navigate to a previously reached stage
+  function goToStage(target: Stage) {
+    const targetIdx = stageIdx(target);
+    if (targetIdx > maxReached) return;
+    // When going to a play stage that's already been completed, auto-complete it
+    if (target === "brute" && maxReached >= stageIdx("brute-done")) {
+      setStage("brute-done");
+      return;
+    }
+    if (target === "memo" && maxReached >= stageIdx("memo-done")) {
+      setStage("memo-done");
+      return;
+    }
+    setStage(target);
+    if (target === "brute" || target === "memo") {
+      setStepIndex(-1);
+      setIsPlaying(false);
+      playRef.current = false;
+    }
+  }
 
   const [stepIndex, setStepIndex] = useState(-1);
   const [isPlaying, setIsPlaying] = useState(false);
@@ -240,6 +282,9 @@ export default function TreeLesson({ config, nextProblemLabel, onNextProblem }: 
   }
   function restart() {
     setStage("intro");
+    setMaxReached(0);
+    setChallengePassed(false);
+    setPassedCode("");
     resetAnim();
   }
 
@@ -250,7 +295,7 @@ export default function TreeLesson({ config, nextProblemLabel, onNextProblem }: 
 
   return (
     <div className="flex flex-col gap-6 animate-fade-in">
-      {/* ─── Problem header (always visible) ─── */}
+      {/* ─── Problem header ─── */}
       <div className="text-left">
         <div className="flex items-center gap-3 mb-2">
           <span className="bg-blue-100 text-blue-700 text-xs font-semibold px-2.5 py-1 rounded-full">
@@ -266,6 +311,43 @@ export default function TreeLesson({ config, nextProblemLabel, onNextProblem }: 
         <h2 className="text-2xl font-bold text-slate-900">{config.title}</h2>
         <div className="text-slate-500 mt-1">{config.description}</div>
       </div>
+
+      {/* ─── Stage navigation ─── */}
+      {stage !== "intro" && (
+        <div className="flex items-center gap-1 animate-fade-in">
+          {STAGE_NAV.map((nav, i) => {
+            const current = nav.stage === stage ||
+              (nav.stage === "brute" && stage === "brute") ||
+              (nav.stage === "memo" && stage === "memo");
+            const reached = i <= maxReached;
+            const isActive = nav.stage === stage;
+
+            return (
+              <div key={nav.stage} className="flex items-center">
+                {i > 0 && (
+                  <div className={`w-6 h-px mx-0.5 ${i <= maxReached ? "bg-blue-300" : "bg-slate-200"}`} />
+                )}
+                <button
+                  onClick={() => reached && goToStage(nav.stage)}
+                  disabled={!reached}
+                  className={`px-2.5 py-1 rounded-lg text-[11px] font-medium transition-all duration-200 ${
+                    isActive
+                      ? "bg-blue-100 text-blue-800 ring-1 ring-blue-300"
+                      : reached
+                        ? "bg-slate-100 text-slate-600 hover:bg-slate-200 cursor-pointer"
+                        : "bg-slate-50 text-slate-300 cursor-not-allowed"
+                  }`}
+                  title={nav.label}
+                >
+                  {current && <span className="inline-block w-1.5 h-1.5 bg-blue-500 rounded-full mr-1.5 align-middle" />}
+                  <span className="hidden sm:inline">{nav.label}</span>
+                  <span className="sm:hidden">{nav.short}</span>
+                </button>
+              </div>
+            );
+          })}
+        </div>
+      )}
 
       {/* ═══ STAGE: intro ═══ */}
       {stage === "intro" && (
@@ -542,7 +624,7 @@ export default function TreeLesson({ config, nextProblemLabel, onNextProblem }: 
           )}
 
           {!challengePassed && config.hints.length > 0 && (
-            <Hints hints={config.hints} />
+            <Hints hints={config.hints} solution={config.solutionJS} />
           )}
 
           <CodeEditor
