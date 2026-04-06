@@ -1,73 +1,49 @@
-# React + TypeScript + Vite
+# DP Learning Lab
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+An interactive web app that teaches dynamic programming visually. Watch recursion trees build up, see where the wasted work is, then flip on memoization and watch it collapse.
 
-Currently, two official plugins are available:
+## What it does
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+Each problem walks you through the same progression:
 
-## React Compiler
+1. **See brute force** — step through a recursion tree and spot the duplicate calls (red nodes)
+2. **Turn on memoization** — watch branches get pruned and a memo table fill up in real time
+3. **Learn the vocabulary** — concepts like "overlapping subproblems" appear after you've already seen what they mean
+4. **Write the code** — solve it yourself in JS or Python with instant test feedback
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## Problems
 
-## Expanding the ESLint configuration
+- Fibonacci Numbers
+- Climbing Stairs
+- Grid Paths
+- Coin Change
+- 0/1 Knapsack
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+## Running locally
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+Requires [Bun](https://bun.sh):
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+bun install
+bun dev
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+Then open http://localhost:5173.
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+## Stack
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+- React + TypeScript
+- Tailwind CSS v4
+- Vite
+- CodeMirror (code editor)
+- Pyodide (Python execution in browser, loaded on demand)
+
+## Project structure
+
+```
+src/
+  components/     UI components (TreeLesson, RecursionTree, CodePanel, etc.)
+  problems/       Tree builders for each DP problem
+  problems/configs/  Problem configs (code, test cases, concept text)
+  engine/         Code execution (Web Worker for JS, Pyodide for Python)
 ```
