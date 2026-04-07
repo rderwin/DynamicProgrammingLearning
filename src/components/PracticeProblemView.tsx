@@ -89,7 +89,7 @@ export default function PracticeProblemView({ problem: p, onBack, onComplete, is
       {/* Hints */}
       {!passed && (
         <div className="mb-6">
-          <Hints hints={p.hints} solution={p.solutionJS} />
+          <Hints hints={p.hints} solution={p.solutionJS} solutionPython={p.solutionPython} />
         </div>
       )}
 

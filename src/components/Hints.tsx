@@ -3,12 +3,14 @@ import { useState } from "react";
 interface Props {
   hints: string[];
   solution: string;
+  solutionPython?: string;
 }
 
-export default function Hints({ hints, solution }: Props) {
+export default function Hints({ hints, solution, solutionPython }: Props) {
   const [revealed, setRevealed] = useState(0);
   const [showSolutionGate, setShowSolutionGate] = useState(false);
   const [solutionRevealed, setSolutionRevealed] = useState(false);
+  const [solutionLang, setSolutionLang] = useState<"js" | "py">("js");
   const allHintsRevealed = revealed >= hints.length;
 
   return (
@@ -42,14 +44,29 @@ export default function Hints({ hints, solution }: Props) {
       {/* Solution (behind gate) */}
       {solutionRevealed && (
         <div className="mx-4 mb-4 animate-fade-in-up">
-          <div className="bg-[#1e1e2e] rounded-lg p-4 border border-slate-700/50">
-            <div className="flex items-center gap-2 mb-2">
+          <div className="bg-[#1e1e2e] rounded-lg border border-slate-700/50 overflow-hidden">
+            {/* Language tabs */}
+            <div className="flex items-center gap-2 px-4 pt-3 pb-2">
               <svg className="w-3.5 h-3.5 text-amber-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 5.25a3 3 0 013 3m3 0a6 6 0 01-7.029 5.912c-.563-.097-1.159.026-1.563.43L10.5 17.25H8.25v2.25H6v2.25H2.25v-2.818c0-.597.237-1.17.659-1.591l6.499-6.499c.404-.404.527-1 .43-1.563A6 6 0 1121.75 8.25z" />
               </svg>
               <span className="text-xs text-amber-400 font-semibold uppercase tracking-wider">Solution</span>
+              {solutionPython && (
+                <div className="flex gap-0.5 bg-[#11111b] rounded-md p-0.5 text-[10px] ml-auto">
+                  <button
+                    onClick={() => setSolutionLang("js")}
+                    className={`px-2 py-0.5 rounded font-medium transition-colors ${solutionLang === "js" ? "bg-[#313244] text-amber-400" : "text-slate-500 hover:text-slate-300"}`}
+                  >JS</button>
+                  <button
+                    onClick={() => setSolutionLang("py")}
+                    className={`px-2 py-0.5 rounded font-medium transition-colors ${solutionLang === "py" ? "bg-[#313244] text-blue-400" : "text-slate-500 hover:text-slate-300"}`}
+                  >Python</button>
+                </div>
+              )}
             </div>
-            <pre className="text-sm text-slate-200 font-mono whitespace-pre-wrap leading-relaxed">{solution}</pre>
+            <pre className="text-sm text-slate-200 font-mono whitespace-pre-wrap leading-relaxed px-4 pb-4">
+              {solutionLang === "py" && solutionPython ? solutionPython : solution}
+            </pre>
           </div>
         </div>
       )}

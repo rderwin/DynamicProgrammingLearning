@@ -1,5 +1,9 @@
 import type { PracticeProblem } from "./types";
 
+// Helper: generate a large array for timeout-forcing test cases
+const LARGE_ROBBER = Array.from({ length: 100 }, (_, i) => (i * 7 + 3) % 50);
+const LARGE_COST = Array.from({ length: 200 }, (_, i) => (i * 13 + 5) % 100);
+
 export const practiceProblems: PracticeProblem[] = [
   // ─── 1. House Robber ───
   {
@@ -15,17 +19,17 @@ export const practiceProblems: PracticeProblem[] = [
     ],
     constraints: ["1 ≤ nums.length ≤ 100", "0 ≤ nums[i] ≤ 400"],
     hints: [
-      "For each house, you have two choices: rob it or skip it. Sound familiar? It's the include/exclude pattern from Knapsack.",
-      "If you rob house i, you get nums[i] + best you can do from house i+2 onward. If you skip, you get best from house i+1.",
-      "Recurrence: rob(i) = max(nums[i] + rob(i+2), rob(i+1)). Base: rob(n)=0, rob(n-1)=nums[n-1].",
+      "For each house: rob it (get nums[i] + best from i+2 onward) or skip it (best from i+1). Sound like include/exclude?",
+      "Recurrence: dp[i] = max(nums[i] + dp[i-2], dp[i-1]). Base: dp[0]=nums[0], dp[1]=max(nums[0], nums[1]).",
+      "Bottom-up loop from i=2 to n-1. The answer is dp[n-1].",
     ],
     testCases: [
       { input: [[1, 2, 3, 1]], expected: 4, label: "rob([1,2,3,1]) = 4" },
       { input: [[2, 7, 9, 3, 1]], expected: 12, label: "rob([2,7,9,3,1]) = 12" },
       { input: [[0]], expected: 0, label: "rob([0]) = 0" },
       { input: [[5, 1, 1, 5]], expected: 10, label: "rob([5,1,1,5]) = 10" },
-      { input: [[2, 1, 1, 2]], expected: 4, label: "rob([2,1,1,2]) = 4" },
       { input: [[1, 3, 1, 3, 100]], expected: 103, label: "rob([1,3,1,3,100]) = 103" },
+      { input: [LARGE_ROBBER], expected: 1275, label: "rob([100 houses]) — needs DP!" },
     ],
     functionName: "rob",
     starterJS: `function rob(nums) {
@@ -49,8 +53,18 @@ export const practiceProblems: PracticeProblem[] = [
   }
   return dp[n-1];
 }`,
+    solutionPython: `def rob(nums):
+    n = len(nums)
+    if n == 0: return 0
+    if n == 1: return nums[0]
+    dp = [0] * n
+    dp[0] = nums[0]
+    dp[1] = max(nums[0], nums[1])
+    for i in range(2, n):
+        dp[i] = max(dp[i-1], nums[i] + dp[i-2])
+    return dp[n-1]`,
     timeComplexity: "O(n)",
-    spaceComplexity: "O(n) — can be O(1) with two variables",
+    spaceComplexity: "O(n)",
   },
 
   // ─── 2. Min Cost Climbing Stairs ───
@@ -67,16 +81,16 @@ export const practiceProblems: PracticeProblem[] = [
     ],
     constraints: ["2 ≤ cost.length ≤ 1000", "0 ≤ cost[i] ≤ 999"],
     hints: [
-      "This is Climbing Stairs but with a cost — instead of counting ways, you minimize cost. Use min() instead of +.",
-      "To reach step i, you came from step i-1 or i-2. Pick whichever is cheaper.",
-      "dp[i] = cost[i] + min(dp[i-1], dp[i-2]). The answer is min(dp[n-1], dp[n-2]) since you can skip the last step.",
+      "To reach step i, you came from i-1 or i-2. Pick whichever is cheaper: dp[i] = cost[i] + min(dp[i-1], dp[i-2]).",
+      "Base: dp[0]=cost[0], dp[1]=cost[1]. Answer: min(dp[n-1], dp[n-2]) since you can skip the last step.",
+      "In Python: dp = list(cost), then loop from 2. Same idea.",
     ],
     testCases: [
       { input: [[10, 15, 20]], expected: 15, label: "minCost([10,15,20]) = 15" },
-      { input: [[1, 100, 1, 1, 1, 100, 1, 1, 100, 1]], expected: 6, label: "minCost([1,100,1,...]) = 6" },
+      { input: [[1, 100, 1, 1, 1, 100, 1, 1, 100, 1]], expected: 6, label: "minCost([1,100,...]) = 6" },
       { input: [[0, 0]], expected: 0, label: "minCost([0,0]) = 0" },
       { input: [[1, 2, 3]], expected: 2, label: "minCost([1,2,3]) = 2" },
-      { input: [[5, 1, 2, 4, 8, 1]], expected: 8, label: "minCost([5,1,2,4,8,1]) = 8" },
+      { input: [LARGE_COST], expected: 4906, label: "minCost([200 steps]) — needs DP!" },
     ],
     functionName: "minCost",
     starterJS: `function minCost(cost) {
@@ -98,6 +112,12 @@ export const practiceProblems: PracticeProblem[] = [
   }
   return Math.min(dp[n-1], dp[n-2]);
 }`,
+    solutionPython: `def minCost(cost):
+    n = len(cost)
+    dp = list(cost)
+    for i in range(2, n):
+        dp[i] = cost[i] + min(dp[i-1], dp[i-2])
+    return min(dp[n-1], dp[n-2])`,
     timeComplexity: "O(n)",
     spaceComplexity: "O(n)",
   },
@@ -117,9 +137,9 @@ export const practiceProblems: PracticeProblem[] = [
     ],
     constraints: ["1 ≤ s.length ≤ 100", "s contains only digits"],
     hints: [
-      "This is like Climbing Stairs — you can 'take' 1 or 2 digits at each step. But not all steps are valid.",
-      "Single digit is valid if it's 1-9 (not 0). Two digits are valid if they form 10-26.",
-      "dp[i] = (valid single? dp[i-1] : 0) + (valid pair? dp[i-2] : 0). Base: dp[0]=1 (empty string = 1 way).",
+      "Like Climbing Stairs: you can 'take' 1 or 2 digits. But not all steps are valid (no leading zeros, two-digit must be 10-26).",
+      "dp[i] = (single digit valid ? dp[i-1] : 0) + (two digits valid ? dp[i-2] : 0). Base: dp[0]=1.",
+      "In Python: check s[i-1] != '0' for single, and 10 <= int(s[i-2:i]) <= 26 for double.",
     ],
     testCases: [
       { input: ["12"], expected: 2, label: 'numDecodings("12") = 2' },
@@ -127,7 +147,7 @@ export const practiceProblems: PracticeProblem[] = [
       { input: ["06"], expected: 0, label: 'numDecodings("06") = 0' },
       { input: ["10"], expected: 1, label: 'numDecodings("10") = 1' },
       { input: ["11106"], expected: 2, label: 'numDecodings("11106") = 2' },
-      { input: ["27"], expected: 1, label: 'numDecodings("27") = 1' },
+      { input: ["1" + "2".repeat(44)], expected: 1346269, label: 'numDecodings("1222...") — needs DP!' },
     ],
     functionName: "numDecodings",
     starterJS: `function numDecodings(s) {
@@ -151,6 +171,18 @@ export const practiceProblems: PracticeProblem[] = [
   }
   return dp[n];
 }`,
+    solutionPython: `def numDecodings(s):
+    n = len(s)
+    dp = [0] * (n + 1)
+    dp[0] = 1
+    dp[1] = 1 if s[0] != '0' else 0
+    for i in range(2, n + 1):
+        if s[i-1] != '0':
+            dp[i] += dp[i-1]
+        two = int(s[i-2:i])
+        if 10 <= two <= 26:
+            dp[i] += dp[i-2]
+    return dp[n]`,
     timeComplexity: "O(n)",
     spaceComplexity: "O(n)",
   },
@@ -169,28 +201,26 @@ export const practiceProblems: PracticeProblem[] = [
     ],
     constraints: ["1 ≤ m,n ≤ 100", "grid[i][j] is 0 or 1"],
     hints: [
-      "Same as Grid Paths, but if a cell has an obstacle, its path count is 0.",
-      "dp[i][j] = 0 if obstacle, else dp[i-1][j] + dp[i][j-1]. First row/col need special handling for obstacles.",
-      "For first row: dp[0][j] = 0 if obstacle at (0,j) or any cell before it. Same for first column.",
+      "Same as Grid Paths but obstacle cells have 0 paths. dp[i][j] = 0 if grid[i][j] == 1.",
+      "First row/col: dp[0][j] = 0 if obstacle at (0,j) or any cell before it. Same for first column.",
+      "In Python: dp = [[0]*n for _ in range(m)], then same logic. Check grid[i][j] first.",
     ],
     testCases: [
-      { input: [[[0,0,0],[0,1,0],[0,0,0]]], expected: 2, label: "3×3 grid with center obstacle = 2" },
-      { input: [[[0,1],[0,0]]], expected: 1, label: "2×2 grid with obstacle = 1" },
+      { input: [[[0,0,0],[0,1,0],[0,0,0]]], expected: 2, label: "3×3 center obstacle = 2" },
+      { input: [[[0,1],[0,0]]], expected: 1, label: "2×2 with obstacle = 1" },
       { input: [[[1,0]]], expected: 0, label: "Start blocked = 0" },
       { input: [[[0,0],[0,0]]], expected: 2, label: "2×2 no obstacles = 2" },
-      { input: [[[0,0,0,0],[0,1,0,0],[0,0,0,0]]], expected: 4, label: "3×4 grid = 4" },
+      { input: [Array.from({length:15}, (_,i) => Array.from({length:15}, (_,j) => (i===7&&j===7)?1:0))], expected: 38165260, label: "15×15 grid — needs DP!" },
     ],
     functionName: "uniquePaths",
     starterJS: `function uniquePaths(grid) {
   // Count paths from top-left to bottom-right
-  // Can only move right or down
-  // grid[i][j] === 1 means obstacle
+  // Can only move right or down, grid[i][j]===1 is obstacle
 
 }`,
     starterPython: `def uniquePaths(grid):
     # Count paths from top-left to bottom-right
-    # Can only move right or down
-    # grid[i][j] == 1 means obstacle
+    # Can only move right or down, grid[i][j]==1 is obstacle
     pass`,
     solutionJS: `function uniquePaths(grid) {
   const m = grid.length, n = grid[0].length;
@@ -204,6 +234,17 @@ export const practiceProblems: PracticeProblem[] = [
       dp[i][j] = grid[i][j] === 1 ? 0 : dp[i-1][j] + dp[i][j-1];
   return dp[m-1][n-1];
 }`,
+    solutionPython: `def uniquePaths(grid):
+    m, n = len(grid), len(grid[0])
+    if grid[0][0] == 1: return 0
+    dp = [[0]*n for _ in range(m)]
+    dp[0][0] = 1
+    for i in range(1, m): dp[i][0] = 0 if grid[i][0] == 1 else dp[i-1][0]
+    for j in range(1, n): dp[0][j] = 0 if grid[0][j] == 1 else dp[0][j-1]
+    for i in range(1, m):
+        for j in range(1, n):
+            dp[i][j] = 0 if grid[i][j] == 1 else dp[i-1][j] + dp[i][j-1]
+    return dp[m-1][n-1]`,
     timeComplexity: "O(m×n)",
     spaceComplexity: "O(m×n)",
   },
@@ -222,16 +263,16 @@ export const practiceProblems: PracticeProblem[] = [
     ],
     constraints: ["0 ≤ amount ≤ 5000", "1 ≤ coins.length ≤ 300"],
     hints: [
-      "This is Coin Change but counting combinations instead of minimizing. The trick: process coins in order to avoid counting permutations.",
-      "For each coin, update all amounts it can contribute to. dp[j] += dp[j - coin].",
-      "Outer loop: coins. Inner loop: amounts. dp[0] = 1 (one way to make 0). This ordering prevents double-counting.",
+      "Process coins in order to avoid double-counting permutations. Outer loop: coins. Inner loop: amounts.",
+      "dp[j] += dp[j - coin]. Start with dp[0] = 1 (one way to make 0).",
+      "In Python: dp = [0]*(amount+1); dp[0]=1; for coin in coins: for j in range(coin, amount+1): dp[j]+=dp[j-coin]",
     ],
     testCases: [
       { input: [5, [1, 2, 5]], expected: 4, label: "change(5, [1,2,5]) = 4" },
       { input: [3, [2]], expected: 0, label: "change(3, [2]) = 0" },
       { input: [0, [1, 2]], expected: 1, label: "change(0, [1,2]) = 1" },
       { input: [10, [10]], expected: 1, label: "change(10, [10]) = 1" },
-      { input: [7, [1, 2, 3]], expected: 8, label: "change(7, [1,2,3]) = 8" },
+      { input: [500, [1, 2, 5, 10, 25]], expected: 90676, label: "change(500, [1,2,5,10,25]) — needs DP!" },
     ],
     functionName: "change",
     starterJS: `function change(amount, coins) {
@@ -253,6 +294,13 @@ export const practiceProblems: PracticeProblem[] = [
   }
   return dp[amount];
 }`,
+    solutionPython: `def change(amount, coins):
+    dp = [0] * (amount + 1)
+    dp[0] = 1
+    for coin in coins:
+        for j in range(coin, amount + 1):
+            dp[j] += dp[j - coin]
+    return dp[amount]`,
     timeComplexity: "O(amount × coins)",
     spaceComplexity: "O(amount)",
   },
@@ -271,16 +319,16 @@ export const practiceProblems: PracticeProblem[] = [
     ],
     constraints: ["1 ≤ nums.length ≤ 2500"],
     hints: [
-      "dp[i] = length of longest increasing subsequence ending at index i. Every element alone is a subsequence of length 1.",
-      "For each i, look at all j < i where nums[j] < nums[i]. dp[i] = max(dp[j] + 1) for all valid j.",
-      "The answer is max(dp[0], dp[1], ..., dp[n-1]). The O(n²) solution is fine for interviews.",
+      "dp[i] = LIS ending at index i. Every element alone is length 1. For each i, check all j < i where nums[j] < nums[i].",
+      "dp[i] = max(dp[j] + 1) for all valid j. Answer is max of all dp values.",
+      "In Python: dp = [1]*n, then double loop. return max(dp).",
     ],
     testCases: [
       { input: [[10, 9, 2, 5, 3, 7, 101, 18]], expected: 4, label: "LIS([10,9,2,5,3,7,101,18]) = 4" },
       { input: [[0, 1, 0, 3, 2, 3]], expected: 4, label: "LIS([0,1,0,3,2,3]) = 4" },
       { input: [[7, 7, 7, 7]], expected: 1, label: "LIS([7,7,7,7]) = 1" },
       { input: [[1]], expected: 1, label: "LIS([1]) = 1" },
-      { input: [[1, 3, 6, 7, 9, 4, 10, 5, 6]], expected: 6, label: "LIS([1,3,6,7,9,4,10,5,6]) = 6" },
+      { input: [Array.from({length:500}, (_,i) => (i*17+3)%200)], expected: 28, label: "LIS([500 elements]) — needs DP!" },
     ],
     functionName: "lengthOfLIS",
     starterJS: `function lengthOfLIS(nums) {
@@ -300,6 +348,14 @@ export const practiceProblems: PracticeProblem[] = [
   }
   return Math.max(...dp);
 }`,
+    solutionPython: `def lengthOfLIS(nums):
+    n = len(nums)
+    dp = [1] * n
+    for i in range(1, n):
+        for j in range(i):
+            if nums[j] < nums[i]:
+                dp[i] = max(dp[i], dp[j] + 1)
+    return max(dp)`,
     timeComplexity: "O(n²)",
     spaceComplexity: "O(n)",
   },
@@ -318,16 +374,16 @@ export const practiceProblems: PracticeProblem[] = [
     ],
     constraints: ["1 ≤ nums.length ≤ 200", "1 ≤ nums[i] ≤ 100"],
     hints: [
-      "If total sum is odd, impossible. Otherwise find if a subset sums to total/2. This is a 0/1 Knapsack where capacity = sum/2.",
-      "dp[j] = true if we can make sum j from the numbers seen so far. For each number, update from right to left.",
-      "dp[0] = true. For each num: for j from target down to num: dp[j] = dp[j] || dp[j-num].",
+      "If total is odd, impossible. Otherwise: can we pick a subset summing to total/2? That's 0/1 Knapsack!",
+      "dp[j] = true if sum j is achievable. For each num: for j from target down to num: dp[j] = dp[j] || dp[j-num].",
+      "In Python: dp = [False]*(target+1); dp[0]=True. Iterate right-to-left to avoid reusing same element.",
     ],
     testCases: [
       { input: [[1, 5, 11, 5]], expected: true, label: "canPartition([1,5,11,5]) = true" },
       { input: [[1, 2, 3, 5]], expected: false, label: "canPartition([1,2,3,5]) = false" },
       { input: [[1, 1]], expected: true, label: "canPartition([1,1]) = true" },
       { input: [[3, 3, 3, 4, 5]], expected: true, label: "canPartition([3,3,3,4,5]) = true" },
-      { input: [[1, 2, 5]], expected: false, label: "canPartition([1,2,5]) = false" },
+      { input: [Array.from({length:50}, (_,i) => i+1)], expected: false, label: "canPartition([1..50]) — needs DP!" },
     ],
     functionName: "canPartition",
     starterJS: `function canPartition(nums) {
@@ -350,6 +406,16 @@ export const practiceProblems: PracticeProblem[] = [
   }
   return dp[target];
 }`,
+    solutionPython: `def canPartition(nums):
+    total = sum(nums)
+    if total % 2 != 0: return False
+    target = total // 2
+    dp = [False] * (target + 1)
+    dp[0] = True
+    for num in nums:
+        for j in range(target, num - 1, -1):
+            dp[j] = dp[j] or dp[j - num]
+    return dp[target]`,
     timeComplexity: "O(n × sum)",
     spaceComplexity: "O(sum)",
   },
@@ -368,16 +434,16 @@ export const practiceProblems: PracticeProblem[] = [
     ],
     constraints: ["1 ≤ m,n ≤ 200", "0 ≤ grid[i][j] ≤ 200"],
     hints: [
-      "Same structure as Grid Paths but instead of counting, you minimize. dp[i][j] = grid[i][j] + min(dp[i-1][j], dp[i][j-1]).",
-      "First row: can only come from the left. First column: can only come from above.",
-      "Build the dp table row by row. The answer is dp[m-1][n-1].",
+      "Same as Grid Paths but minimize instead of count. dp[i][j] = grid[i][j] + min(dp[i-1][j], dp[i][j-1]).",
+      "First row: only from left. First column: only from above. Build the rest.",
+      "In Python: dp = [row[:] for row in grid], then cumsum first row/col, fill rest.",
     ],
     testCases: [
       { input: [[[1,3,1],[1,5,1],[4,2,1]]], expected: 7, label: "minPathSum(3×3) = 7" },
       { input: [[[1,2,3],[4,5,6]]], expected: 12, label: "minPathSum(2×3) = 12" },
       { input: [[[5]]], expected: 5, label: "minPathSum(1×1) = 5" },
       { input: [[[1,2],[1,1]]], expected: 3, label: "minPathSum(2×2) = 3" },
-      { input: [[[1,4,8,2],[5,3,1,6],[9,2,1,3]]], expected: 11, label: "minPathSum(3×4) = 11" },
+      { input: [Array.from({length:50}, (_,i) => Array.from({length:50}, (_,j) => (i+j)%10))], expected: 221, label: "minPathSum(50×50) — needs DP!" },
     ],
     functionName: "minPathSum",
     starterJS: `function minPathSum(grid) {
@@ -399,6 +465,15 @@ export const practiceProblems: PracticeProblem[] = [
       dp[i][j] += Math.min(dp[i-1][j], dp[i][j-1]);
   return dp[m-1][n-1];
 }`,
+    solutionPython: `def minPathSum(grid):
+    m, n = len(grid), len(grid[0])
+    dp = [row[:] for row in grid]
+    for i in range(1, m): dp[i][0] += dp[i-1][0]
+    for j in range(1, n): dp[0][j] += dp[0][j-1]
+    for i in range(1, m):
+        for j in range(1, n):
+            dp[i][j] += min(dp[i-1][j], dp[i][j-1])
+    return dp[m-1][n-1]`,
     timeComplexity: "O(m×n)",
     spaceComplexity: "O(m×n)",
   },
@@ -417,16 +492,16 @@ export const practiceProblems: PracticeProblem[] = [
     ],
     constraints: ["1 ≤ nums.length ≤ 20", "0 ≤ nums[i] ≤ 1000", "|target| ≤ 1000"],
     hints: [
-      "For each number, you either add it (+) or subtract it (-). This is include/exclude with a running sum.",
-      "State: (index, currentSum). Memoize on both. At each step: count(i+1, sum+nums[i]) + count(i+1, sum-nums[i]).",
-      "Base case: if i === nums.length, return currentSum === target ? 1 : 0.",
+      "For each number: add it (+) or subtract it (-). State: (index, currentSum). It's include/exclude with a running sum.",
+      "Memoize on (index, currentSum). Base: if i === length, return sum === target ? 1 : 0.",
+      "In Python: use @lru_cache or a dict with key (i, current_sum). Same recursion.",
     ],
     testCases: [
-      { input: [[1, 1, 1, 1, 1], 3], expected: 5, label: "findTargetSumWays([1,1,1,1,1], 3) = 5" },
-      { input: [[1], 1], expected: 1, label: "findTargetSumWays([1], 1) = 1" },
-      { input: [[1, 0], 1], expected: 2, label: "findTargetSumWays([1,0], 1) = 2" },
-      { input: [[1, 2, 1], 0], expected: 2, label: "findTargetSumWays([1,2,1], 0) = 2" },
-      { input: [[2, 3, 5, 7], 3], expected: 2, label: "findTargetSumWays([2,3,5,7], 3) = 2" },
+      { input: [[1, 1, 1, 1, 1], 3], expected: 5, label: "targetSum([1,1,1,1,1], 3) = 5" },
+      { input: [[1], 1], expected: 1, label: "targetSum([1], 1) = 1" },
+      { input: [[1, 0], 1], expected: 2, label: "targetSum([1,0], 1) = 2" },
+      { input: [[1, 2, 1], 0], expected: 2, label: "targetSum([1,2,1], 0) = 2" },
+      { input: [[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1], 4], expected: 38760, label: "targetSum([twenty 1s], 4) — needs DP!" },
     ],
     functionName: "findTargetSumWays",
     starterJS: `function findTargetSumWays(nums, target) {
@@ -449,6 +524,14 @@ export const practiceProblems: PracticeProblem[] = [
   }
   return dp(0, 0);
 }`,
+    solutionPython: `def findTargetSumWays(nums, target):
+    from functools import lru_cache
+    @lru_cache(maxsize=None)
+    def dp(i, s):
+        if i == len(nums):
+            return 1 if s == target else 0
+        return dp(i + 1, s + nums[i]) + dp(i + 1, s - nums[i])
+    return dp(0, 0)`,
     timeComplexity: "O(n × sum)",
     spaceComplexity: "O(n × sum)",
   },
@@ -467,17 +550,16 @@ export const practiceProblems: PracticeProblem[] = [
     ],
     constraints: ["0 ≤ word.length ≤ 500"],
     hints: [
-      "dp[i][j] = min edits to convert word1[0..i-1] to word2[0..j-1]. If characters match, no edit needed.",
-      "If word1[i-1] === word2[j-1]: dp[i][j] = dp[i-1][j-1]. Otherwise: 1 + min(dp[i-1][j], dp[i][j-1], dp[i-1][j-1]).",
-      "Base cases: dp[i][0] = i (delete all), dp[0][j] = j (insert all). Build the full m×n table.",
+      "dp[i][j] = min edits to convert word1[0..i-1] to word2[0..j-1]. If chars match, no edit needed: dp[i-1][j-1].",
+      "If mismatch: 1 + min(dp[i-1][j] delete, dp[i][j-1] insert, dp[i-1][j-1] replace). Base: dp[i][0]=i, dp[0][j]=j.",
+      "In Python: dp = [[0]*(n+1) for _ in range(m+1)], fill bases, double loop.",
     ],
     testCases: [
       { input: ["horse", "ros"], expected: 3, label: 'minDistance("horse","ros") = 3' },
       { input: ["intention", "execution"], expected: 5, label: 'minDistance("intention","execution") = 5' },
       { input: ["", ""], expected: 0, label: 'minDistance("","") = 0' },
       { input: ["abc", "abc"], expected: 0, label: 'minDistance("abc","abc") = 0' },
-      { input: ["a", "b"], expected: 1, label: 'minDistance("a","b") = 1' },
-      { input: ["kitten", "sitting"], expected: 3, label: 'minDistance("kitten","sitting") = 3' },
+      { input: ["a".repeat(50), "b".repeat(50)], expected: 50, label: 'minDistance("aaa...","bbb...") — needs DP!' },
     ],
     functionName: "minDistance",
     starterJS: `function minDistance(word1, word2) {
@@ -503,6 +585,18 @@ export const practiceProblems: PracticeProblem[] = [
   }
   return dp[m][n];
 }`,
+    solutionPython: `def minDistance(word1, word2):
+    m, n = len(word1), len(word2)
+    dp = [[0]*(n+1) for _ in range(m+1)]
+    for i in range(m+1): dp[i][0] = i
+    for j in range(n+1): dp[0][j] = j
+    for i in range(1, m+1):
+        for j in range(1, n+1):
+            if word1[i-1] == word2[j-1]:
+                dp[i][j] = dp[i-1][j-1]
+            else:
+                dp[i][j] = 1 + min(dp[i-1][j], dp[i][j-1], dp[i-1][j-1])
+    return dp[m][n]`,
     timeComplexity: "O(m×n)",
     spaceComplexity: "O(m×n)",
   },

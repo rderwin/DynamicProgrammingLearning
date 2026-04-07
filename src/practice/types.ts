@@ -23,6 +23,7 @@ export interface PracticeProblem {
   starterPython: string;
   functionName: string;
   solutionJS: string;
+  solutionPython: string;
   timeComplexity: string;
   spaceComplexity: string;
 }
