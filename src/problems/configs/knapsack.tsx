@@ -103,6 +103,33 @@ export const knapsackConfig: ProblemConfig = {
     #
     # Two choices at each step: take or skip
     pass`,
+  insights: {
+    bruteTitle: "You can see it instantly now",
+    bruteBody: ({ totalNodes, duplicateCount, wastedPct }) => (
+      <p>
+        {totalNodes} calls, {duplicateCount} duplicates ({wastedPct}% wasted). At this point, you don't even need me to tell you what's wrong —
+        you can <em>see</em> the overlapping subproblems in the tree.
+        <br /><br />
+        Knapsack introduces the <strong>include/exclude</strong> pattern: for each item, take it or leave it. The state is 2D — <strong>(item index, remaining capacity)</strong>.
+        But the fix? You already know it.
+      </p>
+    ),
+    memoTransition: "One last time →",
+    memoTransitionBody: (
+      <p>
+        Same memoization, 2D key: <code className="bg-green-100 px-1 rounded text-xs">memo[i + "," + capacity]</code>.
+        This is the last core pattern. After this, you've seen everything you need for interview DP.
+      </p>
+    ),
+    memoTitle: "You've got the full toolkit",
+    memoBody: ({ totalNodes }) => (
+      <p>
+        From {totalNodes} to at most <strong>items × capacity</strong> states.
+        You've now mastered the four DP patterns: <strong>1D counting, 2D counting, optimization, and include/exclude</strong>.
+        Every interview DP problem is a variation of what you've already seen.
+      </p>
+    ),
+  },
   concepts: {
     optimalSubstructure: (
       <>For each item you have two choices: <strong>take it</strong> (add its value, reduce capacity) or <strong>skip it</strong>. The optimal answer is the max of both. This <strong>include/exclude pattern</strong> is the most fundamental DP pattern — it shows up everywhere.</>

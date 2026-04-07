@@ -84,6 +84,31 @@ export const climbingStairsConfig: ProblemConfig = {
     # You can take 1 or 2 steps at a time
     # Hint: this is basically Fibonacci in disguise!
     pass`,
+  insights: {
+    bruteTitle: "Look familiar?",
+    bruteBody: ({ totalNodes, duplicateCount, wastedPct }) => (
+      <p>
+        <strong>{totalNodes} calls, {duplicateCount} duplicates, {wastedPct}% waste</strong> — same story as Fibonacci.
+        You're starting to see the pattern: whenever a recursive function calls itself with the same arguments more than once, you've got overlapping subproblems.
+        <br /><br />
+        In fact, this <em>is</em> Fibonacci — just with different base cases. You already know the fix.
+      </p>
+    ),
+    memoTransition: "Apply the same fix →",
+    memoTransitionBody: (
+      <p>
+        You know the drill — add a memo table. This time, notice how the code is <strong>structurally identical</strong> to Fibonacci's memoized version.
+        That's the point: the <em>pattern</em> is what matters, not the specific problem.
+      </p>
+    ),
+    memoTitle: "Same pattern, same result",
+    memoBody: ({ totalNodes, uniqueCount }) => (
+      <p>
+        From {totalNodes} calls down to {uniqueCount}. Identical fix to Fibonacci.
+        The takeaway: <strong>if the recurrence has the same shape, the DP solution has the same shape</strong>. You're not memorizing solutions — you're recognizing structure.
+      </p>
+    ),
+  },
   concepts: {
     optimalSubstructure: (
       <>To reach step <strong>n</strong>, you came from step <strong>n-1</strong> (took 1 step) or step <strong>n-2</strong> (took 2 steps). So <code className="bg-blue-100 px-1.5 py-0.5 rounded text-xs font-mono">ways(n) = ways(n-1) + ways(n-2)</code>. Sound familiar? It's the same structure as Fibonacci!</>

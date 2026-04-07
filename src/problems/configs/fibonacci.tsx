@@ -83,6 +83,34 @@ export const fibonacciConfig: ProblemConfig = {
     # fib(0) = 0, fib(1) = 1
     # Hint: brute force times out on large n — use DP!
     pass`,
+  insights: {
+    bruteTitle: "See the problem?",
+    bruteBody: ({ totalNodes, duplicateCount, wastedPct }) => (
+      <p>
+        That took <strong className="text-slate-800">{totalNodes} calls</strong>, and{" "}
+        <strong className="text-red-600">{duplicateCount} were duplicates</strong> — the same
+        computation done over and over. That's <strong>{wastedPct}% wasted work</strong>.
+        <br /><br />
+        This is your first look at <strong>overlapping subproblems</strong> — the core reason brute-force recursion blows up exponentially.
+      </p>
+    ),
+    memoTransition: "What if we remembered the answers?",
+    memoTransitionBody: (
+      <p>
+        Same recursion, but now every time we compute a value, we <strong className="text-slate-700">store it in a table</strong>.
+        Before computing anything, we check: "Have I seen this before?"
+        If yes, we just look it up. Watch how many branches disappear.
+      </p>
+    ),
+    memoTitle: "That's the power of DP",
+    memoBody: ({ totalNodes, uniqueCount }) => (
+      <p>
+        The tree collapses from <strong>{totalNodes} calls</strong> to just <strong>{uniqueCount} unique computations</strong>.
+        This technique — <strong>memoization</strong> — is the first and most intuitive form of dynamic programming.
+        Remember this feeling. Every DP problem works the same way.
+      </p>
+    ),
+  },
   concepts: {
     optimalSubstructure: (
       <>Each <code className="bg-blue-100 px-1.5 py-0.5 rounded text-xs font-mono">fib(n)</code> is built from <code className="bg-blue-100 px-1.5 py-0.5 rounded text-xs font-mono">fib(n-1)</code> and <code className="bg-blue-100 px-1.5 py-0.5 rounded text-xs font-mono">fib(n-2)</code>. This is <strong>optimal substructure</strong>: the answer to the big problem comes from answers to smaller ones.</>

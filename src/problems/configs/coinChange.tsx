@@ -104,6 +104,32 @@ export const coinChangeConfig: ProblemConfig = {
     #
     # This one branches more than 2 ways!
     pass`,
+  insights: {
+    bruteTitle: "More branches, same problem",
+    bruteBody: ({ totalNodes, duplicateCount, wastedPct }) => (
+      <p>
+        {totalNodes} calls, {duplicateCount} duplicates ({wastedPct}% wasted). The tree is <strong>wider</strong> now —
+        3 coins means 3 branches at each node — but you already know what those red nodes mean.
+        <br /><br />
+        This problem adds a new element: <strong>optimization</strong>. Instead of counting paths (addition), you're minimizing coins (<code className="bg-red-100 px-1 rounded text-xs">Math.min</code>). Different combiner, same DP pattern.
+      </p>
+    ),
+    memoTransition: "You know what to do →",
+    memoTransitionBody: (
+      <p>
+        By now, the fix should feel automatic. Cache by the remaining <strong>amount</strong>.
+        The recurrence is different (min instead of +) but the memoization technique is identical.
+      </p>
+    ),
+    memoTitle: "Different recurrence, same technique",
+    memoBody: ({ totalNodes, uniqueCount }) => (
+      <p>
+        From {totalNodes} to at most {uniqueCount} unique amounts.
+        You've now seen DP with <strong>counting</strong> (Fibonacci, Grid), and <strong>optimization</strong> (Coin Change).
+        The pattern is always: find overlapping subproblems → memoize → done.
+      </p>
+    ),
+  },
   concepts: {
     optimalSubstructure: (
       <>For each coin <strong>c</strong>, the best solution for <strong>amount</strong> might be <code className="bg-blue-100 px-1.5 py-0.5 rounded text-xs font-mono">1 + coinChange(amount - c)</code>. We try all coins and take the minimum. Each subproblem has optimal substructure — the best local choice leads to the global best.</>

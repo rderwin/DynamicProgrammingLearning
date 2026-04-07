@@ -94,6 +94,32 @@ export const gridPathsConfig: ProblemConfig = {
     #
     # This is the first 2D DP problem!
     pass`,
+  insights: {
+    bruteTitle: "Same pattern, new dimension",
+    bruteBody: ({ totalNodes, duplicateCount, wastedPct }) => (
+      <p>
+        {totalNodes} calls, {duplicateCount} duplicates ({wastedPct}% wasted). By now you should be able to spot overlapping subproblems at a glance —
+        different paths through the grid land on the same cell and recompute from scratch.
+        <br /><br />
+        The new wrinkle: this is <strong>2D</strong>. The state is <strong>(row, col)</strong> instead of just <strong>n</strong>. But the fix is the same.
+      </p>
+    ),
+    memoTransition: "Memoize — now in 2D →",
+    memoTransitionBody: (
+      <p>
+        Same technique, but the memo key is now a <strong>pair: (row, col)</strong>.
+        In code, that means <code className="bg-green-100 px-1 rounded text-xs">memo[row + "," + col]</code>.
+        Watch the 2D table fill up.
+      </p>
+    ),
+    memoTitle: "2D works the same way",
+    memoBody: ({ totalNodes, uniqueCount }) => (
+      <p>
+        From {totalNodes} to {uniqueCount} — the grid has at most <strong>n²</strong> unique cells.
+        You now know that DP isn't limited to 1D problems. The dimension of your state space just determines the shape of your memo table.
+      </p>
+    ),
+  },
   concepts: {
     optimalSubstructure: (
       <>To reach cell <strong>(r, c)</strong>, you came from <strong>(r-1, c)</strong> (down) or <strong>(r, c-1)</strong> (right). So <code className="bg-blue-100 px-1.5 py-0.5 rounded text-xs font-mono">paths(r,c) = paths(r-1,c) + paths(r,c-1)</code>. Same "add two subproblems" structure — but now in <strong>2 dimensions</strong>.</>

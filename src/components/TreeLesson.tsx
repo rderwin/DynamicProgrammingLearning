@@ -53,6 +53,15 @@ export interface ProblemConfig {
     tryMemo: React.ReactNode;
     memoWins: (totalNodes: number, uniqueCount: number) => React.ReactNode;
   };
+  /** Customizable insight cards (evolve tone across problems) */
+  insights: {
+    bruteTitle: string;
+    bruteBody: (stats: { totalNodes: number; duplicateCount: number; wastedPct: number }) => React.ReactNode;
+    memoTransition: string;
+    memoTransitionBody: React.ReactNode;
+    memoTitle: string;
+    memoBody: (stats: { totalNodes: number; uniqueCount: number }) => React.ReactNode;
+  };
 }
 
 export interface CodeLine {
@@ -492,7 +501,6 @@ export default function TreeLesson({ config, nextProblemLabel, onNextProblem }: 
       {/* ═══ STAGE: brute-done ═══ */}
       {stage === "brute-done" && (
         <div className="animate-fade-in-up">
-          {/* Insight card */}
           <div className="bg-gradient-to-br from-red-50 to-amber-50/50 border border-red-200 rounded-2xl p-8">
             <div className="flex items-start gap-4">
               <div className="w-12 h-12 bg-red-100 rounded-xl flex items-center justify-center flex-shrink-0">
@@ -501,21 +509,19 @@ export default function TreeLesson({ config, nextProblemLabel, onNextProblem }: 
                 </svg>
               </div>
               <div className="flex-1">
-                <h3 className="text-lg font-bold text-slate-800 mb-2">See the problem?</h3>
-                <p className="text-sm text-slate-600 leading-relaxed mb-1">
-                  That took <strong className="text-slate-800">{totalNodes} calls</strong>, and{" "}
-                  <strong className="text-red-600">{duplicateCount} of them were duplicates</strong> — the same
-                  computation done over and over. That's{" "}
-                  <strong>{Math.round((duplicateCount / totalNodes) * 100)}% wasted work</strong>.
-                </p>
-                <p className="text-sm text-slate-500 mb-4">
-                  {config.concepts.overlappingSubproblems(duplicateCount, totalNodes, n)}
-                </p>
+                <h3 className="text-lg font-bold text-slate-800 mb-2">{config.insights.bruteTitle}</h3>
+                <div className="text-sm text-slate-600 leading-relaxed mb-4">
+                  {config.insights.bruteBody({
+                    totalNodes,
+                    duplicateCount,
+                    wastedPct: Math.round((duplicateCount / totalNodes) * 100),
+                  })}
+                </div>
                 <button
                   onClick={goToMemoIntro}
                   className="group inline-flex items-center gap-2 bg-slate-900 text-white px-5 py-2.5 rounded-xl text-sm font-semibold hover:bg-slate-800 transition-all duration-200 shadow-lg shadow-slate-900/20 hover:shadow-xl hover:-translate-y-0.5 active:translate-y-0"
                 >
-                  What if we remembered the answers?
+                  {config.insights.memoTransition}
                   <svg className="w-4 h-4 transition-transform group-hover:translate-x-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" />
                   </svg>
@@ -537,11 +543,9 @@ export default function TreeLesson({ config, nextProblemLabel, onNextProblem }: 
                 </svg>
               </div>
               <h3 className="text-lg font-bold text-slate-800 mb-2">Memoization</h3>
-              <p className="text-sm text-slate-500 mb-6 leading-relaxed">
-                Same recursion, but now every time we compute a value, we <strong className="text-slate-700">store it in a table</strong>.
-                Before computing anything, we check: "Have I seen this before?"
-                If yes, we just look it up. Watch how many branches disappear.
-              </p>
+              <div className="text-sm text-slate-500 mb-6 leading-relaxed">
+                {config.insights.memoTransitionBody}
+              </div>
               <button
                 onClick={startMemo}
                 className="group inline-flex items-center gap-2 bg-green-700 text-white px-6 py-3 rounded-xl text-sm font-semibold hover:bg-green-600 transition-all duration-200 shadow-lg shadow-green-700/20 hover:shadow-xl hover:-translate-y-0.5 active:translate-y-0"
@@ -573,10 +577,10 @@ export default function TreeLesson({ config, nextProblemLabel, onNextProblem }: 
                 </svg>
               </div>
               <div className="flex-1">
-                <h3 className="text-lg font-bold text-slate-800 mb-2">That's the power of DP</h3>
-                <p className="text-sm text-slate-600 leading-relaxed mb-4">
-                  {config.concepts.memoWins(totalNodes, n + 1)}
-                </p>
+                <h3 className="text-lg font-bold text-slate-800 mb-2">{config.insights.memoTitle}</h3>
+                <div className="text-sm text-slate-600 leading-relaxed mb-4">
+                  {config.insights.memoBody({ totalNodes, uniqueCount: n + 1 })}
+                </div>
               </div>
             </div>
           </div>
