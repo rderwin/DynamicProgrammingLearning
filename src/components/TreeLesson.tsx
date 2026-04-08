@@ -91,25 +91,38 @@ const STAGE_NAV: { stage: Stage; label: string; short: string }[] = [
 ];
 function stageIdx(s: Stage) { return STAGE_ORDER.indexOf(s); }
 
+interface SavedLessonProgress {
+  stage: string;
+  challengePassed: boolean;
+  code: { js: string; py: string };
+}
+
 interface LessonProps {
   config: ProblemConfig;
   nextProblemLabel: string | null;
   onNextProblem?: () => void;
+  savedProgress?: SavedLessonProgress;
+  onProgressChange?: (update: Partial<SavedLessonProgress>) => void;
 }
 
-export default function TreeLesson({ config, nextProblemLabel, onNextProblem }: LessonProps) {
+export default function TreeLesson({ config, nextProblemLabel, onNextProblem, savedProgress, onProgressChange }: LessonProps) {
+  // Restore from saved progress if available
+  const initialStage = (savedProgress?.stage as Stage) || "intro";
+  const initialMaxReached = STAGE_ORDER.indexOf(initialStage) >= 0 ? STAGE_ORDER.indexOf(initialStage) : 0;
+
   const [n, setN] = useState(config.nDefault);
-  const [stage, setStage] = useState<Stage>("intro");
-  const [maxReached, setMaxReached] = useState(0); // index into STAGE_ORDER
-  const [challengePassed, setChallengePassed] = useState(false);
-  const [passedCode, setPassedCode] = useState("");
+  const [stage, setStage] = useState<Stage>(initialStage);
+  const [maxReached, setMaxReached] = useState(initialMaxReached);
+  const [challengePassed, setChallengePassed] = useState(savedProgress?.challengePassed ?? false);
+  const [passedCode, setPassedCode] = useState(savedProgress?.code?.js ?? "");
   const [passedLang, setPassedLang] = useState<Language>("javascript");
   const phase: Phase = (stage === "memo" || stage === "memo-done") ? "memo" : "brute";
 
-  // Track progress
+  // Track progress + save
   useEffect(() => {
     const idx = stageIdx(stage);
     setMaxReached((prev) => Math.max(prev, idx));
+    onProgressChange?.({ stage });
   }, [stage]);
 
   // Navigate to a previously reached stage
@@ -640,6 +653,12 @@ export default function TreeLesson({ config, nextProblemLabel, onNextProblem }: 
               setChallengePassed(true);
               setPassedCode(passedCodeStr);
               setPassedLang(passedLanguage);
+              const langKey = passedLanguage === "python" ? "py" : "js";
+              const otherKey = langKey === "js" ? "py" : "js";
+              onProgressChange?.({
+                challengePassed: true,
+                code: { [langKey]: passedCodeStr, [otherKey]: passedCode || "" } as { js: string; py: string },
+              });
             }}
           />
 

@@ -8,6 +8,8 @@ interface Props {
   onBack: () => void;
   onComplete: (id: string) => void;
   isCompleted: boolean;
+  savedCode?: { js: string; py: string };
+  onCodeChange?: (lang: "js" | "py", code: string) => void;
 }
 
 const difficultyColors = {
@@ -24,7 +26,7 @@ const patternColors = {
   "Include/Exclude": "bg-orange-100 text-orange-700",
 };
 
-export default function PracticeProblemView({ problem: p, onBack, onComplete, isCompleted }: Props) {
+export default function PracticeProblemView({ problem: p, onBack, onComplete, isCompleted, savedCode, onCodeChange }: Props) {
   const [passed, setPassed] = useState(isCompleted);
 
   return (
@@ -97,12 +99,14 @@ export default function PracticeProblemView({ problem: p, onBack, onComplete, is
       <CodeEditor
         functionName={p.functionName}
         testCases={p.testCases}
-        starterJS={p.starterJS}
-        starterPython={p.starterPython}
-        onPass={() => {
+        starterJS={savedCode?.js || p.starterJS}
+        starterPython={savedCode?.py || p.starterPython}
+        onPass={(code, language) => {
           setPassed(true);
           onComplete(p.id);
+          onCodeChange?.(language === "python" ? "py" : "js", code);
         }}
+        onCodeChange={onCodeChange}
       />
 
       {/* Success prompt */}

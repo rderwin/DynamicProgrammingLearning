@@ -51,9 +51,10 @@ interface Props {
   starterPython: string;
   functionName: string;
   onPass?: (code: string, language: Language) => void;
+  onCodeChange?: (lang: "js" | "py", code: string) => void;
 }
 
-export default function CodeEditor({ testCases, starterJS, starterPython, functionName, onPass }: Props) {
+export default function CodeEditor({ testCases, starterJS, starterPython, functionName, onPass, onCodeChange }: Props) {
   const editorRef = useRef<HTMLDivElement>(null);
   const viewRef = useRef<EditorView | null>(null);
   const [language, setLanguage] = useState<Language>("javascript");
@@ -111,6 +112,8 @@ export default function CodeEditor({ testCases, starterJS, starterPython, functi
     if (!viewRef.current) return;
     const code = viewRef.current.state.doc.toString();
     codeStore.current[language] = code;
+    // Save code on each run
+    onCodeChange?.(language === "python" ? "py" : "js", code);
     setRunning(true);
     setResult(null);
     if (language === "python" && !isPyodideLoaded()) setPyodideLoading(true);
