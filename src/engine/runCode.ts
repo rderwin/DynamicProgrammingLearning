@@ -19,10 +19,32 @@ export interface RunResult {
 }
 
 const TIMEOUT_MS = 5000;
+const MAX_CALLS_TRACE = 5000; // hard cap on traced calls to prevent OOM
+
+// ── Cleanup tracking ──
+// Keep references to active workers so we can kill them on abort
+
+let activeWorker: Worker | null = null;
+let activeTimeout: ReturnType<typeof setTimeout> | null = null;
+
+/** Kill any running code execution (call on unmount or before starting a new run) */
+export function abortExecution(): void {
+  if (activeWorker) {
+    activeWorker.terminate();
+    activeWorker = null;
+  }
+  if (activeTimeout) {
+    clearTimeout(activeTimeout);
+    activeTimeout = null;
+  }
+}
 
 // ── JavaScript execution via Web Worker ──
 
 function runJS(code: string, testCases: TestCase[]): Promise<RunResult> {
+  // Kill any previous run
+  abortExecution();
+
   return new Promise((resolve) => {
     const workerCode = `
       self.onmessage = function(e) {
@@ -42,7 +64,6 @@ function runJS(code: string, testCases: TestCase[]): Promise<RunResult> {
                 passed: JSON.stringify(actual) === JSON.stringify(tc.expected),
               };
               results.push(r);
-              // Post progress so main thread knows what passed before timeout
               self.postMessage({ type: 'progress', result: r, index: results.length - 1 });
             } catch (err) {
               const r = {
@@ -68,20 +89,25 @@ function runJS(code: string, testCases: TestCase[]): Promise<RunResult> {
     const blob = new Blob([workerCode], { type: "application/javascript" });
     const url = URL.createObjectURL(blob);
     const worker = new Worker(url);
+    activeWorker = worker;
 
-    // Track partial results for smart timeout messages
     const partialResults: RunResult["results"] = [];
 
-    const timeout = setTimeout(() => {
+    function cleanup() {
       worker.terminate();
       URL.revokeObjectURL(url);
+      if (activeWorker === worker) activeWorker = null;
+      if (activeTimeout === timeout) activeTimeout = null;
+    }
+
+    const timeout = setTimeout(() => {
+      cleanup();
 
       const passedCount = partialResults.filter(r => r.passed).length;
       const ranCount = partialResults.length;
 
       let errorMsg: string;
       if (passedCount > 0 && passedCount === ranCount) {
-        // All completed tests passed but we timed out on a later one
         errorMsg = "Your solution is correct but too slow for the larger inputs. This is exactly why we need DP — try memoization or a bottom-up approach!";
       } else if (passedCount > 0) {
         errorMsg = "Some tests passed but execution timed out. Your approach might work for small inputs but needs optimization for larger ones.";
@@ -89,7 +115,6 @@ function runJS(code: string, testCases: TestCase[]): Promise<RunResult> {
         errorMsg = "Time limit exceeded (5s). Check for missing base cases or infinite recursion.";
       }
 
-      // Fill in remaining tests as timed-out
       for (let i = ranCount; i < testCases.length; i++) {
         partialResults.push({
           input: testCases[i].input,
@@ -102,22 +127,19 @@ function runJS(code: string, testCases: TestCase[]): Promise<RunResult> {
 
       resolve({ passed: false, results: partialResults, error: errorMsg });
     }, TIMEOUT_MS);
+    activeTimeout = timeout;
 
     worker.onmessage = (e) => {
       if (e.data.type === "progress") {
         partialResults[e.data.index] = e.data.result;
       } else if (e.data.type === "done") {
-        clearTimeout(timeout);
-        worker.terminate();
-        URL.revokeObjectURL(url);
+        cleanup();
         resolve({ passed: e.data.passed, results: e.data.results });
       }
     };
 
     worker.onerror = (e) => {
-      clearTimeout(timeout);
-      worker.terminate();
-      URL.revokeObjectURL(url);
+      cleanup();
       resolve({ passed: false, results: [], error: e.message || "Unknown error" });
     };
 
@@ -137,7 +159,7 @@ function loadPyodide(): Promise<any> {
     script.src = "https://cdn.jsdelivr.net/pyodide/v0.27.5/full/pyodide.js";
     script.onload = async () => {
       try {
-        // @ts-ignore - pyodide is loaded via script tag
+        // @ts-ignore
         const pyodide = await (window as any).loadPyodide();
         resolve(pyodide);
       } catch (err) {
@@ -158,23 +180,15 @@ function loadPyodide(): Promise<any> {
 async function runPython(code: string, testCases: TestCase[]): Promise<RunResult> {
   try {
     const pyodide = await loadPyodide();
-
-    // Run user code to define the function
     pyodide.runPython(code);
 
     const results: RunResult["results"] = [];
 
     for (const tc of testCases) {
       try {
-        // Build Python call: fn_name(*args)
-        // We need to figure out the function name from the code
         const fnMatch = code.match(/def\s+(\w+)\s*\(/);
         if (!fnMatch) {
-          return {
-            passed: false,
-            results: [],
-            error: "Could not find a function definition (def function_name(...))",
-          };
+          return { passed: false, results: [], error: "Could not find a function definition (def function_name(...))" };
         }
         const fnName = fnMatch[1];
         const argsStr = tc.input.map((a) => JSON.stringify(a)).join(", ");
@@ -232,14 +246,13 @@ export function preloadPyodide(): void {
 }
 
 // ── Call Tracing ──
-// Instruments a user's JS function to capture the full call tree
 
 export interface TraceNode {
   args: unknown[];
   label: string;
   result: unknown;
   children: TraceNode[];
-  cached: boolean; // true if this was a memoized/cached return
+  cached: boolean;
 }
 
 export interface TraceResult {
@@ -250,7 +263,7 @@ export interface TraceResult {
 
 /**
  * Run the user's code on a single input and capture the full call tree.
- * Uses eval + global scope override so recursive calls go through our tracer.
+ * Has a hard cap on call count to prevent OOM on brute-force solutions.
  */
 export function traceExecution(
   code: string,
@@ -262,16 +275,19 @@ export function traceExecution(
     return Promise.resolve({ tree: null, totalCalls: 0, error: "Tracing only supported for JavaScript" });
   }
 
+  // Kill any previous run
+  abortExecution();
+
   return new Promise((resolve) => {
     const workerCode = `
       self.onmessage = function(e) {
-        const { code, fnName, input } = e.data;
+        const { code, fnName, input, maxCalls } = e.data;
         let totalCalls = 0;
         let root = null;
         const stack = [];
+        let hitLimit = false;
 
         try {
-          // Eval user code in global scope — creates the function as self[fnName]
           (0, eval)(code);
 
           const origFn = self[fnName];
@@ -280,11 +296,19 @@ export function traceExecution(
             return;
           }
 
-          // Override the global function with our tracing wrapper.
-          // When origFn recurses and calls fnName(...), it resolves
-          // through the scope chain to self[fnName] = our wrapper.
           self[fnName] = function(...args) {
             totalCalls++;
+
+            // Hard cap: stop building tree if too many calls
+            if (totalCalls > maxCalls) {
+              if (!hitLimit) {
+                hitLimit = true;
+              }
+              // Still call the original so the function completes,
+              // but don't track the tree anymore
+              return origFn.apply(self, args);
+            }
+
             const node = {
               args: args.map(a => typeof a === 'object' ? JSON.parse(JSON.stringify(a)) : a),
               label: fnName + '(' + args.map(a => Array.isArray(a) ? '[...]' : String(a)).join(',') + ')',
@@ -300,12 +324,9 @@ export function traceExecution(
             }
             stack.push(node);
 
-            // Call the original — its recursive calls go through self[fnName] = this wrapper
             const result = origFn.apply(self, args);
 
             node.result = result;
-            // Cache hit heuristic: returned without making any child calls
-            // and not a base case (stack depth > 1)
             if (node.children.length === 0 && stack.length > 1) {
               node.cached = true;
             }
@@ -313,10 +334,17 @@ export function traceExecution(
             return result;
           };
 
-          // Run the traced function
           self[fnName](...input);
 
-          self.postMessage({ tree: root, totalCalls });
+          if (hitLimit) {
+            self.postMessage({
+              tree: root,
+              totalCalls,
+              error: 'Call tree truncated at ' + maxCalls + ' calls (too many for visualization). Your solution may be using brute force.'
+            });
+          } else {
+            self.postMessage({ tree: root, totalCalls });
+          }
         } catch (err) {
           self.postMessage({ tree: null, totalCalls, error: err.message });
         }
@@ -326,27 +354,31 @@ export function traceExecution(
     const blob = new Blob([workerCode], { type: "application/javascript" });
     const url = URL.createObjectURL(blob);
     const worker = new Worker(url);
+    activeWorker = worker;
+
+    function cleanup() {
+      worker.terminate();
+      URL.revokeObjectURL(url);
+      if (activeWorker === worker) activeWorker = null;
+      if (activeTimeout === timeout) activeTimeout = null;
+    }
 
     const timeout = setTimeout(() => {
-      worker.terminate();
-      URL.revokeObjectURL(url);
-      resolve({ tree: null, totalCalls: 0, error: "Tracing timed out (function too slow for visualization)" });
+      cleanup();
+      resolve({ tree: null, totalCalls: 0, error: "Tracing timed out — your solution may be too slow to visualize. Try memoization!" });
     }, 3000);
+    activeTimeout = timeout;
 
     worker.onmessage = (e) => {
-      clearTimeout(timeout);
-      worker.terminate();
-      URL.revokeObjectURL(url);
+      cleanup();
       resolve(e.data);
     };
 
     worker.onerror = (e) => {
-      clearTimeout(timeout);
-      worker.terminate();
-      URL.revokeObjectURL(url);
+      cleanup();
       resolve({ tree: null, totalCalls: 0, error: e.message || "Trace error" });
     };
 
-    worker.postMessage({ code, fnName, input });
+    worker.postMessage({ code, fnName, input, maxCalls: MAX_CALLS_TRACE });
   });
 }

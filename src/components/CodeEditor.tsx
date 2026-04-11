@@ -9,6 +9,7 @@ import { indentWithTab } from "@codemirror/commands";
 import { autocompletion, type CompletionContext, type CompletionResult } from "@codemirror/autocomplete";
 import {
   runCode,
+  abortExecution,
   preloadPyodide,
   isPyodideLoaded,
   type TestCase,
@@ -105,6 +106,8 @@ export default function CodeEditor({ testCases, starterJS, starterPython, functi
         codeStore.current[language] = viewRef.current.state.doc.toString();
         viewRef.current.destroy();
       }
+      // Kill any running worker on unmount
+      abortExecution();
     };
   }, [language]);
 
