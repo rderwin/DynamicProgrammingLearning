@@ -1,5 +1,5 @@
 import { useState } from "react";
-import type { PracticeProblem } from "../practice/types";
+import type { PracticeProblem } from "../modules/types";
 import CodeEditor from "./CodeEditor";
 import Hints from "./Hints";
 
@@ -12,18 +12,10 @@ interface Props {
   onCodeChange?: (lang: "js" | "py", code: string) => void;
 }
 
-const difficultyColors = {
+const difficultyColors: Record<string, string> = {
   Easy: "bg-emerald-100 text-emerald-700",
   Medium: "bg-amber-100 text-amber-700",
   Hard: "bg-red-100 text-red-700",
-};
-
-const patternColors = {
-  "1D Counting": "bg-blue-100 text-blue-700",
-  "2D Counting": "bg-violet-100 text-violet-700",
-  "1D Optimization": "bg-cyan-100 text-cyan-700",
-  "2D Optimization": "bg-pink-100 text-pink-700",
-  "Include/Exclude": "bg-orange-100 text-orange-700",
 };
 
 export default function PracticeProblemView({ problem: p, onBack, onComplete, isCompleted, savedCode, onCodeChange }: Props) {
@@ -49,7 +41,7 @@ export default function PracticeProblemView({ problem: p, onBack, onComplete, is
           <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${difficultyColors[p.difficulty]}`}>
             {p.difficulty}
           </span>
-          <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${patternColors[p.pattern]}`}>
+          <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${p.patternColor}`}>
             {p.pattern}
           </span>
           {passed && (

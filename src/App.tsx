@@ -1,56 +1,54 @@
 import { useState, useEffect, useCallback } from "react";
 import { AuthProvider, useAuth } from "./contexts/AuthContext";
-import IntroScreen from "./components/IntroScreen";
-import TreeLesson from "./components/TreeLesson";
+import ModulePicker from "./components/ModulePicker";
 import TransitionLesson from "./components/TransitionLesson";
 import CompletionScreen from "./components/CompletionScreen";
 import PracticeHub from "./components/PracticeHub";
 import PracticeProblemView from "./components/PracticeProblemView";
 import AccountPage from "./components/AccountPage";
-import { fibonacciConfig } from "./problems/configs/fibonacci";
-import { climbingStairsConfig } from "./problems/configs/climbingStairs";
-import { gridPathsConfig } from "./problems/configs/gridPaths";
-import { coinChangeConfig } from "./problems/configs/coinChange";
-import { knapsackConfig } from "./problems/configs/knapsack";
-import { fibToStairs, stairsToGrid, gridToCoins, coinsToKnapsack } from "./content/transitions";
-import { practiceProblems } from "./practice/problems";
+import ComingSoonScreen from "./components/ComingSoonScreen";
+import { modules as allModuleConfigs } from "./modules/registry";
+import { dpModule } from "./modules/dp";
+import type { ModuleId, ModuleExport, ProblemEntry } from "./modules/types";
 import {
   loadUserData,
   debouncedSave,
   flushPendingSave,
   loadLocalData,
   saveLocalData,
+  getModuleProgress,
+  updateModuleProgress,
   type UserData,
   type LessonProgress,
 } from "./services/userDataService";
-import type { TransitionContent } from "./components/TransitionLesson";
 
-type View = string;
+// ─── Module registry ───
 
-interface ProblemEntry {
-  id: string;
-  label: string;
-  config: typeof fibonacciConfig;
-  transitionAfter?: { viewId: string; content: TransitionContent; nextView: string };
+const moduleExports: Partial<Record<ModuleId, ModuleExport>> = {
+  dp: dpModule,
+};
+
+function getModuleExport(id: ModuleId): ModuleExport | null {
+  return moduleExports[id] ?? null;
 }
 
-const problems: ProblemEntry[] = [
-  { id: "fibonacci", label: "Fibonacci", config: fibonacciConfig, transitionAfter: { viewId: "t-fib-stairs", content: fibToStairs, nextView: "stairs" } },
-  { id: "stairs", label: "Climbing Stairs", config: climbingStairsConfig, transitionAfter: { viewId: "t-stairs-grid", content: stairsToGrid, nextView: "grid" } },
-  { id: "grid", label: "Grid Paths", config: gridPathsConfig, transitionAfter: { viewId: "t-grid-coins", content: gridToCoins, nextView: "coins" } },
-  { id: "coins", label: "Coin Change", config: coinChangeConfig, transitionAfter: { viewId: "t-coins-knapsack", content: coinsToKnapsack, nextView: "knapsack" } },
-  { id: "knapsack", label: "Knapsack", config: knapsackConfig },
-];
+// ─── Routing ───
 
-const DEFAULT_DATA: UserData = {
-  lessonProgress: {},
-  practiceCompleted: [],
-  practiceCode: {},
-};
+type AppView =
+  | { screen: "home" }
+  | { screen: "module-intro"; moduleId: ModuleId }
+  | { screen: "lesson"; moduleId: ModuleId; problemId: string }
+  | { screen: "transition"; moduleId: ModuleId; transitionId: string }
+  | { screen: "module-complete"; moduleId: ModuleId }
+  | { screen: "practice"; moduleId: ModuleId }
+  | { screen: "practice-problem"; moduleId: ModuleId; problemId: string }
+  | { screen: "account" };
+
+const DEFAULT_DATA: UserData = { modules: {} };
 
 function AppInner() {
   const { user, loading, signIn } = useAuth();
-  const [view, setView] = useState<View>("intro");
+  const [view, setView] = useState<AppView>({ screen: "home" });
   const [userData, setUserData] = useState<UserData>(DEFAULT_DATA);
   const [dataLoaded, setDataLoaded] = useState(false);
 
@@ -68,7 +66,6 @@ function AppInner() {
     load();
   }, [user]);
 
-  // Save whenever userData changes
   const persist = useCallback(
     (data: UserData) => {
       if (user) {
@@ -80,7 +77,6 @@ function AppInner() {
     [user]
   );
 
-  // Flush on page unload
   useEffect(() => {
     const handleUnload = () => flushPendingSave();
     window.addEventListener("beforeunload", handleUnload);
@@ -89,21 +85,17 @@ function AppInner() {
 
   // ─── Data helpers ───
 
+  const activeModuleId = "moduleId" in view ? view.moduleId : null;
+  const activeModule = activeModuleId ? allModuleConfigs.find((m) => m.id === activeModuleId) : null;
+  const activeModuleExport = activeModuleId ? getModuleExport(activeModuleId) : null;
+
   const updateLessonProgress = useCallback(
-    (problemId: string, update: Partial<LessonProgress>) => {
+    (moduleId: ModuleId, problemId: string, update: Partial<LessonProgress>) => {
       setUserData((prev) => {
-        const existing = prev.lessonProgress[problemId] || {
-          stage: "intro",
-          challengePassed: false,
-          code: { js: "", py: "" },
-        };
-        const next = {
-          ...prev,
-          lessonProgress: {
-            ...prev.lessonProgress,
-            [problemId]: { ...existing, ...update },
-          },
-        };
+        const modProgress = getModuleProgress(prev, moduleId);
+        const existing = modProgress.lessonProgress[problemId] || { stage: "intro", challengePassed: false, code: { js: "", py: "" } };
+        const nextMod = { ...modProgress, lessonProgress: { ...modProgress.lessonProgress, [problemId]: { ...existing, ...update } } };
+        const next = updateModuleProgress(prev, moduleId, nextMod);
         persist(next);
         return next;
       });
@@ -112,13 +104,11 @@ function AppInner() {
   );
 
   const markPracticeComplete = useCallback(
-    (id: string) => {
+    (moduleId: ModuleId, id: string) => {
       setUserData((prev) => {
-        if (prev.practiceCompleted.includes(id)) return prev;
-        const next = {
-          ...prev,
-          practiceCompleted: [...prev.practiceCompleted, id],
-        };
+        const modProgress = getModuleProgress(prev, moduleId);
+        if (modProgress.practiceCompleted.includes(id)) return prev;
+        const next = updateModuleProgress(prev, moduleId, { practiceCompleted: [...modProgress.practiceCompleted, id] });
         persist(next);
         return next;
       });
@@ -127,16 +117,11 @@ function AppInner() {
   );
 
   const savePracticeCode = useCallback(
-    (id: string, lang: "js" | "py", code: string) => {
+    (moduleId: ModuleId, id: string, lang: "js" | "py", code: string) => {
       setUserData((prev) => {
-        const existing = prev.practiceCode[id] || { js: "", py: "" };
-        const next = {
-          ...prev,
-          practiceCode: {
-            ...prev.practiceCode,
-            [id]: { ...existing, [lang]: code },
-          },
-        };
+        const modProgress = getModuleProgress(prev, moduleId);
+        const existing = modProgress.practiceCode[id] || { js: "", py: "" };
+        const next = updateModuleProgress(prev, moduleId, { practiceCode: { ...modProgress.practiceCode, [id]: { ...existing, [lang]: code } } });
         persist(next);
         return next;
       });
@@ -148,38 +133,59 @@ function AppInner() {
     const fresh = { ...DEFAULT_DATA };
     setUserData(fresh);
     persist(fresh);
-    setView("intro");
+    setView({ screen: "home" });
   }, [persist]);
 
-  // ─── View routing ───
+  // ─── Navigation helpers ───
 
-  const currentProblemIdx = problems.findIndex((p) => p.id === view);
-  const currentProblem = currentProblemIdx >= 0 ? problems[currentProblemIdx] : null;
-  const currentTransition = problems.find((p) => p.transitionAfter?.viewId === view)?.transitionAfter;
+  const nav = {
+    home: () => setView({ screen: "home" }),
+    moduleIntro: (m: ModuleId) => setView({ screen: "module-intro", moduleId: m }),
+    lesson: (m: ModuleId, p: string) => setView({ screen: "lesson", moduleId: m, problemId: p }),
+    transition: (m: ModuleId, t: string) => setView({ screen: "transition", moduleId: m, transitionId: t }),
+    moduleComplete: (m: ModuleId) => setView({ screen: "module-complete", moduleId: m }),
+    practice: (m: ModuleId) => setView({ screen: "practice", moduleId: m }),
+    practiceProblem: (m: ModuleId, p: string) => setView({ screen: "practice-problem", moduleId: m, problemId: p }),
+    account: () => setView({ screen: "account" }),
+  };
 
-  const isPracticeHub = view === "practice";
-  const practiceProblemId = view.startsWith("practice-") ? view.slice("practice-".length) : null;
-  const practiceProblem = practiceProblemId ? practiceProblems.find((p) => p.id === practiceProblemId) : null;
+  // Get progress for module picker
+  function getModulePickerProgress(id: ModuleId) {
+    const mod = getModuleProgress(userData, id);
+    return {
+      lessons: Object.values(mod.lessonProgress).filter((l) => l.challengePassed).length,
+      practice: mod.practiceCompleted.length,
+    };
+  }
 
-  const isIntro = view === "intro";
-  const isComplete = view === "complete";
-  const isAccount = view === "account";
-  const showNav = !isIntro;
+  // ─── Current module context ───
+
+  const currentProblems: ProblemEntry[] = activeModuleExport?.problems ?? [];
+  const currentProblemIdx = view.screen === "lesson" ? currentProblems.findIndex((p) => p.id === view.problemId) : -1;
+  const currentProblem = currentProblemIdx >= 0 ? currentProblems[currentProblemIdx] : null;
+  const currentTransition = view.screen === "transition" && activeModuleExport
+    ? currentProblems.find((p) => p.transitionAfter?.viewId === view.transitionId)?.transitionAfter
+    : null;
+
+  const modProgress = activeModuleId ? getModuleProgress(userData, activeModuleId) : null;
+  const practiceProblemId = view.screen === "practice-problem" ? view.problemId : null;
+  const practiceProblem = practiceProblemId && activeModuleExport
+    ? activeModuleExport.practice.find((p) => p.id === practiceProblemId)
+    : null;
 
   function handleNextFromLesson() {
-    if (currentProblem?.transitionAfter) {
-      setView(currentProblem.transitionAfter.viewId);
-    } else if (currentProblemIdx === problems.length - 1) {
-      setView("complete");
+    if (!activeModuleId || !currentProblem) return;
+    if (currentProblem.transitionAfter) {
+      nav.transition(activeModuleId, currentProblem.transitionAfter.viewId);
+    } else if (currentProblemIdx === currentProblems.length - 1) {
+      nav.moduleComplete(activeModuleId);
     }
   }
 
-  const activeNavProblem = currentProblem?.id
-    ?? (currentTransition ? problems.find((p) => p.transitionAfter?.viewId === view)?.id : null)
-    ?? null;
-
-  const completedPracticeCount = userData.practiceCompleted.length;
-  const completedIds = new Set(userData.practiceCompleted);
+  // Active nav problem highlight
+  const activeNavProblemId = view.screen === "lesson" ? view.problemId
+    : view.screen === "transition" ? currentProblems.find((p) => p.transitionAfter?.viewId === view.transitionId)?.id ?? null
+    : null;
 
   if (loading || !dataLoaded) {
     return (
@@ -189,35 +195,37 @@ function AppInner() {
     );
   }
 
+  const showModuleNav = activeModule && view.screen !== "home" && view.screen !== "account";
+
   return (
     <div className="min-h-screen bg-slate-50 font-sans">
       {/* Header */}
       <header className="sticky top-0 z-50 bg-white/80 backdrop-blur-lg border-b border-slate-200/80">
         <div className="max-w-6xl mx-auto px-6 py-3 flex items-center justify-between">
-          <button
-            onClick={() => setView("intro")}
-            className="flex items-center gap-3 hover:opacity-80 transition-opacity"
-          >
+          <button onClick={nav.home} className="flex items-center gap-3 hover:opacity-80 transition-opacity">
             <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-violet-600 rounded-lg flex items-center justify-center shadow-sm shadow-blue-500/20">
               <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M4.26 10.147a60.438 60.438 0 00-.491 6.347A48.62 48.62 0 0112 20.904a48.62 48.62 0 018.232-4.41 60.46 60.46 0 00-.491-6.347m-15.482 0a50.636 50.636 0 00-2.658-.813A59.906 59.906 0 0112 3.493a59.903 59.903 0 0110.399 5.84c-.896.248-1.783.52-2.658.814m-15.482 0A50.717 50.717 0 0112 13.489a50.702 50.702 0 017.74-3.342" />
               </svg>
             </div>
             <div className="text-left">
-              <h1 className="text-sm font-bold text-slate-800 leading-tight">DP Learning Lab</h1>
-              <p className="text-[11px] text-slate-400 leading-tight">Zero to interview-ready</p>
+              <h1 className="text-sm font-bold text-slate-800 leading-tight">Interview Prep Lab</h1>
+              <p className="text-[11px] text-slate-400 leading-tight">
+                {activeModule ? activeModule.title : "Master the hard stuff"}
+              </p>
             </div>
           </button>
 
           <div className="flex items-center gap-3">
-            {showNav && (
+            {/* Module nav — shows problem tabs for current module */}
+            {showModuleNav && activeModuleExport && (
               <nav className="flex gap-1 bg-slate-100 rounded-lg p-1 text-xs animate-fade-in">
-                {problems.map((p) => (
+                {currentProblems.map((p) => (
                   <button
                     key={p.id}
-                    onClick={() => setView(p.id)}
+                    onClick={() => nav.lesson(activeModuleId!, p.id)}
                     className={`px-3 py-1.5 rounded-md font-medium transition-all duration-200 ${
-                      p.id === activeNavProblem
+                      p.id === activeNavProblemId
                         ? "bg-white text-slate-800 shadow-sm"
                         : "text-slate-400 hover:text-slate-600 hover:bg-white/50"
                     }`}
@@ -225,30 +233,34 @@ function AppInner() {
                     {p.label}
                   </button>
                 ))}
-                <div className="w-px bg-slate-300 mx-0.5" />
-                <button
-                  onClick={() => setView("practice")}
-                  className={`px-3 py-1.5 rounded-md font-medium transition-all duration-200 ${
-                    isPracticeHub || practiceProblem
-                      ? "bg-white text-slate-800 shadow-sm"
-                      : "text-slate-400 hover:text-slate-600 hover:bg-white/50"
-                  }`}
-                >
-                  Practice
-                  {completedPracticeCount > 0 && (
-                    <span className="ml-1 text-[9px] bg-emerald-100 text-emerald-700 px-1.5 py-0.5 rounded-full font-bold">
-                      {completedPracticeCount}/{practiceProblems.length}
-                    </span>
-                  )}
-                </button>
+                {activeModuleExport.practice.length > 0 && (
+                  <>
+                    <div className="w-px bg-slate-300 mx-0.5" />
+                    <button
+                      onClick={() => nav.practice(activeModuleId!)}
+                      className={`px-3 py-1.5 rounded-md font-medium transition-all duration-200 ${
+                        view.screen === "practice" || view.screen === "practice-problem"
+                          ? "bg-white text-slate-800 shadow-sm"
+                          : "text-slate-400 hover:text-slate-600 hover:bg-white/50"
+                      }`}
+                    >
+                      Practice
+                      {modProgress && modProgress.practiceCompleted.length > 0 && (
+                        <span className="ml-1 text-[9px] bg-emerald-100 text-emerald-700 px-1.5 py-0.5 rounded-full font-bold">
+                          {modProgress.practiceCompleted.length}/{activeModuleExport.practice.length}
+                        </span>
+                      )}
+                    </button>
+                  </>
+                )}
               </nav>
             )}
 
-            {/* Auth button */}
+            {/* Auth */}
             {user ? (
               <button
-                onClick={() => setView("account")}
-                className={`flex items-center gap-2 rounded-lg px-2 py-1 transition-all hover:bg-slate-100 ${isAccount ? "bg-slate-100" : ""}`}
+                onClick={nav.account}
+                className={`flex items-center gap-2 rounded-lg px-2 py-1 transition-all hover:bg-slate-100 ${view.screen === "account" ? "bg-slate-100" : ""}`}
               >
                 {user.photoURL ? (
                   <img src={user.photoURL} alt="" className="w-7 h-7 rounded-full border border-slate-200" referrerPolicy="no-referrer" />
@@ -278,57 +290,103 @@ function AppInner() {
 
       {/* Main content */}
       <main className="max-w-6xl mx-auto px-6 py-8">
-        {isIntro && <IntroScreen onStart={() => setView("fibonacci")} />}
-
-        {currentProblem && (
-          <TreeLesson
-            key={currentProblem.id}
-            config={currentProblem.config}
-            nextProblemLabel={
-              currentProblem.transitionAfter ? currentProblem.transitionAfter.content.toLabel : null
-            }
-            onNextProblem={handleNextFromLesson}
-            savedProgress={userData.lessonProgress[currentProblem.id]}
-            onProgressChange={(update) => updateLessonProgress(currentProblem.id, update)}
+        {/* Home / Module Picker */}
+        {view.screen === "home" && (
+          <ModulePicker
+            modules={allModuleConfigs}
+            onSelectModule={(id) => {
+              const mod = getModuleExport(id);
+              if (mod?.IntroScreen) {
+                nav.moduleIntro(id);
+              } else {
+                // Coming soon module
+                nav.moduleIntro(id);
+              }
+            }}
+            getProgress={getModulePickerProgress}
           />
         )}
 
-        {currentTransition && (
+        {/* Module intro */}
+        {view.screen === "module-intro" && activeModuleId && (() => {
+          const mod = getModuleExport(activeModuleId);
+          if (mod?.IntroScreen) {
+            const IntroComp = mod.IntroScreen;
+            const firstProblem = mod.problems[0];
+            return <IntroComp onStart={() => firstProblem && nav.lesson(activeModuleId, firstProblem.id)} />;
+          }
+          const config = allModuleConfigs.find((m) => m.id === activeModuleId);
+          if (config) return <ComingSoonScreen module={config} onBack={nav.home} />;
+          return null;
+        })()}
+
+        {/* Lesson */}
+        {view.screen === "lesson" && activeModuleId && currentProblem && activeModuleExport?.LessonComponent && (() => {
+          const LessonComp = activeModuleExport.LessonComponent;
+          const nextProblem = currentProblemIdx < currentProblems.length - 1 ? currentProblems[currentProblemIdx + 1] : null;
+          const savedProgress = modProgress?.lessonProgress[currentProblem.id];
+          return (
+            <LessonComp
+              key={currentProblem.id}
+              config={currentProblem.config}
+              nextProblemLabel={
+                currentProblem.transitionAfter ? currentProblem.transitionAfter.content.toLabel
+                : nextProblem ? nextProblem.label : null
+              }
+              onNextProblem={handleNextFromLesson}
+              savedProgress={savedProgress}
+              onProgressChange={(update: Partial<LessonProgress>) => updateLessonProgress(activeModuleId, currentProblem.id, update)}
+            />
+          );
+        })()}
+
+        {/* Transition */}
+        {view.screen === "transition" && activeModuleId && currentTransition && (
           <TransitionLesson
-            key={view}
+            key={view.transitionId}
             content={currentTransition.content}
-            onContinue={() => setView(currentTransition.nextView)}
+            onContinue={() => nav.lesson(activeModuleId, currentTransition.nextView)}
           />
         )}
 
-        {isComplete && <CompletionScreen onPractice={() => setView("practice")} />}
+        {/* Module complete */}
+        {view.screen === "module-complete" && activeModuleId && activeModuleExport?.completionContent && (
+          <CompletionScreen
+            content={activeModuleExport.completionContent}
+            onPractice={() => nav.practice(activeModuleId)}
+            onHome={nav.home}
+          />
+        )}
 
-        {isPracticeHub && (
+        {/* Practice hub */}
+        {view.screen === "practice" && activeModuleId && activeModuleExport && modProgress && (
           <PracticeHub
-            problems={practiceProblems}
-            completedIds={completedIds}
-            onSelectProblem={(id) => setView(`practice-${id}`)}
+            problems={activeModuleExport.practice}
+            completedIds={new Set(modProgress.practiceCompleted)}
+            onSelectProblem={(id) => nav.practiceProblem(activeModuleId, id)}
           />
         )}
 
-        {practiceProblem && (
+        {/* Practice problem */}
+        {view.screen === "practice-problem" && activeModuleId && practiceProblem && modProgress && (
           <PracticeProblemView
             key={practiceProblem.id}
             problem={practiceProblem}
-            onBack={() => setView("practice")}
-            onComplete={markPracticeComplete}
-            isCompleted={completedIds.has(practiceProblem.id)}
-            savedCode={userData.practiceCode[practiceProblem.id]}
-            onCodeChange={(lang, code) => savePracticeCode(practiceProblem.id, lang, code)}
+            onBack={() => nav.practice(activeModuleId)}
+            onComplete={(id) => markPracticeComplete(activeModuleId, id)}
+            isCompleted={modProgress.practiceCompleted.includes(practiceProblem.id)}
+            savedCode={modProgress.practiceCode[practiceProblem.id]}
+            onCodeChange={(lang, code) => savePracticeCode(activeModuleId, practiceProblem.id, lang, code)}
           />
         )}
 
-        {isAccount && (
+        {/* Account */}
+        {view.screen === "account" && (
           <AccountPage
             userData={userData}
             onReset={resetAllProgress}
-            totalLessons={problems.length}
-            totalPractice={practiceProblems.length}
+            moduleConfigs={allModuleConfigs}
+            onHome={nav.home}
           />
         )}
       </main>

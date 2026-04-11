@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import type { TreeNode } from "../problems/fibonacci";
+import type { TreeNode } from "./TreeLesson";
 
 interface Props {
   tree: TreeNode;
