@@ -7,32 +7,32 @@ interface Props {
 
 const styles = {
   blue: {
-    bg: "bg-blue-50/80",
-    border: "border-blue-200",
+    bg: "bg-blue-50/80 dark:bg-blue-950/40",
+    border: "border-blue-200 dark:border-blue-800",
     accent: "bg-blue-500",
-    title: "text-blue-700",
-    text: "text-blue-800",
+    title: "text-blue-700 dark:text-blue-400",
+    text: "text-blue-800 dark:text-blue-300",
   },
   amber: {
-    bg: "bg-amber-50/80",
-    border: "border-amber-200",
+    bg: "bg-amber-50/80 dark:bg-amber-950/40",
+    border: "border-amber-200 dark:border-amber-800",
     accent: "bg-amber-500",
-    title: "text-amber-700",
-    text: "text-amber-800",
+    title: "text-amber-700 dark:text-amber-400",
+    text: "text-amber-800 dark:text-amber-300",
   },
   green: {
-    bg: "bg-green-50/80",
-    border: "border-green-200",
+    bg: "bg-green-50/80 dark:bg-green-950/40",
+    border: "border-green-200 dark:border-green-800",
     accent: "bg-green-500",
-    title: "text-green-700",
-    text: "text-green-800",
+    title: "text-green-700 dark:text-green-400",
+    text: "text-green-800 dark:text-green-300",
   },
   purple: {
-    bg: "bg-purple-50/80",
-    border: "border-purple-200",
+    bg: "bg-purple-50/80 dark:bg-purple-950/40",
+    border: "border-purple-200 dark:border-purple-800",
     accent: "bg-purple-500",
-    title: "text-purple-700",
-    text: "text-purple-800",
+    title: "text-purple-700 dark:text-purple-400",
+    text: "text-purple-800 dark:text-purple-300",
   },
 };
 

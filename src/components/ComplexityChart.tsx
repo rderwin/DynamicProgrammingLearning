@@ -26,16 +26,16 @@ export default function ComplexityChart({ stats, currentN }: Props) {
   const currentStats = stats.find((s) => s.n === currentN);
 
   return (
-    <div className="bg-white border border-slate-200 rounded-xl p-6 shadow-sm animate-fade-in-up">
+    <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl p-6 shadow-sm dark:shadow-slate-900/50 animate-fade-in-up">
       <div className="flex items-start justify-between mb-5">
         <div>
-          <h3 className="text-sm font-semibold text-slate-700 flex items-center gap-2">
-            <svg className="w-4 h-4 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+          <h3 className="text-sm font-semibold text-slate-700 dark:text-slate-300 flex items-center gap-2">
+            <svg className="w-4 h-4 text-slate-400 dark:text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 013 19.875v-6.75zM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V8.625zM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V4.125z" />
             </svg>
             Call Count Comparison
           </h3>
-          <p className="text-xs text-slate-400 mt-0.5">
+          <p className="text-xs text-slate-400 dark:text-slate-500 mt-0.5">
             Brute force vs memoized — watch the gap explode as n grows
           </p>
         </div>
@@ -44,11 +44,11 @@ export default function ComplexityChart({ stats, currentN }: Props) {
           <div className="flex items-center gap-4 text-xs">
             <span className="flex items-center gap-1.5">
               <span className="w-3 h-3 rounded bg-red-400 inline-block" />
-              Brute: <strong className="text-slate-700">{currentStats.bruteForceNodes}</strong> calls
+              Brute: <strong className="text-slate-700 dark:text-slate-300">{currentStats.bruteForceNodes}</strong> calls
             </span>
             <span className="flex items-center gap-1.5">
               <span className="w-3 h-3 rounded bg-emerald-400 inline-block" />
-              Memo: <strong className="text-slate-700">{currentStats.memoNodes}</strong> calls
+              Memo: <strong className="text-slate-700 dark:text-slate-300">{currentStats.memoNodes}</strong> calls
             </span>
             <span className="bg-violet-100 text-violet-700 px-2 py-0.5 rounded-full font-semibold">
               {currentStats.savings}% saved

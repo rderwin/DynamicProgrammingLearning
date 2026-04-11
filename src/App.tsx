@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { AuthProvider, useAuth } from "./contexts/AuthContext";
+import { ThemeProvider, useTheme } from "./contexts/ThemeContext";
 import ModulePicker from "./components/ModulePicker";
 import TransitionLesson from "./components/TransitionLesson";
 import CompletionScreen from "./components/CompletionScreen";
@@ -298,7 +299,7 @@ function AppInner() {
 
   if (loading || !dataLoaded) {
     return (
-      <div className="min-h-screen bg-slate-50 flex items-center justify-center">
+      <div className="min-h-screen bg-slate-50 dark:bg-slate-950 flex items-center justify-center">
         <div className="w-8 h-8 border-3 border-blue-300 border-t-blue-600 rounded-full animate-spin" />
       </div>
     );
@@ -307,9 +308,9 @@ function AppInner() {
   const showModuleNav = activeModule && view.screen !== "home" && view.screen !== "account";
 
   return (
-    <div className="min-h-screen bg-slate-50 font-sans">
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 font-sans">
       {/* Header */}
-      <header className="sticky top-0 z-50 bg-white/80 backdrop-blur-lg border-b border-slate-200/80">
+      <header className="sticky top-0 z-50 bg-white/80 dark:bg-slate-900/80 backdrop-blur-lg border-b border-slate-200/80 dark:border-slate-800/80">
         <div className="max-w-6xl mx-auto px-6 py-3 flex items-center justify-between">
           <button onClick={nav.home} className="flex items-center gap-3 hover:opacity-80 transition-opacity">
             <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-violet-600 rounded-lg flex items-center justify-center shadow-sm shadow-blue-500/20">
@@ -318,7 +319,7 @@ function AppInner() {
               </svg>
             </div>
             <div className="text-left">
-              <h1 className="text-sm font-bold text-slate-800 leading-tight">Interview Prep Lab</h1>
+              <h1 className="text-sm font-bold text-slate-800 dark:text-slate-200 leading-tight">Interview Prep Lab</h1>
               <p className="text-[11px] text-slate-400 leading-tight">
                 {activeModule ? activeModule.title : "Master the hard stuff"}
               </p>
@@ -328,15 +329,15 @@ function AppInner() {
           <div className="flex items-center gap-3">
             {/* Module nav — shows problem tabs for current module */}
             {showModuleNav && activeModuleExport && (
-              <nav className="flex gap-1 bg-slate-100 rounded-lg p-1 text-xs animate-fade-in">
+              <nav className="flex gap-1 bg-slate-100 dark:bg-slate-800 rounded-lg p-1 text-xs animate-fade-in">
                 {currentProblems.map((p) => (
                   <button
                     key={p.id}
                     onClick={() => nav.lesson(activeModuleId!, p.id)}
                     className={`px-3 py-1.5 rounded-md font-medium transition-all duration-200 ${
                       p.id === activeNavProblemId
-                        ? "bg-white text-slate-800 shadow-sm"
-                        : "text-slate-400 hover:text-slate-600 hover:bg-white/50"
+                        ? "bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-200 shadow-sm"
+                        : "text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300 hover:bg-white/50 dark:hover:bg-slate-700/50"
                     }`}
                   >
                     {p.label}
@@ -364,6 +365,9 @@ function AppInner() {
                 )}
               </nav>
             )}
+
+            {/* Theme toggle */}
+            <ThemeToggle />
 
             {/* Auth */}
             {user ? (
@@ -514,10 +518,33 @@ function AppInner() {
   );
 }
 
+function ThemeToggle() {
+  const { theme, toggle } = useTheme();
+  return (
+    <button
+      onClick={toggle}
+      className="w-8 h-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-slate-600 dark:text-slate-500 dark:hover:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all"
+      title={theme === "light" ? "Switch to dark mode" : "Switch to light mode"}
+    >
+      {theme === "light" ? (
+        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+          <path strokeLinecap="round" strokeLinejoin="round" d="M21.752 15.002A9.72 9.72 0 0118 15.75c-5.385 0-9.75-4.365-9.75-9.75 0-1.33.266-2.597.748-3.752A9.753 9.753 0 003 11.25C3 16.635 7.365 21 12.75 21a9.753 9.753 0 009.002-5.998z" />
+        </svg>
+      ) : (
+        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+          <path strokeLinecap="round" strokeLinejoin="round" d="M12 3v2.25m6.364.386l-1.591 1.591M21 12h-2.25m-.386 6.364l-1.591-1.591M12 18.75V21m-4.773-4.227l-1.591 1.591M5.25 12H3m4.227-4.773L5.636 5.636M15.75 12a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0z" />
+        </svg>
+      )}
+    </button>
+  );
+}
+
 export default function App() {
   return (
-    <AuthProvider>
-      <AppInner />
-    </AuthProvider>
+    <ThemeProvider>
+      <AuthProvider>
+        <AppInner />
+      </AuthProvider>
+    </ThemeProvider>
   );
 }

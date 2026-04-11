@@ -323,15 +323,15 @@ export default function TreeLesson({ config, nextProblemLabel, onNextProblem, sa
           <span className="bg-blue-100 text-blue-700 text-xs font-semibold px-2.5 py-1 rounded-full">
             Problem {config.problemNumber} of {config.totalProblems}
           </span>
-          <span className="text-xs text-slate-400">Difficulty: {config.difficulty}</span>
+          <span className="text-xs text-slate-400 dark:text-slate-500">Difficulty: {config.difficulty}</span>
           {stage !== "intro" && (
-            <button onClick={restart} className="ml-auto text-xs text-slate-400 hover:text-slate-600 transition-colors">
+            <button onClick={restart} className="ml-auto text-xs text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300 transition-colors">
               ← Start over
             </button>
           )}
         </div>
-        <h2 className="text-2xl font-bold text-slate-900">{config.title}</h2>
-        <div className="text-slate-500 mt-1">{config.description}</div>
+        <h2 className="text-2xl font-bold text-slate-900 dark:text-slate-100">{config.title}</h2>
+        <div className="text-slate-500 dark:text-slate-400 mt-1">{config.description}</div>
       </div>
 
       {/* ─── Stage navigation ─── */}
@@ -347,17 +347,17 @@ export default function TreeLesson({ config, nextProblemLabel, onNextProblem, sa
             return (
               <div key={nav.stage} className="flex items-center">
                 {i > 0 && (
-                  <div className={`w-6 h-px mx-0.5 ${i <= maxReached ? "bg-blue-300" : "bg-slate-200"}`} />
+                  <div className={`w-6 h-px mx-0.5 ${i <= maxReached ? "bg-blue-300" : "bg-slate-200 dark:bg-slate-700"}`} />
                 )}
                 <button
                   onClick={() => reached && goToStage(nav.stage)}
                   disabled={!reached}
                   className={`px-2.5 py-1 rounded-lg text-[11px] font-medium transition-all duration-200 ${
                     isActive
-                      ? "bg-blue-100 text-blue-800 ring-1 ring-blue-300"
+                      ? "bg-blue-100 dark:bg-blue-900/50 text-blue-800 dark:text-blue-300 ring-1 ring-blue-300 dark:ring-blue-700"
                       : reached
-                        ? "bg-slate-100 text-slate-600 hover:bg-slate-200 cursor-pointer"
-                        : "bg-slate-50 text-slate-300 cursor-not-allowed"
+                        ? "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700 cursor-pointer"
+                        : "bg-slate-50 dark:bg-slate-900 text-slate-300 dark:text-slate-600 cursor-not-allowed"
                   }`}
                   title={nav.label}
                 >
@@ -374,7 +374,7 @@ export default function TreeLesson({ config, nextProblemLabel, onNextProblem, sa
       {/* ═══ STAGE: intro ═══ */}
       {stage === "intro" && (
         <div className="animate-fade-in-up">
-          <div className="bg-gradient-to-br from-slate-50 to-blue-50/50 border border-slate-200 rounded-2xl p-10 text-center">
+          <div className="bg-gradient-to-br from-slate-50 to-blue-50/50 dark:from-slate-900 dark:to-blue-950/30 border border-slate-200 dark:border-slate-700 rounded-2xl p-10 text-center">
             <div className="max-w-lg mx-auto">
               <div className="w-16 h-16 bg-blue-100 rounded-2xl flex items-center justify-center mx-auto mb-5">
                 <svg className="w-8 h-8 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
@@ -382,15 +382,15 @@ export default function TreeLesson({ config, nextProblemLabel, onNextProblem, sa
                   <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                 </svg>
               </div>
-              <h3 className="text-lg font-bold text-slate-800 mb-2">Let's see what happens</h3>
-              <p className="text-sm text-slate-500 mb-2">
+              <h3 className="text-lg font-bold text-slate-800 dark:text-slate-100 mb-2">Let's see what happens</h3>
+              <p className="text-sm text-slate-500 dark:text-slate-400 mb-2">
                 We'll start with the brute force approach — watch the recursion tree build up
                 and see if you can spot the problem.
               </p>
-              <label className="flex items-center gap-3 text-sm text-slate-600 justify-center my-6">
+              <label className="flex items-center gap-3 text-sm text-slate-600 dark:text-slate-400 justify-center my-6">
                 <span className="font-medium">{config.nLabel ?? "n"} =</span>
                 <input type="range" min={config.nRange[0]} max={config.nRange[1]} value={n} onChange={(e) => setN(Number(e.target.value))} className="w-28 accent-blue-500" />
-                <span className="bg-white font-mono font-bold text-slate-800 w-8 h-8 rounded-lg flex items-center justify-center text-sm border border-slate-200">{n}</span>
+                <span className="bg-white dark:bg-slate-800 font-mono font-bold text-slate-800 dark:text-slate-100 w-8 h-8 rounded-lg flex items-center justify-center text-sm border border-slate-200 dark:border-slate-700">{n}</span>
               </label>
               <button
                 onClick={startBrute}
@@ -408,7 +408,7 @@ export default function TreeLesson({ config, nextProblemLabel, onNextProblem, sa
 
       {/* ═══ Controls bar (brute/memo play stages only) ═══ */}
       {showControls && (
-        <div className="bg-white rounded-xl border border-slate-200 px-5 py-4 shadow-sm animate-slide-down">
+        <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700 px-5 py-4 shadow-sm dark:shadow-slate-900/50 animate-slide-down">
           <div className="flex flex-wrap items-center gap-4">
             <div className="flex gap-2">
               <button onClick={step} disabled={isPlaying || isComplete} className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-blue-500 text-white rounded-lg text-sm font-medium hover:bg-blue-600 disabled:opacity-40 disabled:cursor-not-allowed transition-all duration-200 shadow-sm shadow-blue-500/20" title="Step (→)">
@@ -423,18 +423,18 @@ export default function TreeLesson({ config, nextProblemLabel, onNextProblem, sa
                 )}
                 {isPlaying ? "Pause" : "Play"}
               </button>
-              <button onClick={resetAnim} className="px-3.5 py-2 bg-slate-100 text-slate-600 rounded-lg text-sm font-medium hover:bg-slate-200 transition-all duration-200" title="Reset (R)">Reset</button>
+              <button onClick={resetAnim} className="px-3.5 py-2 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 rounded-lg text-sm font-medium hover:bg-slate-200 dark:hover:bg-slate-700 transition-all duration-200" title="Reset (R)">Reset</button>
             </div>
-            <div className="w-px h-8 bg-slate-200" />
-            <label className="flex items-center gap-2 text-xs text-slate-500">
+            <div className="w-px h-8 bg-slate-200 dark:bg-slate-700" />
+            <label className="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400">
               <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M3.75 13.5l10.5-11.25L12 10.5h8.25L9.75 21.75 12 13.5H3.75z" /></svg>
               <input type="range" min={50} max={600} step={10} value={650 - speed} onChange={(e) => setSpeed(650 - Number(e.target.value))} className="w-16 accent-violet-500" />
-              <span className="text-[10px] font-medium text-slate-400 w-12">{speedLabel}</span>
+              <span className="text-[10px] font-medium text-slate-400 dark:text-slate-500 w-12">{speedLabel}</span>
             </label>
             {!hasStarted && (
               <>
-                <div className="w-px h-8 bg-slate-200" />
-                <div className="flex gap-3 text-[10px] text-slate-400">
+                <div className="w-px h-8 bg-slate-200 dark:bg-slate-700" />
+                <div className="flex gap-3 text-[10px] text-slate-400 dark:text-slate-500">
                   <span><kbd className="kbd-hint">Space</kbd> play</span>
                   <span><kbd className="kbd-hint">→</kbd> step</span>
                   <span><kbd className="kbd-hint">R</kbd> reset</span>
@@ -444,12 +444,12 @@ export default function TreeLesson({ config, nextProblemLabel, onNextProblem, sa
           </div>
           {hasStarted && (
             <div className="mt-3 flex items-center gap-4">
-              <div className="flex-1 bg-slate-100 rounded-full h-2 overflow-hidden">
+              <div className="flex-1 bg-slate-100 dark:bg-slate-800 rounded-full h-2 overflow-hidden">
                 <div className="h-full rounded-full transition-all duration-300 ease-out progress-bar-glow" style={{ width: `${progressPercent}%`, background: isComplete ? "linear-gradient(90deg, #22c55e, #10b981)" : "linear-gradient(90deg, #3b82f6, #8b5cf6)" }} />
               </div>
-              <span className="text-xs text-slate-500">
-                <span className="font-mono font-bold text-slate-700 tabular-nums">{stepIndex + 1}</span>
-                <span className="text-slate-300">/{totalSteps}</span>
+              <span className="text-xs text-slate-500 dark:text-slate-400">
+                <span className="font-mono font-bold text-slate-700 dark:text-slate-300 tabular-nums">{stepIndex + 1}</span>
+                <span className="text-slate-300 dark:text-slate-600">/{totalSteps}</span>
                 {phase === "brute" && duplicateCount > 0 && (
                   <span className="ml-3">🔴 <span className="font-mono font-bold text-red-500 tabular-nums">{duplicateCount}</span> duplicates</span>
                 )}
@@ -467,14 +467,14 @@ export default function TreeLesson({ config, nextProblemLabel, onNextProblem, sa
       {/* ═══ Tree + Code panel (visible during play stages) ═══ */}
       {showTree && (
         <div className="grid grid-cols-1 lg:grid-cols-5 gap-4 animate-fade-in-up">
-          <div className="lg:col-span-3 bg-white border border-slate-200 rounded-xl p-6 min-h-[350px] flex items-center justify-center shadow-sm">
+          <div className="lg:col-span-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl p-6 min-h-[350px] flex items-center justify-center shadow-sm dark:shadow-slate-900/50">
             {tree && hasStarted ? (
               <RecursionTree tree={tree} revealedIds={revealedIds} memoizedNs={memoizedNs} prunedIds={prunedIds} currentNodeId={currentNode?.id ?? null} />
             ) : tree && (stage === "brute-done" || stage === "memo-intro" || stage === "memo-done") ? (
               // Show completed tree
               <RecursionTree tree={tree} revealedIds={revealedIds} memoizedNs={memoizedNs} prunedIds={prunedIds} currentNodeId={null} />
             ) : (
-              <div className="flex flex-col items-center gap-4 text-slate-400">
+              <div className="flex flex-col items-center gap-4 text-slate-400 dark:text-slate-500">
                 <div className="empty-state-icon">
                   <svg className="w-16 h-16 text-slate-200" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6zM3.75 15.75A2.25 2.25 0 016 13.5h2.25a2.25 2.25 0 012.25 2.25V18a2.25 2.25 0 01-2.25 2.25H6A2.25 2.25 0 013.75 18v-2.25zM13.5 6a2.25 2.25 0 012.25-2.25H18A2.25 2.25 0 0120.25 6v2.25A2.25 2.25 0 0118 10.5h-2.25a2.25 2.25 0 01-2.25-2.25V6zM13.5 15.75a2.25 2.25 0 012.25-2.25H18a2.25 2.25 0 012.25 2.25V18A2.25 2.25 0 0118 20.25h-2.25A2.25 2.25 0 0113.5 18v-2.25z" />
@@ -499,7 +499,7 @@ export default function TreeLesson({ config, nextProblemLabel, onNextProblem, sa
 
       {/* Legend (during play) */}
       {showControls && hasStarted && (
-        <div className="flex flex-wrap gap-5 justify-center text-xs text-slate-500 animate-fade-in">
+        <div className="flex flex-wrap gap-5 justify-center text-xs text-slate-500 dark:text-slate-400 animate-fade-in">
           <span className="flex items-center gap-2"><span className="w-3.5 h-3.5 rounded-full bg-blue-100 border-2 border-blue-500 inline-block" />Unique call</span>
           <span className="flex items-center gap-2"><span className="w-3.5 h-3.5 rounded-full bg-red-100 border-2 border-red-500 inline-block" />Duplicate</span>
           {phase === "memo" && (
@@ -514,7 +514,7 @@ export default function TreeLesson({ config, nextProblemLabel, onNextProblem, sa
       {/* ═══ STAGE: brute-done ═══ */}
       {stage === "brute-done" && (
         <div className="animate-fade-in-up">
-          <div className="bg-gradient-to-br from-red-50 to-amber-50/50 border border-red-200 rounded-2xl p-8">
+          <div className="bg-gradient-to-br from-red-50 to-amber-50/50 dark:from-red-950/30 dark:to-amber-950/20 border border-red-200 dark:border-red-800 rounded-2xl p-8">
             <div className="flex items-start gap-4">
               <div className="w-12 h-12 bg-red-100 rounded-xl flex items-center justify-center flex-shrink-0">
                 <svg className="w-6 h-6 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
@@ -522,8 +522,8 @@ export default function TreeLesson({ config, nextProblemLabel, onNextProblem, sa
                 </svg>
               </div>
               <div className="flex-1">
-                <h3 className="text-lg font-bold text-slate-800 mb-2">{config.insights.bruteTitle}</h3>
-                <div className="text-sm text-slate-600 leading-relaxed mb-4">
+                <h3 className="text-lg font-bold text-slate-800 dark:text-slate-100 mb-2">{config.insights.bruteTitle}</h3>
+                <div className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed mb-4">
                   {config.insights.bruteBody({
                     totalNodes,
                     duplicateCount,
@@ -548,15 +548,15 @@ export default function TreeLesson({ config, nextProblemLabel, onNextProblem, sa
       {/* ═══ STAGE: memo-intro ═══ */}
       {stage === "memo-intro" && (
         <div className="animate-fade-in-up">
-          <div className="bg-gradient-to-br from-green-50 to-emerald-50/50 border border-green-200 rounded-2xl p-8 text-center">
+          <div className="bg-gradient-to-br from-green-50 to-emerald-50/50 dark:from-green-950/30 dark:to-emerald-950/20 border border-green-200 dark:border-green-800 rounded-2xl p-8 text-center">
             <div className="max-w-lg mx-auto">
               <div className="w-16 h-16 bg-green-100 rounded-2xl flex items-center justify-center mx-auto mb-5">
                 <svg className="w-8 h-8 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 13.5l10.5-11.25L12 10.5h8.25L9.75 21.75 12 13.5H3.75z" />
                 </svg>
               </div>
-              <h3 className="text-lg font-bold text-slate-800 mb-2">Memoization</h3>
-              <div className="text-sm text-slate-500 mb-6 leading-relaxed">
+              <h3 className="text-lg font-bold text-slate-800 dark:text-slate-100 mb-2">Memoization</h3>
+              <div className="text-sm text-slate-500 dark:text-slate-400 mb-6 leading-relaxed">
                 {config.insights.memoTransitionBody}
               </div>
               <button
@@ -582,7 +582,7 @@ export default function TreeLesson({ config, nextProblemLabel, onNextProblem, sa
           )}
 
           {/* Comparison insight */}
-          <div className="bg-gradient-to-br from-violet-50 to-blue-50/50 border border-violet-200 rounded-2xl p-8">
+          <div className="bg-gradient-to-br from-violet-50 to-blue-50/50 dark:from-violet-950/30 dark:to-blue-950/20 border border-violet-200 dark:border-violet-800 rounded-2xl p-8">
             <div className="flex items-start gap-4">
               <div className="w-12 h-12 bg-violet-100 rounded-xl flex items-center justify-center flex-shrink-0">
                 <svg className="w-6 h-6 text-violet-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
@@ -590,8 +590,8 @@ export default function TreeLesson({ config, nextProblemLabel, onNextProblem, sa
                 </svg>
               </div>
               <div className="flex-1">
-                <h3 className="text-lg font-bold text-slate-800 mb-2">{config.insights.memoTitle}</h3>
-                <div className="text-sm text-slate-600 leading-relaxed mb-4">
+                <h3 className="text-lg font-bold text-slate-800 dark:text-slate-100 mb-2">{config.insights.memoTitle}</h3>
+                <div className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed mb-4">
                   {config.insights.memoBody({ totalNodes, uniqueCount: n + 1 })}
                 </div>
               </div>
@@ -623,19 +623,19 @@ export default function TreeLesson({ config, nextProblemLabel, onNextProblem, sa
       {stage === "challenge" && (
         <div className="flex flex-col gap-6 animate-fade-in-up">
           {!challengePassed && (
-            <div className="bg-gradient-to-br from-blue-50 to-slate-50 border border-blue-200 rounded-2xl p-6">
+            <div className="bg-gradient-to-br from-blue-50 to-slate-50 dark:from-blue-950/30 dark:to-slate-900 border border-blue-200 dark:border-blue-800 rounded-2xl p-6">
               <div className="flex items-center gap-3 mb-1">
                 <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
                   <svg className="w-4 h-4 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M17.25 6.75L22.5 12l-5.25 5.25m-10.5 0L1.5 12l5.25-5.25m7.5-3l-4.5 16.5" />
                   </svg>
                 </div>
-                <h3 className="text-lg font-bold text-slate-800">Your turn</h3>
+                <h3 className="text-lg font-bold text-slate-800 dark:text-slate-100">Your turn</h3>
               </div>
-              <p className="text-sm text-slate-500">
+              <p className="text-sm text-slate-500 dark:text-slate-400">
                 You've seen how it works visually. Now implement it — use memoization or bottom-up DP.
                 <br />
-                <span className="text-slate-400 text-xs">The last test case is large enough that brute force will timeout.</span>
+                <span className="text-slate-400 dark:text-slate-500 text-xs">The last test case is large enough that brute force will timeout.</span>
               </p>
             </div>
           )}
@@ -676,16 +676,16 @@ export default function TreeLesson({ config, nextProblemLabel, onNextProblem, sa
 
           {challengePassed && (
             <div className="animate-fade-in-up">
-              <div className="bg-gradient-to-br from-emerald-50 to-teal-50/50 border border-emerald-200 rounded-2xl p-8 text-center">
+              <div className="bg-gradient-to-br from-emerald-50 to-teal-50/50 dark:from-emerald-950/30 dark:to-teal-950/20 border border-emerald-200 dark:border-emerald-800 rounded-2xl p-8 text-center">
                 <div className="w-16 h-16 bg-emerald-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
                   <svg className="w-8 h-8 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                   </svg>
                 </div>
-                <h3 className="text-lg font-bold text-slate-800 mb-1">
+                <h3 className="text-lg font-bold text-slate-800 dark:text-slate-100 mb-1">
                   {config.title} — complete!
                 </h3>
-                <p className="text-sm text-slate-500 mb-6">
+                <p className="text-sm text-slate-500 dark:text-slate-400 mb-6">
                   {nextProblemLabel
                     ? `You've got the pattern. Ready for ${nextProblemLabel}?`
                     : "You've completed all the problems. You're interview-ready for DP!"

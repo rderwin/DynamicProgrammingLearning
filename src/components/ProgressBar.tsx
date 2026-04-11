@@ -18,7 +18,7 @@ export default function ProgressBar({ data }: Props) {
   ).slice(-3);
 
   return (
-    <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-sm">
+    <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl p-4 shadow-sm dark:shadow-slate-900/50">
       <div className="flex items-center gap-4">
         {/* Level badge */}
         <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${level.gradient} flex items-center justify-center shadow-sm flex-shrink-0`}>
@@ -30,10 +30,10 @@ export default function ProgressBar({ data }: Props) {
           <div className="flex items-center gap-2 mb-1">
             <span className={`text-sm font-bold ${level.color}`}>{level.name}</span>
             {nextLevel && (
-              <span className="text-[10px] text-slate-400">→ {nextLevel.name} at {nextLevel.minXP} XP</span>
+              <span className="text-[10px] text-slate-400 dark:text-slate-500">→ {nextLevel.name} at {nextLevel.minXP} XP</span>
             )}
           </div>
-          <div className="w-full bg-slate-100 rounded-full h-2 overflow-hidden">
+          <div className="w-full bg-slate-100 dark:bg-slate-800 rounded-full h-2 overflow-hidden">
             <div
               className={`h-full rounded-full transition-all duration-700 ease-out bg-gradient-to-r ${level.gradient}`}
               style={{ width: `${progress}%` }}
@@ -47,7 +47,7 @@ export default function ProgressBar({ data }: Props) {
           {streak > 0 && (
             <div className="text-center">
               <div className="text-lg font-bold text-orange-500">{streak}</div>
-              <div className="text-[9px] text-slate-400">day streak</div>
+              <div className="text-[9px] text-slate-400 dark:text-slate-500">day streak</div>
             </div>
           )}
           {/* Achievements */}
@@ -60,11 +60,11 @@ export default function ProgressBar({ data }: Props) {
 
       {/* Recent achievements */}
       {recentAchievements.length > 0 && (
-        <div className="flex gap-2 mt-3 pt-3 border-t border-slate-100">
+        <div className="flex gap-2 mt-3 pt-3 border-t border-slate-100 dark:border-slate-800">
           {recentAchievements.map((a) => (
-            <div key={a.id} className="flex items-center gap-1.5 bg-slate-50 rounded-lg px-2.5 py-1 text-[10px]">
+            <div key={a.id} className="flex items-center gap-1.5 bg-slate-50 dark:bg-slate-800 rounded-lg px-2.5 py-1 text-[10px]">
               <span>{a.icon}</span>
-              <span className="font-medium text-slate-600">{a.title}</span>
+              <span className="font-medium text-slate-600 dark:text-slate-400">{a.title}</span>
             </div>
           ))}
         </div>

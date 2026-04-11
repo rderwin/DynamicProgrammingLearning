@@ -16,13 +16,13 @@ export default function CompletionScreen({ content: c, onPractice, onHome }: Pro
             <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
           </svg>
         </div>
-        <h2 className="text-2xl font-bold text-slate-900 mb-1">{c.title}</h2>
-        <p className="text-slate-500">{c.subtitle}</p>
+        <h2 className="text-2xl font-bold text-slate-900 dark:text-slate-100 mb-1">{c.title}</h2>
+        <p className="text-slate-500 dark:text-slate-400">{c.subtitle}</p>
       </div>
 
       {/* Pattern summary */}
-      <div className="bg-white border border-slate-200 rounded-xl p-6 shadow-sm mb-6 animate-fade-in-up">
-        <h3 className="text-sm font-bold text-slate-800 mb-4">Patterns you've learned</h3>
+      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl p-6 shadow-sm dark:shadow-slate-900/50 mb-6 animate-fade-in-up">
+        <h3 className="text-sm font-bold text-slate-800 dark:text-slate-100 mb-4">Patterns you've learned</h3>
         <div className="space-y-3">
           {c.patterns.map((p) => (
             <div key={p.name} className="flex items-start gap-3">
@@ -30,9 +30,9 @@ export default function CompletionScreen({ content: c, onPractice, onHome }: Pro
                 {p.name[0]}
               </span>
               <div>
-                <p className="text-sm font-semibold text-slate-700">{p.name}</p>
-                <p className="text-xs text-slate-400">{p.problems}</p>
-                <code className="text-[11px] text-slate-500 bg-slate-50 px-1.5 py-0.5 rounded mt-1 inline-block">{p.recurrence}</code>
+                <p className="text-sm font-semibold text-slate-700 dark:text-slate-300">{p.name}</p>
+                <p className="text-xs text-slate-400 dark:text-slate-500">{p.problems}</p>
+                <code className="text-[11px] text-slate-500 dark:text-slate-400 bg-slate-50 dark:bg-slate-800 px-1.5 py-0.5 rounded mt-1 inline-block">{p.recurrence}</code>
               </div>
             </div>
           ))}
@@ -40,11 +40,11 @@ export default function CompletionScreen({ content: c, onPractice, onHome }: Pro
       </div>
 
       {/* Recognition tips */}
-      <div className="bg-amber-50 border border-amber-200 rounded-xl p-6 mb-6 animate-fade-in-up delay-100">
-        <h3 className="text-sm font-bold text-amber-800 mb-3">How to recognize these in interviews</h3>
+      <div className="bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800 rounded-xl p-6 mb-6 animate-fade-in-up delay-100">
+        <h3 className="text-sm font-bold text-amber-800 dark:text-amber-300 mb-3">How to recognize these in interviews</h3>
         <ul className="space-y-2">
           {c.recognition.map((tip, i) => (
-            <li key={i} className="flex items-start gap-2 text-sm text-amber-700">
+            <li key={i} className="flex items-start gap-2 text-sm text-amber-700 dark:text-amber-400">
               <span className="text-amber-400 mt-1">•</span>
               <span>{tip}</span>
             </li>
@@ -65,7 +65,7 @@ export default function CompletionScreen({ content: c, onPractice, onHome }: Pro
         </button>
         <button
           onClick={onHome}
-          className="inline-flex items-center justify-center gap-2 bg-slate-100 text-slate-600 px-6 py-3 rounded-xl text-sm font-semibold hover:bg-slate-200 transition-all duration-200"
+          className="inline-flex items-center justify-center gap-2 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 px-6 py-3 rounded-xl text-sm font-semibold hover:bg-slate-200 dark:hover:bg-slate-700 transition-all duration-200"
         >
           Back to all modules
         </button>

@@ -26,7 +26,7 @@ export default function PracticeProblemView({ problem: p, onBack, onComplete, is
       {/* Back button */}
       <button
         onClick={onBack}
-        className="flex items-center gap-1.5 text-sm text-slate-400 hover:text-slate-600 transition-colors mb-6"
+        className="flex items-center gap-1.5 text-sm text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300 transition-colors mb-6"
       >
         <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
           <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
@@ -35,9 +35,9 @@ export default function PracticeProblemView({ problem: p, onBack, onComplete, is
       </button>
 
       {/* Problem description */}
-      <div className="bg-white border border-slate-200 rounded-xl p-6 shadow-sm mb-6">
+      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl p-6 shadow-sm dark:shadow-slate-900/50 mb-6">
         <div className="flex items-center gap-2 mb-3">
-          <h2 className="text-xl font-bold text-slate-900">{p.title}</h2>
+          <h2 className="text-xl font-bold text-slate-900 dark:text-slate-100">{p.title}</h2>
           <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${difficultyColors[p.difficulty]}`}>
             {p.difficulty}
           </span>
@@ -51,13 +51,13 @@ export default function PracticeProblemView({ problem: p, onBack, onComplete, is
           )}
         </div>
 
-        <p className="text-sm text-slate-600 leading-relaxed mb-4">{p.description}</p>
+        <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed mb-4">{p.description}</p>
 
         {/* Examples */}
         <div className="space-y-2 mb-4">
           {p.examples.map((ex, i) => (
-            <div key={i} className="bg-slate-50 rounded-lg px-4 py-2.5">
-              <code className="text-xs font-mono text-slate-700">{ex}</code>
+            <div key={i} className="bg-slate-50 dark:bg-slate-800 rounded-lg px-4 py-2.5">
+              <code className="text-xs font-mono text-slate-700 dark:text-slate-300">{ex}</code>
             </div>
           ))}
         </div>
@@ -65,7 +65,7 @@ export default function PracticeProblemView({ problem: p, onBack, onComplete, is
         {/* Constraints */}
         <div className="flex flex-wrap gap-2">
           {p.constraints.map((c, i) => (
-            <span key={i} className="text-[11px] text-slate-400 bg-slate-50 px-2.5 py-1 rounded-md font-mono">
+            <span key={i} className="text-[11px] text-slate-400 dark:text-slate-500 bg-slate-50 dark:bg-slate-800 px-2.5 py-1 rounded-md font-mono">
               {c}
             </span>
           ))}
@@ -73,9 +73,9 @@ export default function PracticeProblemView({ problem: p, onBack, onComplete, is
 
         {/* Complexity (shown after solving) */}
         {passed && (
-          <div className="mt-4 pt-4 border-t border-slate-100 flex gap-4 text-xs text-slate-500 animate-fade-in">
-            <span>Time: <strong className="text-slate-700">{p.timeComplexity}</strong></span>
-            <span>Space: <strong className="text-slate-700">{p.spaceComplexity}</strong></span>
+          <div className="mt-4 pt-4 border-t border-slate-100 dark:border-slate-800 flex gap-4 text-xs text-slate-500 dark:text-slate-400 animate-fade-in">
+            <span>Time: <strong className="text-slate-700 dark:text-slate-300">{p.timeComplexity}</strong></span>
+            <span>Space: <strong className="text-slate-700 dark:text-slate-300">{p.spaceComplexity}</strong></span>
           </div>
         )}
       </div>
