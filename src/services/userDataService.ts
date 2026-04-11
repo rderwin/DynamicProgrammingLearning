@@ -1,6 +1,7 @@
 import { doc, getDoc, setDoc } from "firebase/firestore";
 import { db } from "../firebase";
 import type { ModuleId } from "../modules/types";
+import { type GamificationData, DEFAULT_GAMIFICATION } from "../engine/gamification";
 
 // ─── Data shape stored per user ───
 
@@ -18,6 +19,7 @@ export interface ModuleProgress {
 
 export interface UserData {
   modules: Partial<Record<ModuleId, ModuleProgress>>;
+  gamification: GamificationData;
 }
 
 const DEFAULT_MODULE: ModuleProgress = {
@@ -28,6 +30,7 @@ const DEFAULT_MODULE: ModuleProgress = {
 
 const DEFAULT_DATA: UserData = {
   modules: {},
+  gamification: { ...DEFAULT_GAMIFICATION },
 };
 
 // ─── Migration from old flat format ───
@@ -35,7 +38,9 @@ const DEFAULT_DATA: UserData = {
 function migrateUserData(raw: Record<string, unknown>): UserData {
   // New format: has `modules` key
   if (raw.modules && typeof raw.modules === "object") {
-    return raw as unknown as UserData;
+    const data = raw as unknown as UserData;
+    if (!data.gamification) data.gamification = { ...DEFAULT_GAMIFICATION };
+    return data;
   }
   // Old format: flat lessonProgress/practiceCompleted at top level
   if (raw.lessonProgress || raw.practiceCompleted || raw.practiceCode) {

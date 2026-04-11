@@ -199,3 +199,28 @@
 ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
 
 ::selection { background: rgba(59, 130, 246, 0.2); }
+
+/* ===== Confetti ===== */
+
+@keyframes confettiFall {
+  0% { transform: translateY(0) rotate(0deg); opacity: 1; }
+  100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
+}
+
+.confetti-particle {
+  animation: confettiFall 2s cubic-bezier(0.25, 0.46, 0.45, 0.94) both;
+}
+
+/* ===== Achievement unlock toast ===== */
+
+@keyframes achievementSlide {
+  0% { transform: translateY(100%) scale(0.9); opacity: 0; }
+  15% { transform: translateY(0) scale(1.02); opacity: 1; }
+  20% { transform: translateY(0) scale(1); opacity: 1; }
+  85% { transform: translateY(0) scale(1); opacity: 1; }
+  100% { transform: translateY(100%) scale(0.9); opacity: 0; }
+}
+
+.achievement-toast {
+  animation: achievementSlide 3s ease-in-out both;
+}
