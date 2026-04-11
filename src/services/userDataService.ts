@@ -52,6 +52,7 @@ function migrateUserData(raw: Record<string, unknown>): UserData {
           practiceCode: (raw.practiceCode as Record<string, { js: string; py: string }>) || {},
         },
       },
+      gamification: { ...DEFAULT_GAMIFICATION },
     };
   }
   return { ...DEFAULT_DATA };
@@ -144,7 +145,7 @@ export function loadLocalData(): UserData {
     const veryOldKey = localStorage.getItem("dp-practice-completed");
     if (veryOldKey) {
       const completed = JSON.parse(veryOldKey) as string[];
-      return { modules: { dp: { ...DEFAULT_MODULE, practiceCompleted: completed } } };
+      return { modules: { dp: { ...DEFAULT_MODULE, practiceCompleted: completed } }, gamification: { ...DEFAULT_GAMIFICATION } };
     }
   } catch {}
   return { ...DEFAULT_DATA };

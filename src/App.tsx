@@ -7,9 +7,22 @@ import PracticeHub from "./components/PracticeHub";
 import PracticeProblemView from "./components/PracticeProblemView";
 import AccountPage from "./components/AccountPage";
 import ComingSoonScreen from "./components/ComingSoonScreen";
+import ProgressBar from "./components/ProgressBar";
+import Confetti from "./components/Confetti";
+import AchievementToast from "./components/AchievementToast";
 import { modules as allModuleConfigs } from "./modules/registry";
 import { dpModule } from "./modules/dp";
 import type { ModuleId, ModuleExport, ProblemEntry } from "./modules/types";
+import {
+  XP_REWARDS,
+  ACHIEVEMENTS,
+  addXP,
+  unlockAchievement,
+  recordActivity,
+  calculateStreak,
+  getLevel,
+  type Achievement,
+} from "./engine/gamification";
 import {
   loadUserData,
   debouncedSave,
@@ -44,13 +57,15 @@ type AppView =
   | { screen: "practice-problem"; moduleId: ModuleId; problemId: string }
   | { screen: "account" };
 
-const DEFAULT_DATA: UserData = { modules: {} };
+const DEFAULT_DATA: UserData = { modules: {}, gamification: { xp: 0, achievementsUnlocked: [], activityDates: [] } };
 
 function AppInner() {
   const { user, loading, signIn } = useAuth();
   const [view, setView] = useState<AppView>({ screen: "home" });
   const [userData, setUserData] = useState<UserData>(DEFAULT_DATA);
   const [dataLoaded, setDataLoaded] = useState(false);
+  const [showConfetti, setShowConfetti] = useState(false);
+  const [toastAchievement, setToastAchievement] = useState<Achievement | null>(null);
 
   // Load data on auth change
   useEffect(() => {
@@ -83,6 +98,58 @@ function AppInner() {
     return () => window.removeEventListener("beforeunload", handleUnload);
   }, []);
 
+  // ─── Gamification helpers ───
+
+  const awardXP = useCallback(
+    (amount: number) => {
+      setUserData((prev) => {
+        const oldLevel = getLevel(prev.gamification.xp);
+        let gam = addXP(prev.gamification, amount);
+        gam = recordActivity(gam);
+        const newLevel = getLevel(gam.xp);
+
+        if (newLevel.name !== oldLevel.name) {
+          setShowConfetti(true);
+          setTimeout(() => setShowConfetti(false), 3000);
+        }
+
+        const streak = calculateStreak(gam.activityDates);
+        if (streak >= 3 && !gam.achievementsUnlocked.includes("streak-3")) gam = unlockAchievement(gam, "streak-3");
+        if (streak >= 7 && !gam.achievementsUnlocked.includes("streak-7")) gam = unlockAchievement(gam, "streak-7");
+        if (streak >= 14 && !gam.achievementsUnlocked.includes("streak-14")) gam = unlockAchievement(gam, "streak-14");
+
+        if (gam.xp >= 350 && !gam.achievementsUnlocked.includes("level-intermediate")) gam = unlockAchievement(gam, "level-intermediate");
+        if (gam.xp >= 1000 && !gam.achievementsUnlocked.includes("level-expert")) gam = unlockAchievement(gam, "level-expert");
+        if (gam.xp >= 1500 && !gam.achievementsUnlocked.includes("level-master")) gam = unlockAchievement(gam, "level-master");
+
+        const next = { ...prev, gamification: gam };
+        persist(next);
+        return next;
+      });
+    },
+    [persist]
+  );
+
+  const tryUnlockAchievement = useCallback(
+    (id: string) => {
+      setUserData((prev) => {
+        if (prev.gamification.achievementsUnlocked.includes(id)) return prev;
+        const gam = unlockAchievement(prev.gamification, id);
+        const achievement = ACHIEVEMENTS.find((a) => a.id === id);
+        if (achievement) {
+          setToastAchievement(achievement);
+          setTimeout(() => setToastAchievement(null), 3500);
+          setShowConfetti(true);
+          setTimeout(() => setShowConfetti(false), 3000);
+        }
+        const next = { ...prev, gamification: gam };
+        persist(next);
+        return next;
+      });
+    },
+    [persist]
+  );
+
   // ─── Data helpers ───
 
   const activeModuleId = "moduleId" in view ? view.moduleId : null;
@@ -99,12 +166,39 @@ function AppInner() {
         persist(next);
         return next;
       });
+
+      // Award XP for stage advancement
+      if (update.stage) {
+        awardXP(XP_REWARDS.lessonStageComplete);
+        tryUnlockAchievement("first-lesson");
+      }
+      if (update.challengePassed) {
+        awardXP(XP_REWARDS.lessonChallengePassed);
+        tryUnlockAchievement("first-solve");
+
+        // Check if all lessons in module are complete
+        const mod = getModuleExport(moduleId);
+        if (mod) {
+          const progress = getModuleProgress(userData, moduleId);
+          const allDone = mod.problems.every((p) =>
+            p.id === problemId ? true : progress.lessonProgress[p.id]?.challengePassed
+          );
+          if (allDone) tryUnlockAchievement("module-complete");
+        }
+      }
     },
-    [persist]
+    [persist, awardXP, tryUnlockAchievement, userData]
   );
 
   const markPracticeComplete = useCallback(
     (moduleId: ModuleId, id: string) => {
+      // Find difficulty for XP
+      const mod = getModuleExport(moduleId);
+      const problem = mod?.practice.find((p) => p.id === id);
+      const xp = problem?.difficulty === "Hard" ? XP_REWARDS.practiceHard
+        : problem?.difficulty === "Medium" ? XP_REWARDS.practiceMedium
+        : XP_REWARDS.practiceEasy;
+
       setUserData((prev) => {
         const modProgress = getModuleProgress(prev, moduleId);
         if (modProgress.practiceCompleted.includes(id)) return prev;
@@ -112,8 +206,23 @@ function AppInner() {
         persist(next);
         return next;
       });
+
+      awardXP(xp);
+      tryUnlockAchievement("first-practice");
+
+      // Check completion achievements
+      if (mod) {
+        const progress = getModuleProgress(userData, moduleId);
+        const newCompleted = [...progress.practiceCompleted, id];
+        const allEasy = mod.practice.filter((p) => p.difficulty === "Easy").every((p) => newCompleted.includes(p.id));
+        const allMedium = mod.practice.filter((p) => p.difficulty === "Medium").every((p) => newCompleted.includes(p.id));
+        const allDone = mod.practice.every((p) => newCompleted.includes(p.id));
+        if (allEasy) tryUnlockAchievement("all-practice-easy");
+        if (allMedium) tryUnlockAchievement("all-practice-medium");
+        if (allDone) tryUnlockAchievement("all-practice");
+      }
     },
-    [persist]
+    [persist, awardXP, tryUnlockAchievement, userData]
   );
 
   const savePracticeCode = useCallback(
@@ -130,7 +239,7 @@ function AppInner() {
   );
 
   const resetAllProgress = useCallback(() => {
-    const fresh = { ...DEFAULT_DATA };
+    const fresh = { ...DEFAULT_DATA, gamification: { xp: 0, achievementsUnlocked: [], activityDates: [] } };
     setUserData(fresh);
     persist(fresh);
     setView({ screen: "home" });
@@ -289,9 +398,19 @@ function AppInner() {
       </header>
 
       {/* Main content */}
+      {/* Confetti + Achievement Toast */}
+      {showConfetti && <Confetti />}
+      {toastAchievement && <AchievementToast achievement={toastAchievement} />}
+
       <main className="max-w-6xl mx-auto px-6 py-8">
         {/* Home / Module Picker */}
         {view.screen === "home" && (
+          <>
+          {userData.gamification.xp > 0 && (
+            <div className="mb-6">
+              <ProgressBar data={userData.gamification} />
+            </div>
+          )}
           <ModulePicker
             modules={allModuleConfigs}
             onSelectModule={(id) => {
@@ -305,6 +424,7 @@ function AppInner() {
             }}
             getProgress={getModulePickerProgress}
           />
+          </>
         )}
 
         {/* Module intro */}
