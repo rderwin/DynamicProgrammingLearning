@@ -29,7 +29,7 @@ export const practiceProblems: PracticeProblem[] = [
       { input: [[0]], expected: 0, label: "rob([0]) = 0" },
       { input: [[5, 1, 1, 5]], expected: 10, label: "rob([5,1,1,5]) = 10" },
       { input: [[1, 3, 1, 3, 100]], expected: 103, label: "rob([1,3,1,3,100]) = 103" },
-      { input: [LARGE_ROBBER], expected: 1275, label: "rob([100 houses]) — needs DP!" },
+      { input: [LARGE_ROBBER], expected: 1361, label: "rob([100 houses]) — needs DP!" },
     ],
     functionName: "rob",
     starterJS: `function rob(nums) {
@@ -90,7 +90,7 @@ export const practiceProblems: PracticeProblem[] = [
       { input: [[1, 100, 1, 1, 1, 100, 1, 1, 100, 1]], expected: 6, label: "minCost([1,100,...]) = 6" },
       { input: [[0, 0]], expected: 0, label: "minCost([0,0]) = 0" },
       { input: [[1, 2, 3]], expected: 2, label: "minCost([1,2,3]) = 2" },
-      { input: [LARGE_COST], expected: 4906, label: "minCost([200 steps]) — needs DP!" },
+      { input: [LARGE_COST], expected: 4368, label: "minCost([200 steps]) — needs DP!" },
     ],
     functionName: "minCost",
     starterJS: `function minCost(cost) {
@@ -147,7 +147,7 @@ export const practiceProblems: PracticeProblem[] = [
       { input: ["06"], expected: 0, label: 'numDecodings("06") = 0' },
       { input: ["10"], expected: 1, label: 'numDecodings("10") = 1' },
       { input: ["11106"], expected: 2, label: 'numDecodings("11106") = 2' },
-      { input: ["1" + "2".repeat(44)], expected: 1346269, label: 'numDecodings("1222...") — needs DP!' },
+      { input: ["1" + "2".repeat(44)], expected: 1836311903, label: 'numDecodings("1222...") — needs DP!' },
     ],
     functionName: "numDecodings",
     starterJS: `function numDecodings(s) {
@@ -210,7 +210,7 @@ export const practiceProblems: PracticeProblem[] = [
       { input: [[[0,1],[0,0]]], expected: 1, label: "2×2 with obstacle = 1" },
       { input: [[[1,0]]], expected: 0, label: "Start blocked = 0" },
       { input: [[[0,0],[0,0]]], expected: 2, label: "2×2 no obstacles = 2" },
-      { input: [Array.from({length:15}, (_,i) => Array.from({length:15}, (_,j) => (i===7&&j===7)?1:0))], expected: 38165260, label: "15×15 grid — needs DP!" },
+      { input: [Array.from({length:15}, (_,i) => Array.from({length:15}, (_,j) => (i===7&&j===7)?1:0))], expected: 28337976, label: "15×15 grid — needs DP!" },
     ],
     functionName: "uniquePaths",
     starterJS: `function uniquePaths(grid) {
@@ -272,7 +272,7 @@ export const practiceProblems: PracticeProblem[] = [
       { input: [3, [2]], expected: 0, label: "change(3, [2]) = 0" },
       { input: [0, [1, 2]], expected: 1, label: "change(0, [1,2]) = 1" },
       { input: [10, [10]], expected: 1, label: "change(10, [10]) = 1" },
-      { input: [500, [1, 2, 5, 10, 25]], expected: 90676, label: "change(500, [1,2,5,10,25]) — needs DP!" },
+      { input: [500, [1, 2, 5, 10, 25]], expected: 1231126, label: "change(500, [1,2,5,10,25]) — needs DP!" },
     ],
     functionName: "change",
     starterJS: `function change(amount, coins) {
@@ -328,7 +328,7 @@ export const practiceProblems: PracticeProblem[] = [
       { input: [[0, 1, 0, 3, 2, 3]], expected: 4, label: "LIS([0,1,0,3,2,3]) = 4" },
       { input: [[7, 7, 7, 7]], expected: 1, label: "LIS([7,7,7,7]) = 1" },
       { input: [[1]], expected: 1, label: "LIS([1]) = 1" },
-      { input: [Array.from({length:500}, (_,i) => (i*17+3)%200)], expected: 28, label: "LIS([500 elements]) — needs DP!" },
+      { input: [Array.from({length:500}, (_,i) => (i*17+3)%200)], expected: 43, label: "LIS([500 elements]) — needs DP!" },
     ],
     functionName: "lengthOfLIS",
     starterJS: `function lengthOfLIS(nums) {
@@ -443,7 +443,7 @@ export const practiceProblems: PracticeProblem[] = [
       { input: [[[1,2,3],[4,5,6]]], expected: 12, label: "minPathSum(2×3) = 12" },
       { input: [[[5]]], expected: 5, label: "minPathSum(1×1) = 5" },
       { input: [[[1,2],[1,1]]], expected: 3, label: "minPathSum(2×2) = 3" },
-      { input: [Array.from({length:50}, (_,i) => Array.from({length:50}, (_,j) => (i+j)%10))], expected: 221, label: "minPathSum(50×50) — needs DP!" },
+      { input: [Array.from({length:50}, (_,i) => Array.from({length:50}, (_,j) => (i+j)%10))], expected: 441, label: "minPathSum(50×50) — needs DP!" },
     ],
     functionName: "minPathSum",
     starterJS: `function minPathSum(grid) {
@@ -501,7 +501,7 @@ export const practiceProblems: PracticeProblem[] = [
       { input: [[1], 1], expected: 1, label: "targetSum([1], 1) = 1" },
       { input: [[1, 0], 1], expected: 2, label: "targetSum([1,0], 1) = 2" },
       { input: [[1, 2, 1], 0], expected: 2, label: "targetSum([1,2,1], 0) = 2" },
-      { input: [[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1], 4], expected: 38760, label: "targetSum([twenty 1s], 4) — needs DP!" },
+      { input: [[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1], 4], expected: 125970, label: "targetSum([twenty 1s], 4) — needs DP!" },
     ],
     functionName: "findTargetSumWays",
     starterJS: `function findTargetSumWays(nums, target) {
