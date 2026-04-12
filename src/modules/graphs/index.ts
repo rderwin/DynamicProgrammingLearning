@@ -1,12 +1,18 @@
 import type { ModuleExport, ProblemEntry } from "../types";
 import { modules } from "../registry";
 import { bfsConfig } from "./problems/configs/bfs";
+import { dfsConfig } from "./problems/configs/dfs";
+import { topoConfig } from "./problems/configs/topologicalSort";
+import { dijkstraConfig } from "./problems/configs/dijkstra";
+import { bfsToDfs, dfsToTopo, topoToDijkstra, graphCompletionContent } from "./content/transitions";
 import GraphLesson from "../../components/GraphLesson";
 import GraphIntroScreen from "./IntroScreen";
 
 const problems: ProblemEntry[] = [
-  { id: "bfs", label: "BFS", config: bfsConfig },
-  // DFS, Topo Sort, Dijkstra coming next
+  { id: "bfs", label: "BFS", config: bfsConfig, transitionAfter: { viewId: "t-bfs-dfs", content: bfsToDfs, nextView: "dfs" } },
+  { id: "dfs", label: "DFS", config: dfsConfig, transitionAfter: { viewId: "t-dfs-topo", content: dfsToTopo, nextView: "topo" } },
+  { id: "topo", label: "Topo Sort", config: topoConfig, transitionAfter: { viewId: "t-topo-dijkstra", content: topoToDijkstra, nextView: "dijkstra" } },
+  { id: "dijkstra", label: "Dijkstra", config: dijkstraConfig },
 ];
 
 export const graphsModule: ModuleExport = {
@@ -16,15 +22,5 @@ export const graphsModule: ModuleExport = {
   transitions: [],
   LessonComponent: GraphLesson,
   IntroScreen: GraphIntroScreen,
-  completionContent: {
-    title: "Graph Algorithms — Complete!",
-    subtitle: "You can navigate any graph now.",
-    patterns: [
-      { name: "BFS", problems: "Level-order traversal, shortest path", recurrence: "queue.push() / queue.shift()" },
-    ],
-    recognition: [
-      "Graph problems involve nodes and connections — adjacency lists, grids, matrices",
-      "BFS for shortest path in unweighted graphs or level-order processing",
-    ],
-  },
+  completionContent: graphCompletionContent,
 };
