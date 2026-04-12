@@ -206,6 +206,24 @@
   animation: labelFade 0.3s ease-out both;
 }
 
+/* ===== Graph Animations ===== */
+
+@keyframes edgeTraverse {
+  from { stroke-dashoffset: var(--edge-len, 100); opacity: 0.3; }
+  to { stroke-dashoffset: 0; opacity: 1; }
+}
+
+@keyframes nodeVisit {
+  0% { transform: scale(1); }
+  40% { transform: scale(1.2); }
+  100% { transform: scale(1); }
+}
+
+@keyframes distanceUpdate {
+  0% { opacity: 0; transform: scale(0.5) translateY(4px); }
+  100% { opacity: 1; transform: scale(1) translateY(0); }
+}
+
 /* ===== Intro Screen ===== */
 
 @keyframes gradientShift {
