@@ -8,26 +8,32 @@ interface Particle {
   size: number;
   rotation: number;
   delay: number;
+  drift: number;
+  spin: number;
+  shape: "rect" | "circle";
 }
 
-const COLORS = ["#3b82f6", "#8b5cf6", "#22c55e", "#f59e0b", "#ef4444", "#ec4899", "#06b6d4"];
+const COLORS = ["#3b82f6", "#8b5cf6", "#22c55e", "#f59e0b", "#ef4444", "#ec4899", "#06b6d4", "#f97316"];
 
-export default function Confetti({ duration = 2500 }: { duration?: number }) {
+export default function Confetti({ duration = 3000 }: { duration?: number }) {
   const [particles, setParticles] = useState<Particle[]>([]);
   const [visible, setVisible] = useState(true);
 
   useEffect(() => {
-    const count = 40;
+    const count = 50;
     const generated: Particle[] = [];
     for (let i = 0; i < count; i++) {
       generated.push({
         id: i,
-        x: 20 + Math.random() * 60, // % from left
-        y: -10 - Math.random() * 20, // start above viewport
+        x: Math.random() * 100,
+        y: -5 - Math.random() * 15,
         color: COLORS[Math.floor(Math.random() * COLORS.length)],
-        size: 6 + Math.random() * 8,
+        size: 6 + Math.random() * 6,
         rotation: Math.random() * 360,
-        delay: Math.random() * 400,
+        delay: Math.random() * 600,
+        drift: (Math.random() - 0.5) * 120,
+        spin: 360 + Math.random() * 720,
+        shape: Math.random() > 0.5 ? "rect" : "circle",
       });
     }
     setParticles(generated);
@@ -43,17 +49,20 @@ export default function Confetti({ duration = 2500 }: { duration?: number }) {
       {particles.map((p) => (
         <div
           key={p.id}
-          className="absolute confetti-particle"
+          className="absolute"
           style={{
             left: `${p.x}%`,
             top: `${p.y}%`,
             width: p.size,
-            height: p.size * 0.6,
+            height: p.shape === "circle" ? p.size : p.size * 0.5,
             backgroundColor: p.color,
-            borderRadius: "2px",
+            borderRadius: p.shape === "circle" ? "50%" : "2px",
             transform: `rotate(${p.rotation}deg)`,
-            animationDelay: `${p.delay}ms`,
-          }}
+            animation: `confettiFall ${1.8 + Math.random() * 0.8}s cubic-bezier(0.25, 0.46, 0.45, 0.94) ${p.delay}ms both`,
+            // @ts-ignore — CSS custom properties
+            "--confetti-drift": `${p.drift}px`,
+            "--confetti-spin": `${p.spin}deg`,
+          } as React.CSSProperties}
         />
       ))}
     </div>

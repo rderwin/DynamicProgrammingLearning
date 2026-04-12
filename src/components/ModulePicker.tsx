@@ -66,7 +66,7 @@ export default function ModulePicker({ modules, onSelectModule, getProgress }: P
               </div>
 
               {/* Title + tagline */}
-              <h3 className={`text-base font-bold mb-1 ${isAvailable ? "text-slate-900 dark:text-slate-100 group-hover:" + mod.color.text : "text-slate-400 dark:text-slate-500"} transition-colors`}>
+              <h3 className={`text-base font-bold mb-1 ${isAvailable ? `text-slate-900 dark:text-slate-100` : "text-slate-400 dark:text-slate-500"} transition-colors`}>
                 {mod.title}
               </h3>
               <p className={`text-xs mb-4 leading-relaxed ${isAvailable ? "text-slate-500 dark:text-slate-400" : "text-slate-400 dark:text-slate-500"}`}>

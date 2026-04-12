@@ -46,10 +46,28 @@
   to { opacity: 1; transform: scale(1); }
 }
 
+@keyframes fadeOut {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes pulseHint {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.4); }
+  50% { box-shadow: 0 0 0 6px rgba(245, 158, 11, 0); }
+}
+
 .animate-fade-in-up { animation: fadeInUp 0.4s ease-out both; }
 .animate-fade-in { animation: fadeIn 0.3s ease-out both; }
+.animate-fade-out { animation: fadeOut 0.3s ease-out both; }
 .animate-slide-down { animation: slideDown 0.3s ease-out both; }
+.animate-slide-up { animation: slideUp 0.3s ease-out both; }
 .animate-scale-in { animation: scaleIn 0.3s ease-out both; }
+.animate-pulse-hint { animation: pulseHint 2s ease-in-out infinite; }
 
 .delay-100 { animation-delay: 100ms; }
 .delay-200 { animation-delay: 200ms; }
@@ -221,12 +239,9 @@
 /* ===== Confetti ===== */
 
 @keyframes confettiFall {
-  0% { transform: translateY(0) rotate(0deg); opacity: 1; }
-  100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
-}
-
-.confetti-particle {
-  animation: confettiFall 2s cubic-bezier(0.25, 0.46, 0.45, 0.94) both;
+  0% { transform: translateY(0) translateX(0) rotate(0deg); opacity: 1; }
+  75% { opacity: 1; }
+  100% { transform: translateY(100vh) translateX(var(--confetti-drift, 0px)) rotate(var(--confetti-spin, 720deg)); opacity: 0; }
 }
 
 /* ===== Achievement unlock toast ===== */

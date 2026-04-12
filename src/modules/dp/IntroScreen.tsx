@@ -7,12 +7,12 @@ export default function IntroScreen({ onStart }: Props) {
     <div className="min-h-[80vh] flex flex-col items-center justify-center text-center px-6 max-w-3xl mx-auto">
       {/* Hero */}
       <div className="animate-fade-in-up">
-        <div className="inline-flex items-center gap-2 bg-blue-50 text-blue-700 text-sm font-medium px-4 py-1.5 rounded-full mb-8">
+        <div className="inline-flex items-center gap-2 bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 text-sm font-medium px-4 py-1.5 rounded-full mb-8">
           <span className="w-2 h-2 rounded-full bg-blue-500 animate-pulse" />
           Interactive visual learning
         </div>
 
-        <h1 className="text-5xl sm:text-6xl font-extrabold text-slate-900 tracking-tight leading-tight mb-6">
+        <h1 className="text-5xl sm:text-6xl font-extrabold text-slate-900 dark:text-slate-100 tracking-tight leading-tight mb-6">
           Dynamic Programming
           <br />
           <span className="bg-gradient-to-r from-blue-600 via-violet-600 to-blue-600 bg-clip-text text-transparent gradient-animate">
@@ -20,7 +20,7 @@ export default function IntroScreen({ onStart }: Props) {
           </span>
         </h1>
 
-        <p className="text-xl text-slate-500 leading-relaxed max-w-2xl mx-auto mb-12">
+        <p className="text-xl text-slate-500 dark:text-slate-400 leading-relaxed max-w-2xl mx-auto mb-12">
           Seriously. It's just remembering answers you already figured out.
           <br />
           We'll prove it to you — visually, step by step.
@@ -47,8 +47,8 @@ export default function IntroScreen({ onStart }: Props) {
       </div>
 
       {/* How it works */}
-      <div className="w-full bg-slate-50 rounded-2xl border border-slate-200 p-8 mb-12 text-left animate-fade-in-up delay-300">
-        <h2 className="text-lg font-bold text-slate-800 mb-4">How this works</h2>
+      <div className="w-full bg-slate-50 dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-700 p-8 mb-12 text-left animate-fade-in-up delay-300">
+        <h2 className="text-lg font-bold text-slate-800 dark:text-slate-100 mb-4">How this works</h2>
         <div className="grid sm:grid-cols-4 gap-4">
           <Step num={1} title="See brute force" desc="Watch the recursion tree grow and spot the wasted work yourself" />
           <Step num={2} title="Turn on memoization" desc="One click — watch branches vanish and a table fill up in real time" />
@@ -59,7 +59,7 @@ export default function IntroScreen({ onStart }: Props) {
 
       {/* Problem roadmap */}
       <div className="w-full mb-12 animate-fade-in-up delay-400">
-        <h2 className="text-lg font-bold text-slate-800 mb-4">The roadmap</h2>
+        <h2 className="text-lg font-bold text-slate-800 dark:text-slate-100 mb-4">The roadmap</h2>
         <div className="flex items-center justify-center gap-2 flex-wrap">
           <RoadmapItem label="Fibonacci" active />
           <Arrow />
@@ -71,7 +71,7 @@ export default function IntroScreen({ onStart }: Props) {
           <Arrow />
           <RoadmapItem label="Knapsack" />
         </div>
-        <p className="text-sm text-slate-400 mt-3">
+        <p className="text-sm text-slate-400 dark:text-slate-500 mt-3">
           Each problem builds on the same core pattern but adds complexity.
         </p>
       </div>
@@ -79,7 +79,7 @@ export default function IntroScreen({ onStart }: Props) {
       {/* CTA */}
       <button
         onClick={onStart}
-        className="animate-fade-in-up delay-500 group relative inline-flex items-center gap-3 bg-slate-900 text-white px-8 py-4 rounded-2xl text-lg font-semibold hover:bg-slate-800 transition-all duration-200 shadow-lg shadow-slate-900/20 hover:shadow-xl hover:shadow-slate-900/25 hover:-translate-y-0.5 active:translate-y-0"
+        className="animate-fade-in-up delay-500 group relative inline-flex items-center gap-3 bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 px-8 py-4 rounded-2xl text-lg font-semibold hover:bg-slate-800 dark:hover:bg-white transition-all duration-200 shadow-lg shadow-slate-900/20 dark:shadow-black/20 hover:shadow-xl hover:-translate-y-0.5 active:translate-y-0"
       >
         Start with Fibonacci
         <svg className="w-5 h-5 transition-transform group-hover:translate-x-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
@@ -110,10 +110,10 @@ function MythCard({ myth, reality, icon }: { myth: string; reality: string; icon
   };
 
   return (
-    <div className="bg-white rounded-xl border border-slate-200 p-5 text-left hover:border-slate-300 hover:shadow-sm transition-all duration-200">
-      <div className="text-slate-400 mb-3">{icons[icon]}</div>
-      <p className="text-sm text-slate-400 line-through decoration-slate-300 mb-2">{myth}</p>
-      <p className="text-sm text-slate-700 font-medium leading-snug">{reality}</p>
+    <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 p-5 text-left hover:border-slate-300 dark:hover:border-slate-600 hover:shadow-sm transition-all duration-200">
+      <div className="text-slate-400 dark:text-slate-500 mb-3">{icons[icon]}</div>
+      <p className="text-sm text-slate-400 dark:text-slate-500 line-through decoration-slate-300 dark:decoration-slate-600 mb-2">{myth}</p>
+      <p className="text-sm text-slate-700 dark:text-slate-300 font-medium leading-snug">{reality}</p>
     </div>
   );
 }
@@ -121,11 +121,11 @@ function MythCard({ myth, reality, icon }: { myth: string; reality: string; icon
 function Step({ num, title, desc }: { num: number; title: string; desc: string }) {
   return (
     <div className="flex flex-col gap-2">
-      <div className="w-8 h-8 rounded-full bg-slate-900 text-white flex items-center justify-center text-sm font-bold">
+      <div className="w-8 h-8 rounded-full bg-slate-900 dark:bg-slate-200 text-white dark:text-slate-900 flex items-center justify-center text-sm font-bold">
         {num}
       </div>
-      <h3 className="text-sm font-semibold text-slate-800">{title}</h3>
-      <p className="text-xs text-slate-500 leading-relaxed">{desc}</p>
+      <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-200">{title}</h3>
+      <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">{desc}</p>
     </div>
   );
 }
@@ -135,8 +135,8 @@ function RoadmapItem({ label, active = false }: { label: string; active?: boolea
     <span
       className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
         active
-          ? "bg-blue-100 text-blue-800 ring-2 ring-blue-500/20"
-          : "bg-slate-100 text-slate-400"
+          ? "bg-blue-100 dark:bg-blue-900/40 text-blue-800 dark:text-blue-300 ring-2 ring-blue-500/20"
+          : "bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-500"
       }`}
     >
       {label}
@@ -146,7 +146,7 @@ function RoadmapItem({ label, active = false }: { label: string; active?: boolea
 
 function Arrow() {
   return (
-    <svg className="w-4 h-4 text-slate-300 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+    <svg className="w-4 h-4 text-slate-300 dark:text-slate-600 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
       <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
     </svg>
   );
