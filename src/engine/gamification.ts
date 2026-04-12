@@ -88,12 +88,16 @@ export const ACHIEVEMENTS: Achievement[] = [
 
 // ─── Streak ───
 
+function localDateString(date = new Date()): string {
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
+}
+
 export function calculateStreak(activityDates: string[]): number {
   if (activityDates.length === 0) return 0;
 
   const sorted = [...new Set(activityDates)].sort().reverse();
-  const today = new Date().toISOString().slice(0, 10);
-  const yesterday = new Date(Date.now() - 86400000).toISOString().slice(0, 10);
+  const today = localDateString();
+  const yesterday = localDateString(new Date(Date.now() - 86400000));
 
   // Streak must include today or yesterday
   if (sorted[0] !== today && sorted[0] !== yesterday) return 0;
@@ -127,7 +131,7 @@ export const DEFAULT_GAMIFICATION: GamificationData = {
 };
 
 export function recordActivity(data: GamificationData): GamificationData {
-  const today = new Date().toISOString().slice(0, 10);
+  const today = localDateString();
   if (data.activityDates.includes(today)) return data;
   return { ...data, activityDates: [...data.activityDates, today] };
 }

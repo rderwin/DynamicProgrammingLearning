@@ -106,9 +106,10 @@ interface LessonProps {
 }
 
 export default function TreeLesson({ config, nextProblemLabel, onNextProblem, savedProgress, onProgressChange }: LessonProps) {
-  // Restore from saved progress if available
-  const initialStage = (savedProgress?.stage as Stage) || "intro";
-  const initialMaxReached = STAGE_ORDER.indexOf(initialStage) >= 0 ? STAGE_ORDER.indexOf(initialStage) : 0;
+  // Restore from saved progress if available (validate stage name)
+  const rawStage = savedProgress?.stage as string | undefined;
+  const initialStage: Stage = rawStage && STAGE_ORDER.includes(rawStage as Stage) ? (rawStage as Stage) : "intro";
+  const initialMaxReached = STAGE_ORDER.indexOf(initialStage);
 
   const [n, setN] = useState(config.nDefault);
   const [stage, setStage] = useState<Stage>(initialStage);

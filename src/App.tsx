@@ -99,6 +99,11 @@ function AppInner() {
     return () => window.removeEventListener("beforeunload", handleUnload);
   }, []);
 
+  // Flush pending saves when user signs out
+  useEffect(() => {
+    if (!user && dataLoaded) flushPendingSave();
+  }, [user, dataLoaded]);
+
   // ─── Gamification helpers ───
 
   const awardXP = useCallback(
@@ -277,11 +282,28 @@ function AppInner() {
     ? currentProblems.find((p) => p.transitionAfter?.viewId === view.transitionId)?.transitionAfter
     : null;
 
+  // Guard: redirect invalid problem/transition/practice IDs to module intro
+  useEffect(() => {
+    if (view.screen === "lesson" && activeModuleId && currentProblemIdx === -1 && currentProblems.length > 0) {
+      nav.lesson(activeModuleId, currentProblems[0].id);
+    }
+    if (view.screen === "transition" && activeModuleId && !currentTransition) {
+      nav.moduleIntro(activeModuleId);
+    }
+  }, [view, activeModuleId, currentProblemIdx, currentTransition, currentProblems]);
+
   const modProgress = activeModuleId ? getModuleProgress(userData, activeModuleId) : null;
   const practiceProblemId = view.screen === "practice-problem" ? view.problemId : null;
   const practiceProblem = practiceProblemId && activeModuleExport
     ? activeModuleExport.practice.find((p) => p.id === practiceProblemId)
     : null;
+
+  // Guard: redirect invalid practice problem IDs
+  useEffect(() => {
+    if (view.screen === "practice-problem" && activeModuleId && !practiceProblem) {
+      nav.practice(activeModuleId);
+    }
+  }, [view, activeModuleId, practiceProblem]);
 
   function handleNextFromLesson() {
     if (!activeModuleId || !currentProblem) return;
