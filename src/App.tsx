@@ -13,6 +13,7 @@ import Confetti from "./components/Confetti";
 import AchievementToast from "./components/AchievementToast";
 import { modules as allModuleConfigs } from "./modules/registry";
 import { dpModule } from "./modules/dp";
+import { graphsModule } from "./modules/graphs";
 import type { ModuleId, ModuleExport, ProblemEntry } from "./modules/types";
 import {
   XP_REWARDS,
@@ -40,6 +41,7 @@ import {
 
 const moduleExports: Partial<Record<ModuleId, ModuleExport>> = {
   dp: dpModule,
+  graphs: graphsModule,
 };
 
 function getModuleExport(id: ModuleId): ModuleExport | null {

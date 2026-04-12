@@ -33,8 +33,8 @@ export const modules: ModuleConfig[] = [
       border: "border-emerald-200",
     },
     topics: ["BFS", "DFS", "Topological Sort", "Dijkstra's Algorithm"],
-    status: "coming-soon",
-    problemCount: 0,
+    status: "available",
+    problemCount: 4,
     practiceCount: 0,
   },
   {
