@@ -53,7 +53,7 @@ export default function PatternQuiz({ questions, onComplete, title = "Pattern Re
   }, [currentIdx, total, score, isCorrect, onComplete]);
 
   if (done) {
-    const finalScore = answers.reduce((s, a, i) => s + (a === questions[i].correctIndex ? 1 : 0), 0);
+    const finalScore = answers.reduce((s: number, a, i) => s + (a === questions[i].correctIndex ? 1 : 0), 0);
     const pct = Math.round((finalScore / total) * 100);
     return (
       <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-2xl p-8 text-center animate-fade-in">

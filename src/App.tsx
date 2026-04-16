@@ -8,6 +8,7 @@ import PracticeHub from "./components/PracticeHub";
 import PracticeProblemView from "./components/PracticeProblemView";
 import AccountPage from "./components/AccountPage";
 import ComingSoonScreen from "./components/ComingSoonScreen";
+import TrainingCenter from "./components/TrainingCenter";
 import ProgressBar from "./components/ProgressBar";
 import Confetti from "./components/Confetti";
 import AchievementToast from "./components/AchievementToast";
@@ -58,7 +59,8 @@ type AppView =
   | { screen: "module-complete"; moduleId: ModuleId }
   | { screen: "practice"; moduleId: ModuleId }
   | { screen: "practice-problem"; moduleId: ModuleId; problemId: string }
-  | { screen: "account" };
+  | { screen: "account" }
+  | { screen: "training" };
 
 const DEFAULT_DATA: UserData = { modules: {}, gamification: { xp: 0, achievementsUnlocked: [], activityDates: [] } };
 
@@ -264,6 +266,7 @@ function AppInner() {
     practice: (m: ModuleId) => setView({ screen: "practice", moduleId: m }),
     practiceProblem: (m: ModuleId, p: string) => setView({ screen: "practice-problem", moduleId: m, problemId: p }),
     account: () => setView({ screen: "account" }),
+    training: () => setView({ screen: "training" }),
   };
 
   // Get progress for module picker
@@ -330,7 +333,7 @@ function AppInner() {
     );
   }
 
-  const showModuleNav = activeModule && view.screen !== "home" && view.screen !== "account";
+  const showModuleNav = activeModule && view.screen !== "home" && view.screen !== "account" && view.screen !== "training";
 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950 font-sans">
@@ -452,6 +455,7 @@ function AppInner() {
               }
             }}
             getProgress={getModulePickerProgress}
+            onTraining={nav.training}
           />
           </>
         )}
@@ -526,6 +530,14 @@ function AppInner() {
             isCompleted={modProgress.practiceCompleted.includes(practiceProblem.id)}
             savedCode={modProgress.practiceCode[practiceProblem.id]}
             onCodeChange={(lang, code) => savePracticeCode(activeModuleId, practiceProblem.id, lang, code)}
+          />
+        )}
+
+        {/* Training Center */}
+        {view.screen === "training" && (
+          <TrainingCenter
+            onBack={nav.home}
+            onXP={awardXP}
           />
         )}
 

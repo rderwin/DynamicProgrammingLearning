@@ -4,9 +4,10 @@ interface Props {
   modules: ModuleConfig[];
   onSelectModule: (id: ModuleId) => void;
   getProgress: (id: ModuleId) => { lessons: number; practice: number };
+  onTraining?: () => void;
 }
 
-export default function ModulePicker({ modules, onSelectModule, getProgress }: Props) {
+export default function ModulePicker({ modules, onSelectModule, getProgress, onTraining }: Props) {
   return (
     <div className="max-w-4xl mx-auto animate-fade-in">
       {/* Hero */}
@@ -110,6 +111,29 @@ export default function ModulePicker({ modules, onSelectModule, getProgress }: P
           );
         })}
       </div>
+
+      {/* Training Center card */}
+      {onTraining && (
+        <div className="mt-8 animate-fade-in-up delay-300">
+          <button
+            onClick={onTraining}
+            className="w-full text-left bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-950/30 dark:to-orange-950/30 border border-amber-200 dark:border-amber-800 rounded-2xl p-6 hover:shadow-lg hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 group"
+          >
+            <div className="flex items-center gap-4">
+              <div className="w-12 h-12 bg-gradient-to-br from-amber-400 to-orange-600 rounded-xl flex items-center justify-center shadow-sm flex-shrink-0">
+                <span className="text-xl">⚡</span>
+              </div>
+              <div className="flex-1">
+                <h3 className="text-base font-bold text-slate-800 dark:text-slate-100 group-hover:text-amber-700 dark:group-hover:text-amber-400 transition-colors">Training Center</h3>
+                <p className="text-xs text-slate-500 dark:text-slate-400">Pattern recognition quizzes, bug hunts, and skill drills — earn XP</p>
+              </div>
+              <svg className="w-5 h-5 text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-300 transition-all group-hover:translate-x-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" />
+              </svg>
+            </div>
+          </button>
+        </div>
+      )}
     </div>
   );
 }
