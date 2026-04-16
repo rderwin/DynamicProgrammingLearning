@@ -4,6 +4,7 @@ import DataStructurePanel from "./DataStructurePanel";
 import GraphCodePanel from "./GraphCodePanel";
 import CodeEditor from "./CodeEditor";
 import Hints from "./Hints";
+import ExplainBack from "./ExplainBack";
 import type { AlgorithmStep } from "../modules/graphs/graphs/types";
 import type { GraphCodeLine } from "./GraphCodePanel";
 import type { TestCase } from "../engine/runCode";
@@ -394,6 +395,11 @@ export default function GraphLesson({ config, nextProblemLabel, onNextProblem, s
               </div>
             </div>
           </div>
+
+          <ExplainBack
+            prompt={`In your own words: how does ${config.algorithmName} work? What data structure does it use and why?`}
+            onSubmit={() => {}}
+          />
 
           <div className="text-center">
             <button

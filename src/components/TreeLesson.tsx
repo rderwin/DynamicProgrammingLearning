@@ -6,6 +6,7 @@ import CodeEditor from "./CodeEditor";
 import ComplexityChart from "./ComplexityChart";
 import SolutionReplay from "./SolutionReplay";
 import Hints from "./Hints";
+import ExplainBack from "./ExplainBack";
 import type { TestCase, Language } from "../engine/runCode";
 import { computeStatsRange } from "../engine/computeStats";
 
@@ -531,9 +532,13 @@ export default function TreeLesson({ config, nextProblemLabel, onNextProblem, sa
                     wastedPct: Math.round((duplicateCount / totalNodes) * 100),
                   })}
                 </div>
+                <ExplainBack
+                  prompt="In your own words: why does brute-force recursion have duplicate work? What would you do to fix it?"
+                  onSubmit={() => {}}
+                />
                 <button
                   onClick={goToMemoIntro}
-                  className="group inline-flex items-center gap-2 bg-slate-900 text-white px-5 py-2.5 rounded-xl text-sm font-semibold hover:bg-slate-800 transition-all duration-200 shadow-lg shadow-slate-900/20 hover:shadow-xl hover:-translate-y-0.5 active:translate-y-0"
+                  className="mt-4 group inline-flex items-center gap-2 bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 px-5 py-2.5 rounded-xl text-sm font-semibold hover:bg-slate-800 dark:hover:bg-white transition-all duration-200 shadow-lg shadow-slate-900/20 dark:shadow-black/20 hover:shadow-xl hover:-translate-y-0.5 active:translate-y-0"
                 >
                   {config.insights.memoTransition}
                   <svg className="w-4 h-4 transition-transform group-hover:translate-x-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
