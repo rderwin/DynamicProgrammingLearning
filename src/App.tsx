@@ -10,6 +10,8 @@ import AccountPage from "./components/AccountPage";
 import ComingSoonScreen from "./components/ComingSoonScreen";
 import TrainingCenter from "./components/TrainingCenter";
 import ProgressBar from "./components/ProgressBar";
+import DailyChallenge from "./components/DailyChallenge";
+import { dailyProblems } from "./content/dailyProblems";
 import Confetti from "./components/Confetti";
 import AchievementToast from "./components/AchievementToast";
 import { modules as allModuleConfigs } from "./modules/registry";
@@ -443,6 +445,16 @@ function AppInner() {
               <ProgressBar data={userData.gamification} />
             </div>
           )}
+          <div className="mb-6">
+            <DailyChallenge
+              problems={dailyProblems}
+              completedToday={userData.gamification.activityDates.includes(
+                `${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, "0")}-${String(new Date().getDate()).padStart(2, "0")}`
+              )}
+              streak={calculateStreak(userData.gamification.activityDates)}
+              onComplete={() => { awardXP(25); tryUnlockAchievement("first-practice"); }}
+            />
+          </div>
           <ModulePicker
             modules={allModuleConfigs}
             onSelectModule={(id) => {
