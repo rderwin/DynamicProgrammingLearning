@@ -1,0 +1,86 @@
+import type { RaceScenario } from "../components/AlgorithmRace";
+
+export const raceScenarios: RaceScenario[] = [
+  {
+    id: "race-1",
+    title: "Fibonacci: Brute Force vs DP",
+    description: "Computing the 30th Fibonacci number. Watch brute force explode while DP finishes instantly.",
+    inputSize: 30,
+    approaches: [
+      { name: "Brute Force Recursion", complexity: "O(2^n)", color: "#ef4444", operations: 1073741824 },
+      { name: "Memoized DP", complexity: "O(n)", color: "#22c55e", operations: 30 },
+      { name: "Bottom-Up DP", complexity: "O(n)", color: "#3b82f6", operations: 30 },
+    ],
+    question: "Which approaches are practical for n=30?",
+    correctIndex: 1,
+    explanation: "Both DP approaches finish in 30 operations. Brute force needs over a BILLION. At n=50, brute force would take years. DP takes microseconds.",
+  },
+  {
+    id: "race-2",
+    title: "Search: Linear vs Binary",
+    description: "Finding a number in a sorted array of 1 million elements.",
+    inputSize: 1000000,
+    approaches: [
+      { name: "Linear Search", complexity: "O(n)", color: "#ef4444", operations: 1000000 },
+      { name: "Binary Search", complexity: "O(log n)", color: "#22c55e", operations: 20 },
+    ],
+    question: "How many comparisons does binary search need for 1M elements?",
+    correctIndex: 1,
+    explanation: "Binary search: log₂(1,000,000) ≈ 20 comparisons. Linear search: up to 1,000,000. That's a 50,000x difference!",
+  },
+  {
+    id: "race-3",
+    title: "Sorting: Bubble Sort vs Merge Sort",
+    description: "Sorting 10,000 elements.",
+    inputSize: 10000,
+    approaches: [
+      { name: "Bubble Sort", complexity: "O(n²)", color: "#ef4444", operations: 100000000 },
+      { name: "Merge Sort", complexity: "O(n log n)", color: "#22c55e", operations: 132877 },
+      { name: "JavaScript .sort()", complexity: "O(n log n)", color: "#3b82f6", operations: 132877 },
+    ],
+    question: "Why is O(n²) sorting impractical for large inputs?",
+    correctIndex: 0,
+    explanation: "n² = 100,000,000 operations for just 10K elements. At 1M elements, that's 1 TRILLION operations. O(n log n) sorts handle millions easily.",
+  },
+  {
+    id: "race-4",
+    title: "Two Sum: Brute Force vs Hash Map",
+    description: "Finding two numbers that sum to a target in an array of 100,000 elements.",
+    inputSize: 100000,
+    approaches: [
+      { name: "Brute Force (nested loops)", complexity: "O(n²)", color: "#ef4444", operations: 10000000000 },
+      { name: "Hash Map (single pass)", complexity: "O(n)", color: "#22c55e", operations: 100000 },
+    ],
+    question: "The hash map approach uses more memory. Is the tradeoff worth it?",
+    correctIndex: 1,
+    explanation: "Absolutely. O(n) extra space for O(n) time vs O(1) space for O(n²) time. The hash map is 100,000x faster. This is the most common time-space tradeoff in interviews.",
+  },
+  {
+    id: "race-5",
+    title: "Graph: BFS vs DFS vs Dijkstra",
+    description: "Finding shortest path in a weighted graph with 1000 nodes and 5000 edges.",
+    inputSize: 1000,
+    approaches: [
+      { name: "BFS (unweighted only)", complexity: "O(V+E)", color: "#f59e0b", operations: 6000 },
+      { name: "Dijkstra", complexity: "O((V+E)log V)", color: "#22c55e", operations: 60000 },
+      { name: "Brute Force (all paths)", complexity: "O(V!)", color: "#ef4444", operations: 1000000000 },
+    ],
+    question: "Which algorithm correctly finds shortest paths in a weighted graph?",
+    correctIndex: 1,
+    explanation: "BFS only works for unweighted graphs. Dijkstra handles weights correctly. Brute force is exponential and completely impractical. BFS is fastest but gives wrong answers on weighted graphs!",
+  },
+  {
+    id: "race-6",
+    title: "Subset Generation: Iterative vs Backtracking",
+    description: "Generating all subsets of a set with 20 elements.",
+    inputSize: 20,
+    approaches: [
+      { name: "Bit Manipulation", complexity: "O(2^n × n)", color: "#3b82f6", operations: 20971520 },
+      { name: "Backtracking", complexity: "O(2^n × n)", color: "#22c55e", operations: 20971520 },
+      { name: "Generate & Filter", complexity: "O(2^n × n)", color: "#f59e0b", operations: 20971520 },
+    ],
+    question: "Can we do better than O(2^n) for generating all subsets?",
+    correctIndex: 0,
+    explanation: "No! There ARE 2^n subsets, so any algorithm that generates all of them must be at least O(2^n). The approaches differ in constants and memory, but not in Big O. This is an inherent lower bound.",
+  },
+];

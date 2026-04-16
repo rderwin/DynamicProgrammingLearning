@@ -12,13 +12,17 @@ import { allConceptCards } from "../content/conceptCards";
 import { complexityChallenges } from "../content/complexityChallenges";
 import { interviewProblems } from "../content/interviewProblems";
 import StepPredictor from "./StepPredictor";
+import AlgorithmRace from "./AlgorithmRace";
+import CodeRefactor from "./CodeRefactor";
 import { predictorChallenges } from "../content/predictorChallenges";
+import { raceScenarios } from "../content/raceScenarios";
+import { refactorChallenges } from "../content/refactorChallenges";
 interface Props {
   onBack: () => void;
   onXP: (amount: number) => void;
 }
 
-type Mode = "menu" | "quiz-dp" | "quiz-graphs" | "quiz-mixed" | "bugs-dp" | "bugs-graphs" | "speed" | "cards" | "complexity" | "interview" | "predict";
+type Mode = "menu" | "quiz-dp" | "quiz-graphs" | "quiz-mixed" | "bugs-dp" | "bugs-graphs" | "speed" | "cards" | "complexity" | "interview" | "predict" | "race" | "refactor";
 
 const activities = [
   { id: "quiz-dp" as Mode, icon: "🎯", title: "DP Pattern Quiz", desc: "5 questions — identify the DP pattern", xp: 25, color: "from-blue-500 to-violet-600" },
@@ -30,6 +34,8 @@ const activities = [
   { id: "cards" as Mode, icon: "🧠", title: "Concept Review", desc: "19 flashcards — test your recall of key concepts", xp: 20, color: "from-sky-500 to-blue-600" },
   { id: "complexity" as Mode, icon: "📊", title: "Complexity Estimator", desc: "8 code snippets — guess the Big O for time and space", xp: 35, color: "from-cyan-500 to-teal-600" },
   { id: "predict" as Mode, icon: "🔮", title: "What Comes Next?", desc: "8 algorithm traces — predict the next step", xp: 30, color: "from-purple-500 to-pink-600" },
+  { id: "race" as Mode, icon: "🏁", title: "Algorithm Race", desc: "6 visual races — watch algorithms compete on the same input", xp: 25, color: "from-rose-500 to-red-600" },
+  { id: "refactor" as Mode, icon: "🔧", title: "Optimize This", desc: "4 slow solutions — rewrite them to be fast", xp: 40, color: "from-teal-500 to-emerald-600" },
   { id: "interview" as Mode, icon: "🎤", title: "Mock Interview", desc: "Full flow: read → identify → plan → code → analyze", xp: 75, color: "from-indigo-500 to-blue-600" },
 ];
 
@@ -53,6 +59,8 @@ export default function TrainingCenter({ onBack, onXP }: Props) {
   if (mode === "cards") return <div className="max-w-2xl mx-auto"><BackBtn onClick={() => setMode("menu")} /><ConceptCards cards={allConceptCards} onComplete={handleQuizComplete} /></div>;
   if (mode === "complexity") return <div className="max-w-2xl mx-auto"><BackBtn onClick={() => setMode("menu")} /><ComplexityEstimator challenges={complexityChallenges} onComplete={handleQuizComplete} /></div>;
   if (mode === "predict") return <div className="max-w-2xl mx-auto"><BackBtn onClick={() => setMode("menu")} /><StepPredictor challenges={predictorChallenges} onComplete={handleQuizComplete} /></div>;
+  if (mode === "race") return <div className="max-w-2xl mx-auto"><BackBtn onClick={() => setMode("menu")} /><AlgorithmRace scenarios={raceScenarios} onComplete={handleQuizComplete} /></div>;
+  if (mode === "refactor") return <div className="max-w-3xl mx-auto"><BackBtn onClick={() => setMode("menu")} /><CodeRefactor challenges={refactorChallenges} onComplete={handleQuizComplete} /></div>;
   if (mode === "interview") {
     const randomProblem = interviewProblems[Math.floor(Math.random() * interviewProblems.length)];
     return <div className="max-w-3xl mx-auto"><BackBtn onClick={() => setMode("menu")} /><InterviewSim problem={randomProblem} onComplete={(result) => { const score = [result.identifiedPattern, result.planWritten, result.codePassed, result.complexityCorrect].filter(Boolean).length; handleQuizComplete(score, 4); }} /></div>;
