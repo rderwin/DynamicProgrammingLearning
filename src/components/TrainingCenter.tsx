@@ -1,14 +1,16 @@
 import { useState } from "react";
 import PatternQuiz from "./PatternQuiz";
 import BugHunt from "./BugHunt";
+import SpeedDrill from "./SpeedDrill";
 import { dpPatternQuiz, graphPatternQuiz, mixedPatternQuiz } from "../content/quizQuestions";
 import { dpBugChallenges, graphBugChallenges } from "../content/bugChallenges";
+import { speedDrillProblems } from "../content/speedDrills";
 interface Props {
   onBack: () => void;
   onXP: (amount: number) => void;
 }
 
-type Mode = "menu" | "quiz-dp" | "quiz-graphs" | "quiz-mixed" | "bugs-dp" | "bugs-graphs";
+type Mode = "menu" | "quiz-dp" | "quiz-graphs" | "quiz-mixed" | "bugs-dp" | "bugs-graphs" | "speed";
 
 const activities = [
   { id: "quiz-dp" as Mode, icon: "🎯", title: "DP Pattern Quiz", desc: "5 questions — identify the DP pattern", xp: 25, color: "from-blue-500 to-violet-600" },
@@ -16,6 +18,7 @@ const activities = [
   { id: "quiz-mixed" as Mode, icon: "🧩", title: "Mixed Pattern Quiz", desc: "5 questions — any topic, any pattern", xp: 40, color: "from-amber-500 to-orange-600" },
   { id: "bugs-dp" as Mode, icon: "🔍", title: "DP Bug Hunt", desc: "5 buggy DP solutions — find the line", xp: 30, color: "from-violet-500 to-purple-600" },
   { id: "bugs-graphs" as Mode, icon: "🐛", title: "Graph Bug Hunt", desc: "3 buggy graph solutions — find the line", xp: 30, color: "from-pink-500 to-rose-600" },
+  { id: "speed" as Mode, icon: "⏱️", title: "Speed Drill", desc: "8 timed coding challenges — build fluency under pressure", xp: 50, color: "from-red-500 to-orange-600" },
 ];
 
 export default function TrainingCenter({ onBack, onXP }: Props) {
@@ -34,6 +37,7 @@ export default function TrainingCenter({ onBack, onXP }: Props) {
   if (mode === "quiz-mixed") return <div className="max-w-2xl mx-auto"><BackBtn onClick={() => setMode("menu")} /><PatternQuiz questions={mixedPatternQuiz} onComplete={handleQuizComplete} title="Mixed Pattern Recognition" /></div>;
   if (mode === "bugs-dp") return <div className="max-w-2xl mx-auto"><BackBtn onClick={() => setMode("menu")} /><BugHunt challenges={dpBugChallenges} onComplete={handleQuizComplete} /></div>;
   if (mode === "bugs-graphs") return <div className="max-w-2xl mx-auto"><BackBtn onClick={() => setMode("menu")} /><BugHunt challenges={graphBugChallenges} onComplete={handleQuizComplete} /></div>;
+  if (mode === "speed") return <div className="max-w-3xl mx-auto"><BackBtn onClick={() => setMode("menu")} /><SpeedDrill problems={speedDrillProblems} onComplete={(results) => { const solved = results.filter(r => r.solved).length; handleQuizComplete(solved, results.length); }} /></div>;
 
   return (
     <div className="max-w-2xl mx-auto animate-fade-in">
