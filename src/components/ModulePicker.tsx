@@ -5,9 +5,10 @@ interface Props {
   onSelectModule: (id: ModuleId) => void;
   getProgress: (id: ModuleId) => { lessons: number; practice: number };
   onTraining?: () => void;
+  onCheatSheet?: () => void;
 }
 
-export default function ModulePicker({ modules, onSelectModule, getProgress, onTraining }: Props) {
+export default function ModulePicker({ modules, onSelectModule, getProgress, onTraining, onCheatSheet }: Props) {
   return (
     <div className="max-w-4xl mx-auto animate-fade-in">
       {/* Hero */}
@@ -128,6 +129,29 @@ export default function ModulePicker({ modules, onSelectModule, getProgress, onT
                 <p className="text-xs text-slate-500 dark:text-slate-400">Pattern recognition quizzes, bug hunts, and skill drills — earn XP</p>
               </div>
               <svg className="w-5 h-5 text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-300 transition-all group-hover:translate-x-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" />
+              </svg>
+            </div>
+          </button>
+        </div>
+      )}
+
+      {/* Bottom row: cheat sheet */}
+      {onCheatSheet && (
+        <div className="mt-3 animate-fade-in-up delay-400">
+          <button
+            onClick={onCheatSheet}
+            className="w-full text-left bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-2xl p-5 hover:shadow-lg hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 group"
+          >
+            <div className="flex items-center gap-4">
+              <div className="w-10 h-10 bg-slate-100 dark:bg-slate-800 rounded-xl flex items-center justify-center flex-shrink-0">
+                <span className="text-lg">📋</span>
+              </div>
+              <div className="flex-1">
+                <h3 className="text-sm font-bold text-slate-800 dark:text-slate-100">Interview Cheat Sheet</h3>
+                <p className="text-xs text-slate-500 dark:text-slate-400">Patterns, templates, complexity — all on one page</p>
+              </div>
+              <svg className="w-4 h-4 text-slate-300 dark:text-slate-600 group-hover:text-slate-500 transition-all group-hover:translate-x-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" />
               </svg>
             </div>

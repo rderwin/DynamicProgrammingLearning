@@ -9,6 +9,7 @@ import PracticeProblemView from "./components/PracticeProblemView";
 import AccountPage from "./components/AccountPage";
 import ComingSoonScreen from "./components/ComingSoonScreen";
 import TrainingCenter from "./components/TrainingCenter";
+import CheatSheet from "./components/CheatSheet";
 import ProgressBar from "./components/ProgressBar";
 import DailyChallenge from "./components/DailyChallenge";
 import { dailyProblems } from "./content/dailyProblems";
@@ -62,7 +63,8 @@ type AppView =
   | { screen: "practice"; moduleId: ModuleId }
   | { screen: "practice-problem"; moduleId: ModuleId; problemId: string }
   | { screen: "account" }
-  | { screen: "training" };
+  | { screen: "training" }
+  | { screen: "cheatsheet" };
 
 const DEFAULT_DATA: UserData = { modules: {}, gamification: { xp: 0, achievementsUnlocked: [], activityDates: [] } };
 
@@ -269,6 +271,7 @@ function AppInner() {
     practiceProblem: (m: ModuleId, p: string) => setView({ screen: "practice-problem", moduleId: m, problemId: p }),
     account: () => setView({ screen: "account" }),
     training: () => setView({ screen: "training" }),
+    cheatsheet: () => setView({ screen: "cheatsheet" }),
   };
 
   // Get progress for module picker
@@ -335,7 +338,7 @@ function AppInner() {
     );
   }
 
-  const showModuleNav = activeModule && view.screen !== "home" && view.screen !== "account" && view.screen !== "training";
+  const showModuleNav = activeModule && view.screen !== "home" && view.screen !== "account" && view.screen !== "training" && view.screen !== "cheatsheet";
 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950 font-sans">
@@ -468,6 +471,7 @@ function AppInner() {
             }}
             getProgress={getModulePickerProgress}
             onTraining={nav.training}
+            onCheatSheet={nav.cheatsheet}
           />
           </>
         )}
@@ -543,6 +547,11 @@ function AppInner() {
             savedCode={modProgress.practiceCode[practiceProblem.id]}
             onCodeChange={(lang, code) => savePracticeCode(activeModuleId, practiceProblem.id, lang, code)}
           />
+        )}
+
+        {/* Cheat Sheet */}
+        {view.screen === "cheatsheet" && (
+          <CheatSheet onBack={nav.home} />
         )}
 
         {/* Training Center */}
