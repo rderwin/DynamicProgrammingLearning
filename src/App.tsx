@@ -17,6 +17,7 @@ import ComplexityVisualizer from "./components/ComplexityVisualizer";
 import DataStructureSandbox from "./components/DataStructureSandbox";
 import PythonDPTrainer from "./components/PythonDPTrainer";
 import StatsDashboard from "./components/StatsDashboard";
+import PythonGotchas from "./components/PythonGotchas";
 import ProgressBar from "./components/ProgressBar";
 import DailyChallenge from "./components/DailyChallenge";
 import { dailyProblems } from "./content/dailyProblems";
@@ -79,7 +80,8 @@ type AppView =
   | { screen: "complexity-viz" }
   | { screen: "sandbox" }
   | { screen: "python-dp" }
-  | { screen: "stats" };
+  | { screen: "stats" }
+  | { screen: "gotchas" };
 
 const DEFAULT_DATA: UserData = { modules: {}, gamification: { xp: 0, achievementsUnlocked: [], activityDates: [] } };
 
@@ -294,6 +296,7 @@ function AppInner() {
     sandbox: () => setView({ screen: "sandbox" }),
     pythonDP: () => setView({ screen: "python-dp" }),
     stats: () => setView({ screen: "stats" }),
+    gotchas: () => setView({ screen: "gotchas" }),
   };
 
   // Get progress for module picker
@@ -360,7 +363,7 @@ function AppInner() {
     );
   }
 
-  const showModuleNav = activeModule && view.screen !== "home" && view.screen !== "account" && view.screen !== "training" && view.screen !== "cheatsheet" && view.screen !== "flowchart" && view.screen !== "languages" && view.screen !== "python" && view.screen !== "complexity-viz" && view.screen !== "sandbox" && view.screen !== "python-dp" && view.screen !== "stats";
+  const showModuleNav = activeModule && view.screen !== "home" && view.screen !== "account" && view.screen !== "training" && view.screen !== "cheatsheet" && view.screen !== "flowchart" && view.screen !== "languages" && view.screen !== "python" && view.screen !== "complexity-viz" && view.screen !== "sandbox" && view.screen !== "python-dp" && view.screen !== "stats" && view.screen !== "gotchas";
 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950 font-sans">
@@ -501,6 +504,7 @@ function AppInner() {
             onSandbox={nav.sandbox}
             onPythonDP={nav.pythonDP}
             onStats={nav.stats}
+            onGotchas={nav.gotchas}
           />
           </>
         )}
@@ -616,6 +620,11 @@ function AppInner() {
         {/* Stats Dashboard */}
         {view.screen === "stats" && (
           <StatsDashboard userData={userData} moduleConfigs={allModuleConfigs} onBack={nav.home} />
+        )}
+
+        {/* Python Gotchas */}
+        {view.screen === "gotchas" && (
+          <PythonGotchas onBack={nav.home} />
         )}
 
         {/* Training Center */}

@@ -13,9 +13,10 @@ interface Props {
   onSandbox?: () => void;
   onPythonDP?: () => void;
   onStats?: () => void;
+  onGotchas?: () => void;
 }
 
-export default function ModulePicker({ modules, onSelectModule, getProgress, onTraining, onCheatSheet, onFlowchart, onLanguages, onPython, onComplexityViz, onSandbox, onPythonDP, onStats }: Props) {
+export default function ModulePicker({ modules, onSelectModule, getProgress, onTraining, onCheatSheet, onFlowchart, onLanguages, onPython, onComplexityViz, onSandbox, onPythonDP, onStats, onGotchas }: Props) {
   return (
     <div className="max-w-4xl mx-auto animate-fade-in">
       {/* Hero */}
@@ -171,6 +172,9 @@ export default function ModulePicker({ modules, onSelectModule, getProgress, onT
             )}
             {onStats && (
               <ToolCard onClick={onStats} icon="📊" title="My Stats" desc="All your progress across the app" color="from-blue-500 to-violet-600" />
+            )}
+            {onGotchas && (
+              <ToolCard onClick={onGotchas} icon="⚠️" title="Python Gotchas" desc="The weird behaviors that bite in interviews" color="from-red-500 to-orange-600" />
             )}
           </div>
         </div>
