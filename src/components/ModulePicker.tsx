@@ -15,9 +15,10 @@ interface Props {
   onStats?: () => void;
   onGotchas?: () => void;
   onStateFinder?: () => void;
+  onRecurrenceBuilder?: () => void;
 }
 
-export default function ModulePicker({ modules, onSelectModule, getProgress, onTraining, onCheatSheet, onFlowchart, onLanguages, onPython, onComplexityViz, onSandbox, onPythonDP, onStats, onGotchas, onStateFinder }: Props) {
+export default function ModulePicker({ modules, onSelectModule, getProgress, onTraining, onCheatSheet, onFlowchart, onLanguages, onPython, onComplexityViz, onSandbox, onPythonDP, onStats, onGotchas, onStateFinder, onRecurrenceBuilder }: Props) {
   return (
     <div className="max-w-4xl mx-auto animate-fade-in">
       {/* Hero */}
@@ -179,6 +180,9 @@ export default function ModulePicker({ modules, onSelectModule, getProgress, onT
             )}
             {onStateFinder && (
               <ToolCard onClick={onStateFinder} icon="🧠" title="DP State Finder" desc="Practice the hardest part of DP — identifying the state" color="from-violet-500 to-fuchsia-600" />
+            )}
+            {onRecurrenceBuilder && (
+              <ToolCard onClick={onRecurrenceBuilder} icon="🔁" title="Recurrence Builder" desc="Derive the DP recurrence step by step" color="from-pink-500 to-rose-600" />
             )}
           </div>
         </div>

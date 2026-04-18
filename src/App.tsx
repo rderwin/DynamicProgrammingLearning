@@ -19,6 +19,7 @@ import PythonDPTrainer from "./components/PythonDPTrainer";
 import StatsDashboard from "./components/StatsDashboard";
 import PythonGotchas from "./components/PythonGotchas";
 import DPStateFinder from "./components/DPStateFinder";
+import RecurrenceBuilder from "./components/RecurrenceBuilder";
 import ProgressBar from "./components/ProgressBar";
 import DailyChallenge from "./components/DailyChallenge";
 import { dailyProblems } from "./content/dailyProblems";
@@ -83,7 +84,8 @@ type AppView =
   | { screen: "python-dp" }
   | { screen: "stats" }
   | { screen: "gotchas" }
-  | { screen: "state-finder" };
+  | { screen: "state-finder" }
+  | { screen: "recurrence-builder" };
 
 const DEFAULT_DATA: UserData = { modules: {}, gamification: { xp: 0, achievementsUnlocked: [], activityDates: [] } };
 
@@ -300,6 +302,7 @@ function AppInner() {
     stats: () => setView({ screen: "stats" }),
     gotchas: () => setView({ screen: "gotchas" }),
     stateFinder: () => setView({ screen: "state-finder" }),
+    recurrenceBuilder: () => setView({ screen: "recurrence-builder" }),
   };
 
   // Get progress for module picker
@@ -366,7 +369,7 @@ function AppInner() {
     );
   }
 
-  const showModuleNav = activeModule && view.screen !== "home" && view.screen !== "account" && view.screen !== "training" && view.screen !== "cheatsheet" && view.screen !== "flowchart" && view.screen !== "languages" && view.screen !== "python" && view.screen !== "complexity-viz" && view.screen !== "sandbox" && view.screen !== "python-dp" && view.screen !== "stats" && view.screen !== "gotchas" && view.screen !== "state-finder";
+  const showModuleNav = activeModule && view.screen !== "home" && view.screen !== "account" && view.screen !== "training" && view.screen !== "cheatsheet" && view.screen !== "flowchart" && view.screen !== "languages" && view.screen !== "python" && view.screen !== "complexity-viz" && view.screen !== "sandbox" && view.screen !== "python-dp" && view.screen !== "stats" && view.screen !== "gotchas" && view.screen !== "state-finder" && view.screen !== "recurrence-builder";
 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950 font-sans">
@@ -509,6 +512,7 @@ function AppInner() {
             onStats={nav.stats}
             onGotchas={nav.gotchas}
             onStateFinder={nav.stateFinder}
+            onRecurrenceBuilder={nav.recurrenceBuilder}
           />
           </>
         )}
@@ -634,6 +638,11 @@ function AppInner() {
         {/* DP State Finder */}
         {view.screen === "state-finder" && (
           <DPStateFinder onBack={nav.home} />
+        )}
+
+        {/* Recurrence Builder */}
+        {view.screen === "recurrence-builder" && (
+          <RecurrenceBuilder onBack={nav.home} />
         )}
 
         {/* Training Center */}
