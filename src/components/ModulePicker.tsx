@@ -9,9 +9,11 @@ interface Props {
   onFlowchart?: () => void;
   onLanguages?: () => void;
   onPython?: () => void;
+  onComplexityViz?: () => void;
+  onSandbox?: () => void;
 }
 
-export default function ModulePicker({ modules, onSelectModule, getProgress, onTraining, onCheatSheet, onFlowchart, onLanguages, onPython }: Props) {
+export default function ModulePicker({ modules, onSelectModule, getProgress, onTraining, onCheatSheet, onFlowchart, onLanguages, onPython, onComplexityViz, onSandbox }: Props) {
   return (
     <div className="max-w-4xl mx-auto animate-fade-in">
       {/* Hero */}
@@ -155,6 +157,12 @@ export default function ModulePicker({ modules, onSelectModule, getProgress, onT
             )}
             {onCheatSheet && (
               <ToolCard onClick={onCheatSheet} icon="📋" title="Cheat Sheet" desc="Patterns & complexity reference" color="from-slate-600 to-slate-800" />
+            )}
+            {onComplexityViz && (
+              <ToolCard onClick={onComplexityViz} icon="📈" title="Complexity Visualizer" desc="See how Big O classes grow" color="from-cyan-500 to-blue-600" />
+            )}
+            {onSandbox && (
+              <ToolCard onClick={onSandbox} icon="🎮" title="Data Structure Sandbox" desc="Play with stack, queue, heap, map, set" color="from-teal-500 to-cyan-600" />
             )}
           </div>
         </div>

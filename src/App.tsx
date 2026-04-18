@@ -13,6 +13,8 @@ import CheatSheet from "./components/CheatSheet";
 import PatternFlowchart from "./components/PatternFlowchart";
 import LanguageGuide from "./components/LanguageGuide";
 import PythonTrainer from "./components/PythonTrainer";
+import ComplexityVisualizer from "./components/ComplexityVisualizer";
+import DataStructureSandbox from "./components/DataStructureSandbox";
 import ProgressBar from "./components/ProgressBar";
 import DailyChallenge from "./components/DailyChallenge";
 import { dailyProblems } from "./content/dailyProblems";
@@ -70,7 +72,9 @@ type AppView =
   | { screen: "cheatsheet" }
   | { screen: "flowchart" }
   | { screen: "languages" }
-  | { screen: "python" };
+  | { screen: "python" }
+  | { screen: "complexity-viz" }
+  | { screen: "sandbox" };
 
 const DEFAULT_DATA: UserData = { modules: {}, gamification: { xp: 0, achievementsUnlocked: [], activityDates: [] } };
 
@@ -281,6 +285,8 @@ function AppInner() {
     flowchart: () => setView({ screen: "flowchart" }),
     languages: () => setView({ screen: "languages" }),
     python: () => setView({ screen: "python" }),
+    complexityViz: () => setView({ screen: "complexity-viz" }),
+    sandbox: () => setView({ screen: "sandbox" }),
   };
 
   // Get progress for module picker
@@ -347,7 +353,7 @@ function AppInner() {
     );
   }
 
-  const showModuleNav = activeModule && view.screen !== "home" && view.screen !== "account" && view.screen !== "training" && view.screen !== "cheatsheet" && view.screen !== "flowchart" && view.screen !== "languages" && view.screen !== "python";
+  const showModuleNav = activeModule && view.screen !== "home" && view.screen !== "account" && view.screen !== "training" && view.screen !== "cheatsheet" && view.screen !== "flowchart" && view.screen !== "languages" && view.screen !== "python" && view.screen !== "complexity-viz" && view.screen !== "sandbox";
 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950 font-sans">
@@ -484,6 +490,8 @@ function AppInner() {
             onFlowchart={nav.flowchart}
             onLanguages={nav.languages}
             onPython={nav.python}
+            onComplexityViz={nav.complexityViz}
+            onSandbox={nav.sandbox}
           />
           </>
         )}
@@ -579,6 +587,16 @@ function AppInner() {
         {/* Python Trainer */}
         {view.screen === "python" && (
           <PythonTrainer onBack={nav.home} />
+        )}
+
+        {/* Complexity Visualizer */}
+        {view.screen === "complexity-viz" && (
+          <ComplexityVisualizer onBack={nav.home} />
+        )}
+
+        {/* Data Structure Sandbox */}
+        {view.screen === "sandbox" && (
+          <DataStructureSandbox onBack={nav.home} />
         )}
 
         {/* Training Center */}
