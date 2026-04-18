@@ -15,6 +15,7 @@ import LanguageGuide from "./components/LanguageGuide";
 import PythonTrainer from "./components/PythonTrainer";
 import ComplexityVisualizer from "./components/ComplexityVisualizer";
 import DataStructureSandbox from "./components/DataStructureSandbox";
+import PythonDPTrainer from "./components/PythonDPTrainer";
 import ProgressBar from "./components/ProgressBar";
 import DailyChallenge from "./components/DailyChallenge";
 import { dailyProblems } from "./content/dailyProblems";
@@ -74,7 +75,8 @@ type AppView =
   | { screen: "languages" }
   | { screen: "python" }
   | { screen: "complexity-viz" }
-  | { screen: "sandbox" };
+  | { screen: "sandbox" }
+  | { screen: "python-dp" };
 
 const DEFAULT_DATA: UserData = { modules: {}, gamification: { xp: 0, achievementsUnlocked: [], activityDates: [] } };
 
@@ -287,6 +289,7 @@ function AppInner() {
     python: () => setView({ screen: "python" }),
     complexityViz: () => setView({ screen: "complexity-viz" }),
     sandbox: () => setView({ screen: "sandbox" }),
+    pythonDP: () => setView({ screen: "python-dp" }),
   };
 
   // Get progress for module picker
@@ -353,7 +356,7 @@ function AppInner() {
     );
   }
 
-  const showModuleNav = activeModule && view.screen !== "home" && view.screen !== "account" && view.screen !== "training" && view.screen !== "cheatsheet" && view.screen !== "flowchart" && view.screen !== "languages" && view.screen !== "python" && view.screen !== "complexity-viz" && view.screen !== "sandbox";
+  const showModuleNav = activeModule && view.screen !== "home" && view.screen !== "account" && view.screen !== "training" && view.screen !== "cheatsheet" && view.screen !== "flowchart" && view.screen !== "languages" && view.screen !== "python" && view.screen !== "complexity-viz" && view.screen !== "sandbox" && view.screen !== "python-dp";
 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950 font-sans">
@@ -492,6 +495,7 @@ function AppInner() {
             onPython={nav.python}
             onComplexityViz={nav.complexityViz}
             onSandbox={nav.sandbox}
+            onPythonDP={nav.pythonDP}
           />
           </>
         )}
@@ -597,6 +601,11 @@ function AppInner() {
         {/* Data Structure Sandbox */}
         {view.screen === "sandbox" && (
           <DataStructureSandbox onBack={nav.home} />
+        )}
+
+        {/* Python DP Trainer */}
+        {view.screen === "python-dp" && (
+          <PythonDPTrainer onBack={nav.home} />
         )}
 
         {/* Training Center */}

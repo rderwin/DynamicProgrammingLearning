@@ -11,9 +11,10 @@ interface Props {
   onPython?: () => void;
   onComplexityViz?: () => void;
   onSandbox?: () => void;
+  onPythonDP?: () => void;
 }
 
-export default function ModulePicker({ modules, onSelectModule, getProgress, onTraining, onCheatSheet, onFlowchart, onLanguages, onPython, onComplexityViz, onSandbox }: Props) {
+export default function ModulePicker({ modules, onSelectModule, getProgress, onTraining, onCheatSheet, onFlowchart, onLanguages, onPython, onComplexityViz, onSandbox, onPythonDP }: Props) {
   return (
     <div className="max-w-4xl mx-auto animate-fade-in">
       {/* Hero */}
@@ -148,6 +149,9 @@ export default function ModulePicker({ modules, onSelectModule, getProgress, onT
           <div className="grid sm:grid-cols-2 gap-3">
             {onPython && (
               <ToolCard onClick={onPython} icon="🐍" title="Python for Interviews" desc="Hands-on lessons for Python tricks" color="from-blue-500 to-yellow-500" />
+            )}
+            {onPythonDP && (
+              <ToolCard onClick={onPythonDP} icon="🧮" title="Python DP Masterclass" desc="6 hands-on DP lessons in Python" color="from-violet-500 to-blue-600" />
             )}
             {onFlowchart && (
               <ToolCard onClick={onFlowchart} icon="🧭" title="Pattern Finder" desc="Identify the right algorithm for any problem" color="from-indigo-500 to-purple-600" />
