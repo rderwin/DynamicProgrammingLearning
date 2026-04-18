@@ -10,6 +10,9 @@ import AccountPage from "./components/AccountPage";
 import ComingSoonScreen from "./components/ComingSoonScreen";
 import TrainingCenter from "./components/TrainingCenter";
 import CheatSheet from "./components/CheatSheet";
+import PatternFlowchart from "./components/PatternFlowchart";
+import LanguageGuide from "./components/LanguageGuide";
+import PythonTrainer from "./components/PythonTrainer";
 import ProgressBar from "./components/ProgressBar";
 import DailyChallenge from "./components/DailyChallenge";
 import { dailyProblems } from "./content/dailyProblems";
@@ -64,7 +67,10 @@ type AppView =
   | { screen: "practice-problem"; moduleId: ModuleId; problemId: string }
   | { screen: "account" }
   | { screen: "training" }
-  | { screen: "cheatsheet" };
+  | { screen: "cheatsheet" }
+  | { screen: "flowchart" }
+  | { screen: "languages" }
+  | { screen: "python" };
 
 const DEFAULT_DATA: UserData = { modules: {}, gamification: { xp: 0, achievementsUnlocked: [], activityDates: [] } };
 
@@ -272,6 +278,9 @@ function AppInner() {
     account: () => setView({ screen: "account" }),
     training: () => setView({ screen: "training" }),
     cheatsheet: () => setView({ screen: "cheatsheet" }),
+    flowchart: () => setView({ screen: "flowchart" }),
+    languages: () => setView({ screen: "languages" }),
+    python: () => setView({ screen: "python" }),
   };
 
   // Get progress for module picker
@@ -338,7 +347,7 @@ function AppInner() {
     );
   }
 
-  const showModuleNav = activeModule && view.screen !== "home" && view.screen !== "account" && view.screen !== "training" && view.screen !== "cheatsheet";
+  const showModuleNav = activeModule && view.screen !== "home" && view.screen !== "account" && view.screen !== "training" && view.screen !== "cheatsheet" && view.screen !== "flowchart" && view.screen !== "languages" && view.screen !== "python";
 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950 font-sans">
@@ -472,6 +481,9 @@ function AppInner() {
             getProgress={getModulePickerProgress}
             onTraining={nav.training}
             onCheatSheet={nav.cheatsheet}
+            onFlowchart={nav.flowchart}
+            onLanguages={nav.languages}
+            onPython={nav.python}
           />
           </>
         )}
@@ -552,6 +564,21 @@ function AppInner() {
         {/* Cheat Sheet */}
         {view.screen === "cheatsheet" && (
           <CheatSheet onBack={nav.home} />
+        )}
+
+        {/* Pattern Flowchart */}
+        {view.screen === "flowchart" && (
+          <PatternFlowchart onBack={nav.home} />
+        )}
+
+        {/* Language Guide */}
+        {view.screen === "languages" && (
+          <LanguageGuide onBack={nav.home} />
+        )}
+
+        {/* Python Trainer */}
+        {view.screen === "python" && (
+          <PythonTrainer onBack={nav.home} />
         )}
 
         {/* Training Center */}

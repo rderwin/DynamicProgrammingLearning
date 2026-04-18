@@ -6,9 +6,12 @@ interface Props {
   getProgress: (id: ModuleId) => { lessons: number; practice: number };
   onTraining?: () => void;
   onCheatSheet?: () => void;
+  onFlowchart?: () => void;
+  onLanguages?: () => void;
+  onPython?: () => void;
 }
 
-export default function ModulePicker({ modules, onSelectModule, getProgress, onTraining, onCheatSheet }: Props) {
+export default function ModulePicker({ modules, onSelectModule, getProgress, onTraining, onCheatSheet, onFlowchart, onLanguages, onPython }: Props) {
   return (
     <div className="max-w-4xl mx-auto animate-fade-in">
       {/* Hero */}
@@ -136,28 +139,45 @@ export default function ModulePicker({ modules, onSelectModule, getProgress, onT
         </div>
       )}
 
-      {/* Bottom row: cheat sheet */}
-      {onCheatSheet && (
-        <div className="mt-3 animate-fade-in-up delay-400">
-          <button
-            onClick={onCheatSheet}
-            className="w-full text-left bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-2xl p-5 hover:shadow-lg hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 group"
-          >
-            <div className="flex items-center gap-4">
-              <div className="w-10 h-10 bg-slate-100 dark:bg-slate-800 rounded-xl flex items-center justify-center flex-shrink-0">
-                <span className="text-lg">📋</span>
-              </div>
-              <div className="flex-1">
-                <h3 className="text-sm font-bold text-slate-800 dark:text-slate-100">Interview Cheat Sheet</h3>
-                <p className="text-xs text-slate-500 dark:text-slate-400">Patterns, templates, complexity — all on one page</p>
-              </div>
-              <svg className="w-4 h-4 text-slate-300 dark:text-slate-600 group-hover:text-slate-500 transition-all group-hover:translate-x-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" />
-              </svg>
-            </div>
-          </button>
+      {/* Interview Tools section */}
+      {(onCheatSheet || onFlowchart || onLanguages || onPython) && (
+        <div className="mt-8 animate-fade-in-up delay-400">
+          <h2 className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-3">Interview Tools</h2>
+          <div className="grid sm:grid-cols-2 gap-3">
+            {onPython && (
+              <ToolCard onClick={onPython} icon="🐍" title="Python for Interviews" desc="Hands-on lessons for Python tricks" color="from-blue-500 to-yellow-500" />
+            )}
+            {onFlowchart && (
+              <ToolCard onClick={onFlowchart} icon="🧭" title="Pattern Finder" desc="Identify the right algorithm for any problem" color="from-indigo-500 to-purple-600" />
+            )}
+            {onLanguages && (
+              <ToolCard onClick={onLanguages} icon="💬" title="Language Guide" desc="Pick the best language for your interview" color="from-fuchsia-500 to-purple-600" />
+            )}
+            {onCheatSheet && (
+              <ToolCard onClick={onCheatSheet} icon="📋" title="Cheat Sheet" desc="Patterns & complexity reference" color="from-slate-600 to-slate-800" />
+            )}
+          </div>
         </div>
       )}
     </div>
+  );
+}
+
+function ToolCard({ onClick, icon, title, desc, color }: { onClick: () => void; icon: string; title: string; desc: string; color: string }) {
+  return (
+    <button onClick={onClick} className="text-left bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl p-4 hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 group">
+      <div className="flex items-center gap-3">
+        <div className={`w-10 h-10 rounded-xl bg-gradient-to-br ${color} flex items-center justify-center flex-shrink-0`}>
+          <span className="text-lg">{icon}</span>
+        </div>
+        <div className="flex-1 min-w-0">
+          <h3 className="text-sm font-bold text-slate-800 dark:text-slate-100 truncate">{title}</h3>
+          <p className="text-[11px] text-slate-500 dark:text-slate-400 truncate">{desc}</p>
+        </div>
+        <svg className="w-4 h-4 text-slate-300 dark:text-slate-600 group-hover:text-slate-500 transition-all group-hover:translate-x-1 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+          <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
+        </svg>
+      </div>
+    </button>
   );
 }
