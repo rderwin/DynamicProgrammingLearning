@@ -25,6 +25,7 @@ import IntervalDPTrainer from "./components/IntervalDPTrainer";
 import BitmaskDPTrainer from "./components/BitmaskDPTrainer";
 import TreeDPTrainer from "./components/TreeDPTrainer";
 import DPPatternRecognizer from "./components/DPPatternRecognizer";
+import WhiteboardMode from "./components/WhiteboardMode";
 import ProgressBar from "./components/ProgressBar";
 import DailyChallenge from "./components/DailyChallenge";
 import { dailyProblems } from "./content/dailyProblems";
@@ -95,7 +96,8 @@ type AppView =
   | { screen: "interval-dp" }
   | { screen: "bitmask-dp" }
   | { screen: "tree-dp" }
-  | { screen: "pattern-recognizer" };
+  | { screen: "pattern-recognizer" }
+  | { screen: "whiteboard" };
 
 const DEFAULT_DATA: UserData = { modules: {}, gamification: { xp: 0, achievementsUnlocked: [], activityDates: [] } };
 
@@ -318,6 +320,7 @@ function AppInner() {
     bitmaskDP: () => setView({ screen: "bitmask-dp" }),
     treeDP: () => setView({ screen: "tree-dp" }),
     patternRecognizer: () => setView({ screen: "pattern-recognizer" }),
+    whiteboard: () => setView({ screen: "whiteboard" }),
   };
 
   // Get progress for module picker
@@ -384,7 +387,7 @@ function AppInner() {
     );
   }
 
-  const showModuleNav = activeModule && view.screen !== "home" && view.screen !== "account" && view.screen !== "training" && view.screen !== "cheatsheet" && view.screen !== "flowchart" && view.screen !== "languages" && view.screen !== "python" && view.screen !== "complexity-viz" && view.screen !== "sandbox" && view.screen !== "python-dp" && view.screen !== "stats" && view.screen !== "gotchas" && view.screen !== "state-finder" && view.screen !== "recurrence-builder" && view.screen !== "string-dp" && view.screen !== "interval-dp" && view.screen !== "bitmask-dp" && view.screen !== "tree-dp" && view.screen !== "pattern-recognizer";
+  const showModuleNav = activeModule && view.screen !== "home" && view.screen !== "account" && view.screen !== "training" && view.screen !== "cheatsheet" && view.screen !== "flowchart" && view.screen !== "languages" && view.screen !== "python" && view.screen !== "complexity-viz" && view.screen !== "sandbox" && view.screen !== "python-dp" && view.screen !== "stats" && view.screen !== "gotchas" && view.screen !== "state-finder" && view.screen !== "recurrence-builder" && view.screen !== "string-dp" && view.screen !== "interval-dp" && view.screen !== "bitmask-dp" && view.screen !== "tree-dp" && view.screen !== "pattern-recognizer" && view.screen !== "whiteboard";
 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950 font-sans">
@@ -533,6 +536,7 @@ function AppInner() {
             onBitmaskDP={nav.bitmaskDP}
             onTreeDP={nav.treeDP}
             onPatternRecognizer={nav.patternRecognizer}
+            onWhiteboard={nav.whiteboard}
           />
           </>
         )}
@@ -688,6 +692,11 @@ function AppInner() {
         {/* DP Pattern Recognizer */}
         {view.screen === "pattern-recognizer" && (
           <DPPatternRecognizer onBack={nav.home} />
+        )}
+
+        {/* Whiteboard Mode */}
+        {view.screen === "whiteboard" && (
+          <WhiteboardMode onBack={nav.home} />
         )}
 
         {/* Training Center */}

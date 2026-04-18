@@ -21,9 +21,10 @@ interface Props {
   onBitmaskDP?: () => void;
   onTreeDP?: () => void;
   onPatternRecognizer?: () => void;
+  onWhiteboard?: () => void;
 }
 
-export default function ModulePicker({ modules, onSelectModule, getProgress, onTraining, onCheatSheet, onFlowchart, onLanguages, onPython, onComplexityViz, onSandbox, onPythonDP, onStats, onGotchas, onStateFinder, onRecurrenceBuilder, onStringDP, onIntervalDP, onBitmaskDP, onTreeDP, onPatternRecognizer }: Props) {
+export default function ModulePicker({ modules, onSelectModule, getProgress, onTraining, onCheatSheet, onFlowchart, onLanguages, onPython, onComplexityViz, onSandbox, onPythonDP, onStats, onGotchas, onStateFinder, onRecurrenceBuilder, onStringDP, onIntervalDP, onBitmaskDP, onTreeDP, onPatternRecognizer, onWhiteboard }: Props) {
   return (
     <div className="max-w-4xl mx-auto animate-fade-in">
       {/* Hero */}
@@ -203,6 +204,9 @@ export default function ModulePicker({ modules, onSelectModule, getProgress, onT
             )}
             {onPatternRecognizer && (
               <ToolCard onClick={onPatternRecognizer} icon="🎯" title="DP Pattern Recognizer" desc="Identify which DP pattern applies from a problem description" color="from-purple-500 to-red-600" />
+            )}
+            {onWhiteboard && (
+              <ToolCard onClick={onWhiteboard} icon="📋" title="Whiteboard Mode" desc="Sketch the approach before coding — the interview discipline" color="from-slate-700 to-slate-900" />
             )}
           </div>
         </div>
