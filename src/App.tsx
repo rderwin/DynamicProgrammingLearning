@@ -18,6 +18,7 @@ import DataStructureSandbox from "./components/DataStructureSandbox";
 import PythonDPTrainer from "./components/PythonDPTrainer";
 import StatsDashboard from "./components/StatsDashboard";
 import PythonGotchas from "./components/PythonGotchas";
+import DPStateFinder from "./components/DPStateFinder";
 import ProgressBar from "./components/ProgressBar";
 import DailyChallenge from "./components/DailyChallenge";
 import { dailyProblems } from "./content/dailyProblems";
@@ -81,7 +82,8 @@ type AppView =
   | { screen: "sandbox" }
   | { screen: "python-dp" }
   | { screen: "stats" }
-  | { screen: "gotchas" };
+  | { screen: "gotchas" }
+  | { screen: "state-finder" };
 
 const DEFAULT_DATA: UserData = { modules: {}, gamification: { xp: 0, achievementsUnlocked: [], activityDates: [] } };
 
@@ -297,6 +299,7 @@ function AppInner() {
     pythonDP: () => setView({ screen: "python-dp" }),
     stats: () => setView({ screen: "stats" }),
     gotchas: () => setView({ screen: "gotchas" }),
+    stateFinder: () => setView({ screen: "state-finder" }),
   };
 
   // Get progress for module picker
@@ -363,7 +366,7 @@ function AppInner() {
     );
   }
 
-  const showModuleNav = activeModule && view.screen !== "home" && view.screen !== "account" && view.screen !== "training" && view.screen !== "cheatsheet" && view.screen !== "flowchart" && view.screen !== "languages" && view.screen !== "python" && view.screen !== "complexity-viz" && view.screen !== "sandbox" && view.screen !== "python-dp" && view.screen !== "stats" && view.screen !== "gotchas";
+  const showModuleNav = activeModule && view.screen !== "home" && view.screen !== "account" && view.screen !== "training" && view.screen !== "cheatsheet" && view.screen !== "flowchart" && view.screen !== "languages" && view.screen !== "python" && view.screen !== "complexity-viz" && view.screen !== "sandbox" && view.screen !== "python-dp" && view.screen !== "stats" && view.screen !== "gotchas" && view.screen !== "state-finder";
 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950 font-sans">
@@ -505,6 +508,7 @@ function AppInner() {
             onPythonDP={nav.pythonDP}
             onStats={nav.stats}
             onGotchas={nav.gotchas}
+            onStateFinder={nav.stateFinder}
           />
           </>
         )}
@@ -625,6 +629,11 @@ function AppInner() {
         {/* Python Gotchas */}
         {view.screen === "gotchas" && (
           <PythonGotchas onBack={nav.home} />
+        )}
+
+        {/* DP State Finder */}
+        {view.screen === "state-finder" && (
+          <DPStateFinder onBack={nav.home} />
         )}
 
         {/* Training Center */}

@@ -14,9 +14,10 @@ interface Props {
   onPythonDP?: () => void;
   onStats?: () => void;
   onGotchas?: () => void;
+  onStateFinder?: () => void;
 }
 
-export default function ModulePicker({ modules, onSelectModule, getProgress, onTraining, onCheatSheet, onFlowchart, onLanguages, onPython, onComplexityViz, onSandbox, onPythonDP, onStats, onGotchas }: Props) {
+export default function ModulePicker({ modules, onSelectModule, getProgress, onTraining, onCheatSheet, onFlowchart, onLanguages, onPython, onComplexityViz, onSandbox, onPythonDP, onStats, onGotchas, onStateFinder }: Props) {
   return (
     <div className="max-w-4xl mx-auto animate-fade-in">
       {/* Hero */}
@@ -175,6 +176,9 @@ export default function ModulePicker({ modules, onSelectModule, getProgress, onT
             )}
             {onGotchas && (
               <ToolCard onClick={onGotchas} icon="⚠️" title="Python Gotchas" desc="The weird behaviors that bite in interviews" color="from-red-500 to-orange-600" />
+            )}
+            {onStateFinder && (
+              <ToolCard onClick={onStateFinder} icon="🧠" title="DP State Finder" desc="Practice the hardest part of DP — identifying the state" color="from-violet-500 to-fuchsia-600" />
             )}
           </div>
         </div>
