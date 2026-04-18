@@ -19,9 +19,10 @@ interface Props {
   onStringDP?: () => void;
   onIntervalDP?: () => void;
   onBitmaskDP?: () => void;
+  onTreeDP?: () => void;
 }
 
-export default function ModulePicker({ modules, onSelectModule, getProgress, onTraining, onCheatSheet, onFlowchart, onLanguages, onPython, onComplexityViz, onSandbox, onPythonDP, onStats, onGotchas, onStateFinder, onRecurrenceBuilder, onStringDP, onIntervalDP, onBitmaskDP }: Props) {
+export default function ModulePicker({ modules, onSelectModule, getProgress, onTraining, onCheatSheet, onFlowchart, onLanguages, onPython, onComplexityViz, onSandbox, onPythonDP, onStats, onGotchas, onStateFinder, onRecurrenceBuilder, onStringDP, onIntervalDP, onBitmaskDP, onTreeDP }: Props) {
   return (
     <div className="max-w-4xl mx-auto animate-fade-in">
       {/* Hero */}
@@ -195,6 +196,9 @@ export default function ModulePicker({ modules, onSelectModule, getProgress, onT
             )}
             {onBitmaskDP && (
               <ToolCard onClick={onBitmaskDP} icon="🎛️" title="Bitmask DP Masterclass" desc="Subset as state — TSP, Assignment, Can I Win" color="from-cyan-500 to-emerald-600" />
+            )}
+            {onTreeDP && (
+              <ToolCard onClick={onTreeDP} icon="🌳" title="Tree DP Masterclass" desc="Post-order DFS + rerooting — Diameter, Max Path, Rerooting" color="from-green-500 to-teal-600" />
             )}
           </div>
         </div>

@@ -23,6 +23,7 @@ import RecurrenceBuilder from "./components/RecurrenceBuilder";
 import StringDPTrainer from "./components/StringDPTrainer";
 import IntervalDPTrainer from "./components/IntervalDPTrainer";
 import BitmaskDPTrainer from "./components/BitmaskDPTrainer";
+import TreeDPTrainer from "./components/TreeDPTrainer";
 import ProgressBar from "./components/ProgressBar";
 import DailyChallenge from "./components/DailyChallenge";
 import { dailyProblems } from "./content/dailyProblems";
@@ -91,7 +92,8 @@ type AppView =
   | { screen: "recurrence-builder" }
   | { screen: "string-dp" }
   | { screen: "interval-dp" }
-  | { screen: "bitmask-dp" };
+  | { screen: "bitmask-dp" }
+  | { screen: "tree-dp" };
 
 const DEFAULT_DATA: UserData = { modules: {}, gamification: { xp: 0, achievementsUnlocked: [], activityDates: [] } };
 
@@ -312,6 +314,7 @@ function AppInner() {
     stringDP: () => setView({ screen: "string-dp" }),
     intervalDP: () => setView({ screen: "interval-dp" }),
     bitmaskDP: () => setView({ screen: "bitmask-dp" }),
+    treeDP: () => setView({ screen: "tree-dp" }),
   };
 
   // Get progress for module picker
@@ -378,7 +381,7 @@ function AppInner() {
     );
   }
 
-  const showModuleNav = activeModule && view.screen !== "home" && view.screen !== "account" && view.screen !== "training" && view.screen !== "cheatsheet" && view.screen !== "flowchart" && view.screen !== "languages" && view.screen !== "python" && view.screen !== "complexity-viz" && view.screen !== "sandbox" && view.screen !== "python-dp" && view.screen !== "stats" && view.screen !== "gotchas" && view.screen !== "state-finder" && view.screen !== "recurrence-builder" && view.screen !== "string-dp" && view.screen !== "interval-dp" && view.screen !== "bitmask-dp";
+  const showModuleNav = activeModule && view.screen !== "home" && view.screen !== "account" && view.screen !== "training" && view.screen !== "cheatsheet" && view.screen !== "flowchart" && view.screen !== "languages" && view.screen !== "python" && view.screen !== "complexity-viz" && view.screen !== "sandbox" && view.screen !== "python-dp" && view.screen !== "stats" && view.screen !== "gotchas" && view.screen !== "state-finder" && view.screen !== "recurrence-builder" && view.screen !== "string-dp" && view.screen !== "interval-dp" && view.screen !== "bitmask-dp" && view.screen !== "tree-dp";
 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950 font-sans">
@@ -525,6 +528,7 @@ function AppInner() {
             onStringDP={nav.stringDP}
             onIntervalDP={nav.intervalDP}
             onBitmaskDP={nav.bitmaskDP}
+            onTreeDP={nav.treeDP}
           />
           </>
         )}
@@ -670,6 +674,11 @@ function AppInner() {
         {/* Bitmask DP Masterclass */}
         {view.screen === "bitmask-dp" && (
           <BitmaskDPTrainer onBack={nav.home} />
+        )}
+
+        {/* Tree DP Masterclass */}
+        {view.screen === "tree-dp" && (
+          <TreeDPTrainer onBack={nav.home} />
         )}
 
         {/* Training Center */}
