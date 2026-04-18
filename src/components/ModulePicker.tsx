@@ -1,46 +1,117 @@
 import type { ModuleConfig, ModuleId } from "../modules/types";
 
+/**
+ * Map of tool key → handler. Only keys with handlers render. The tool metadata
+ * (icon, title, desc, color, section) lives in a table below, not in props —
+ * this keeps Props compact and lets us reorder/recategorize without touching
+ * the calling side.
+ */
+export type ToolKey =
+  | "python"
+  | "pythonDP"
+  | "stringDP"
+  | "intervalDP"
+  | "bitmaskDP"
+  | "treeDP"
+  | "stateFinder"
+  | "recurrenceBuilder"
+  | "patternRecognizer"
+  | "whiteboard"
+  | "gotchas"
+  | "flowchart"
+  | "languages"
+  | "cheatsheet"
+  | "complexityViz"
+  | "sandbox"
+  | "stats";
+
+type Section = "dp-deep-dives" | "dp-skill-drills" | "general" | "reference";
+
+interface ToolMeta {
+  key: ToolKey;
+  icon: string;
+  title: string;
+  desc: string;
+  color: string;
+  section: Section;
+}
+
+const TOOLS: ToolMeta[] = [
+  // DP Deep Dives — sustained hands-on trainers, one topic each
+  { key: "pythonDP", icon: "🧮", title: "Python DP Masterclass", desc: "6 hands-on DP lessons in Python", color: "from-violet-500 to-blue-600", section: "dp-deep-dives" },
+  { key: "stringDP", icon: "📝", title: "String DP Masterclass", desc: "LCS, Edit Distance, Palindromes — the string DP patterns", color: "from-rose-500 to-orange-600", section: "dp-deep-dives" },
+  { key: "intervalDP", icon: "⏏️", title: "Interval DP Masterclass", desc: "Split-the-range — Matrix Chain, Burst Balloons, Stone Game", color: "from-indigo-500 to-pink-600", section: "dp-deep-dives" },
+  { key: "bitmaskDP", icon: "🎛️", title: "Bitmask DP Masterclass", desc: "Subset as state — TSP, Assignment, Can I Win", color: "from-cyan-500 to-emerald-600", section: "dp-deep-dives" },
+  { key: "treeDP", icon: "🌳", title: "Tree DP Masterclass", desc: "Post-order DFS + rerooting — Diameter, Max Path", color: "from-green-500 to-teal-600", section: "dp-deep-dives" },
+
+  // DP Skill Drills — short interactive tools that build specific DP skills
+  { key: "stateFinder", icon: "🧠", title: "DP State Finder", desc: "Practice identifying the state — the hardest part of DP", color: "from-violet-500 to-fuchsia-600", section: "dp-skill-drills" },
+  { key: "recurrenceBuilder", icon: "🔁", title: "Recurrence Builder", desc: "Derive the DP recurrence step by step", color: "from-pink-500 to-rose-600", section: "dp-skill-drills" },
+  { key: "patternRecognizer", icon: "🎯", title: "DP Pattern Recognizer", desc: "Given a problem, identify the DP pattern that fits", color: "from-purple-500 to-red-600", section: "dp-skill-drills" },
+  { key: "whiteboard", icon: "📋", title: "Whiteboard Mode", desc: "Sketch the approach before coding — interview discipline", color: "from-slate-700 to-slate-900", section: "dp-skill-drills" },
+
+  // General interview prep — not DP specific
+  { key: "python", icon: "🐍", title: "Python for Interviews", desc: "Hands-on lessons for Python tricks", color: "from-blue-500 to-yellow-500", section: "general" },
+  { key: "gotchas", icon: "⚠️", title: "Python Gotchas", desc: "The weird behaviors that bite in interviews", color: "from-red-500 to-orange-600", section: "general" },
+  { key: "flowchart", icon: "🧭", title: "Pattern Finder", desc: "Identify the right algorithm for any problem", color: "from-indigo-500 to-purple-600", section: "general" },
+  { key: "languages", icon: "💬", title: "Language Guide", desc: "Pick the best language for your interview", color: "from-fuchsia-500 to-purple-600", section: "general" },
+  { key: "sandbox", icon: "🎮", title: "Data Structure Sandbox", desc: "Play with stack, queue, heap, map, set", color: "from-teal-500 to-cyan-600", section: "general" },
+
+  // Reference — lookup / tracking tools
+  { key: "cheatsheet", icon: "📋", title: "Cheat Sheet", desc: "Patterns & complexity reference", color: "from-slate-600 to-slate-800", section: "reference" },
+  { key: "complexityViz", icon: "📈", title: "Complexity Visualizer", desc: "See how Big O classes grow", color: "from-cyan-500 to-blue-600", section: "reference" },
+  { key: "stats", icon: "📊", title: "My Stats", desc: "All your progress across the app", color: "from-blue-500 to-violet-600", section: "reference" },
+];
+
+const SECTION_LABELS: Record<Section, string> = {
+  "dp-deep-dives": "DP Deep Dives",
+  "dp-skill-drills": "DP Skill Drills",
+  "general": "Interview Prep",
+  "reference": "Reference & Progress",
+};
+
+const SECTION_ORDER: Section[] = ["dp-deep-dives", "dp-skill-drills", "general", "reference"];
+
 interface Props {
   modules: ModuleConfig[];
   onSelectModule: (id: ModuleId) => void;
   getProgress: (id: ModuleId) => { lessons: number; practice: number };
   onTraining?: () => void;
-  onCheatSheet?: () => void;
-  onFlowchart?: () => void;
-  onLanguages?: () => void;
-  onPython?: () => void;
-  onComplexityViz?: () => void;
-  onSandbox?: () => void;
-  onPythonDP?: () => void;
-  onStats?: () => void;
-  onGotchas?: () => void;
-  onStateFinder?: () => void;
-  onRecurrenceBuilder?: () => void;
-  onStringDP?: () => void;
-  onIntervalDP?: () => void;
-  onBitmaskDP?: () => void;
-  onTreeDP?: () => void;
-  onPatternRecognizer?: () => void;
-  onWhiteboard?: () => void;
+  /**
+   * Map of tool key → handler. Only keys with handlers render.
+   */
+  tools?: Partial<Record<ToolKey, () => void>>;
 }
 
-export default function ModulePicker({ modules, onSelectModule, getProgress, onTraining, onCheatSheet, onFlowchart, onLanguages, onPython, onComplexityViz, onSandbox, onPythonDP, onStats, onGotchas, onStateFinder, onRecurrenceBuilder, onStringDP, onIntervalDP, onBitmaskDP, onTreeDP, onPatternRecognizer, onWhiteboard }: Props) {
+export default function ModulePicker({ modules, onSelectModule, getProgress, onTraining, tools = {} }: Props) {
+  // Group the tools that have handlers into their sections
+  const toolsBySection: Record<Section, ToolMeta[]> = {
+    "dp-deep-dives": [],
+    "dp-skill-drills": [],
+    "general": [],
+    "reference": [],
+  };
+  for (const t of TOOLS) {
+    if (tools[t.key]) toolsBySection[t.section].push(t);
+  }
+  const hasAnyTools = Object.values(toolsBySection).some((arr) => arr.length > 0);
+
   return (
     <div className="max-w-4xl mx-auto animate-fade-in">
       {/* Hero */}
       <div className="text-center mb-12">
-        <div className="inline-flex items-center gap-2 bg-blue-50 text-blue-700 text-sm font-medium px-4 py-1.5 rounded-full mb-6">
+        <div className="inline-flex items-center gap-2 bg-blue-50 dark:bg-blue-950/40 text-blue-700 dark:text-blue-400 text-sm font-medium px-4 py-1.5 rounded-full mb-6">
           <span className="w-2 h-2 rounded-full bg-blue-500 animate-pulse" />
           Interactive visual learning
         </div>
-        <h1 className="text-4xl sm:text-5xl font-extrabold text-slate-900 dark:text-slate-100 tracking-tight leading-tight mb-4">
+        <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-slate-900 dark:text-slate-100 tracking-tight leading-tight mb-4">
           Master the topics that
           <br />
           <span className="bg-gradient-to-r from-blue-600 via-violet-600 to-blue-600 bg-clip-text text-transparent gradient-animate">
             actually come up in interviews.
           </span>
         </h1>
-        <p className="text-lg text-slate-500 dark:text-slate-400 max-w-xl mx-auto">
+        <p className="text-base sm:text-lg text-slate-500 dark:text-slate-400 max-w-xl mx-auto">
           Each module walks you through step by step — visualize the algorithm, understand why it works, then write the code yourself.
         </p>
       </div>
@@ -59,7 +130,8 @@ export default function ModulePicker({ modules, onSelectModule, getProgress, onT
               key={mod.id}
               onClick={() => isAvailable && onSelectModule(mod.id)}
               disabled={!isAvailable}
-              className={`text-left rounded-2xl border p-6 transition-all duration-200 group ${
+              aria-label={isAvailable ? `Open ${mod.title}` : `${mod.title} (coming soon)`}
+              className={`text-left rounded-2xl border p-6 transition-all duration-200 group focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-slate-950 ${
                 isAvailable
                   ? `${mod.color.border} hover:shadow-lg hover:-translate-y-1 active:translate-y-0 cursor-pointer bg-white dark:bg-slate-900`
                   : "border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800/50 cursor-not-allowed"
@@ -134,7 +206,8 @@ export default function ModulePicker({ modules, onSelectModule, getProgress, onT
         <div className="mt-8 animate-fade-in-up delay-300">
           <button
             onClick={onTraining}
-            className="w-full text-left bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-950/30 dark:to-orange-950/30 border border-amber-200 dark:border-amber-800 rounded-2xl p-6 hover:shadow-lg hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 group"
+            aria-label="Open Training Center"
+            className="w-full text-left bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-950/30 dark:to-orange-950/30 border border-amber-200 dark:border-amber-800 rounded-2xl p-6 hover:shadow-lg hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 group focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-slate-950"
           >
             <div className="flex items-center gap-4">
               <div className="w-12 h-12 bg-gradient-to-br from-amber-400 to-orange-600 rounded-xl flex items-center justify-center shadow-sm flex-shrink-0">
@@ -144,7 +217,7 @@ export default function ModulePicker({ modules, onSelectModule, getProgress, onT
                 <h3 className="text-base font-bold text-slate-800 dark:text-slate-100 group-hover:text-amber-700 dark:group-hover:text-amber-400 transition-colors">Training Center</h3>
                 <p className="text-xs text-slate-500 dark:text-slate-400">Pattern recognition quizzes, bug hunts, and skill drills — earn XP</p>
               </div>
-              <svg className="w-5 h-5 text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-300 transition-all group-hover:translate-x-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <svg aria-hidden="true" className="w-5 h-5 text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-300 transition-all group-hover:translate-x-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" />
               </svg>
             </div>
@@ -152,63 +225,37 @@ export default function ModulePicker({ modules, onSelectModule, getProgress, onT
         </div>
       )}
 
-      {/* Interview Tools section */}
-      {(onCheatSheet || onFlowchart || onLanguages || onPython) && (
-        <div className="mt-8 animate-fade-in-up delay-400">
-          <h2 className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-3">Interview Tools</h2>
-          <div className="grid sm:grid-cols-2 gap-3">
-            {onPython && (
-              <ToolCard onClick={onPython} icon="🐍" title="Python for Interviews" desc="Hands-on lessons for Python tricks" color="from-blue-500 to-yellow-500" />
-            )}
-            {onPythonDP && (
-              <ToolCard onClick={onPythonDP} icon="🧮" title="Python DP Masterclass" desc="6 hands-on DP lessons in Python" color="from-violet-500 to-blue-600" />
-            )}
-            {onFlowchart && (
-              <ToolCard onClick={onFlowchart} icon="🧭" title="Pattern Finder" desc="Identify the right algorithm for any problem" color="from-indigo-500 to-purple-600" />
-            )}
-            {onLanguages && (
-              <ToolCard onClick={onLanguages} icon="💬" title="Language Guide" desc="Pick the best language for your interview" color="from-fuchsia-500 to-purple-600" />
-            )}
-            {onCheatSheet && (
-              <ToolCard onClick={onCheatSheet} icon="📋" title="Cheat Sheet" desc="Patterns & complexity reference" color="from-slate-600 to-slate-800" />
-            )}
-            {onComplexityViz && (
-              <ToolCard onClick={onComplexityViz} icon="📈" title="Complexity Visualizer" desc="See how Big O classes grow" color="from-cyan-500 to-blue-600" />
-            )}
-            {onSandbox && (
-              <ToolCard onClick={onSandbox} icon="🎮" title="Data Structure Sandbox" desc="Play with stack, queue, heap, map, set" color="from-teal-500 to-cyan-600" />
-            )}
-            {onStats && (
-              <ToolCard onClick={onStats} icon="📊" title="My Stats" desc="All your progress across the app" color="from-blue-500 to-violet-600" />
-            )}
-            {onGotchas && (
-              <ToolCard onClick={onGotchas} icon="⚠️" title="Python Gotchas" desc="The weird behaviors that bite in interviews" color="from-red-500 to-orange-600" />
-            )}
-            {onStateFinder && (
-              <ToolCard onClick={onStateFinder} icon="🧠" title="DP State Finder" desc="Practice the hardest part of DP — identifying the state" color="from-violet-500 to-fuchsia-600" />
-            )}
-            {onRecurrenceBuilder && (
-              <ToolCard onClick={onRecurrenceBuilder} icon="🔁" title="Recurrence Builder" desc="Derive the DP recurrence step by step" color="from-pink-500 to-rose-600" />
-            )}
-            {onStringDP && (
-              <ToolCard onClick={onStringDP} icon="📝" title="String DP Masterclass" desc="LCS, Edit Distance, Palindromes — the string DP patterns" color="from-rose-500 to-orange-600" />
-            )}
-            {onIntervalDP && (
-              <ToolCard onClick={onIntervalDP} icon="⏏️" title="Interval DP Masterclass" desc="Split-the-range pattern — Matrix Chain, Burst Balloons, Stone Game" color="from-indigo-500 to-pink-600" />
-            )}
-            {onBitmaskDP && (
-              <ToolCard onClick={onBitmaskDP} icon="🎛️" title="Bitmask DP Masterclass" desc="Subset as state — TSP, Assignment, Can I Win" color="from-cyan-500 to-emerald-600" />
-            )}
-            {onTreeDP && (
-              <ToolCard onClick={onTreeDP} icon="🌳" title="Tree DP Masterclass" desc="Post-order DFS + rerooting — Diameter, Max Path, Rerooting" color="from-green-500 to-teal-600" />
-            )}
-            {onPatternRecognizer && (
-              <ToolCard onClick={onPatternRecognizer} icon="🎯" title="DP Pattern Recognizer" desc="Identify which DP pattern applies from a problem description" color="from-purple-500 to-red-600" />
-            )}
-            {onWhiteboard && (
-              <ToolCard onClick={onWhiteboard} icon="📋" title="Whiteboard Mode" desc="Sketch the approach before coding — the interview discipline" color="from-slate-700 to-slate-900" />
-            )}
-          </div>
+      {/* Sectioned tool groups */}
+      {hasAnyTools && (
+        <div className="mt-10 space-y-8 animate-fade-in-up delay-400">
+          {SECTION_ORDER.map((section) => {
+            const items = toolsBySection[section];
+            if (items.length === 0) return null;
+            return (
+              <section key={section}>
+                <div className="flex items-baseline justify-between mb-3">
+                  <h2 className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+                    {SECTION_LABELS[section]}
+                  </h2>
+                  <span className="text-[10px] text-slate-400 dark:text-slate-500 font-mono">
+                    {items.length} {items.length === 1 ? "tool" : "tools"}
+                  </span>
+                </div>
+                <div className="grid sm:grid-cols-2 gap-3">
+                  {items.map((t) => (
+                    <ToolCard
+                      key={t.key}
+                      onClick={tools[t.key]!}
+                      icon={t.icon}
+                      title={t.title}
+                      desc={t.desc}
+                      color={t.color}
+                    />
+                  ))}
+                </div>
+              </section>
+            );
+          })}
         </div>
       )}
     </div>
@@ -217,7 +264,11 @@ export default function ModulePicker({ modules, onSelectModule, getProgress, onT
 
 function ToolCard({ onClick, icon, title, desc, color }: { onClick: () => void; icon: string; title: string; desc: string; color: string }) {
   return (
-    <button onClick={onClick} className="text-left bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl p-4 hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 group">
+    <button
+      onClick={onClick}
+      aria-label={`Open ${title}`}
+      className="text-left bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl p-4 hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 group focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-slate-950"
+    >
       <div className="flex items-center gap-3">
         <div className={`w-10 h-10 rounded-xl bg-gradient-to-br ${color} flex items-center justify-center flex-shrink-0`}>
           <span className="text-lg">{icon}</span>
@@ -226,7 +277,7 @@ function ToolCard({ onClick, icon, title, desc, color }: { onClick: () => void; 
           <h3 className="text-sm font-bold text-slate-800 dark:text-slate-100 truncate">{title}</h3>
           <p className="text-[11px] text-slate-500 dark:text-slate-400 truncate">{desc}</p>
         </div>
-        <svg className="w-4 h-4 text-slate-300 dark:text-slate-600 group-hover:text-slate-500 transition-all group-hover:translate-x-1 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+        <svg aria-hidden="true" className="w-4 h-4 text-slate-300 dark:text-slate-600 group-hover:text-slate-500 transition-all group-hover:translate-x-1 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
           <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
         </svg>
       </div>

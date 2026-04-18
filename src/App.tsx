@@ -387,7 +387,17 @@ function AppInner() {
     );
   }
 
-  const showModuleNav = activeModule && view.screen !== "home" && view.screen !== "account" && view.screen !== "training" && view.screen !== "cheatsheet" && view.screen !== "flowchart" && view.screen !== "languages" && view.screen !== "python" && view.screen !== "complexity-viz" && view.screen !== "sandbox" && view.screen !== "python-dp" && view.screen !== "stats" && view.screen !== "gotchas" && view.screen !== "state-finder" && view.screen !== "recurrence-builder" && view.screen !== "string-dp" && view.screen !== "interval-dp" && view.screen !== "bitmask-dp" && view.screen !== "tree-dp" && view.screen !== "pattern-recognizer" && view.screen !== "whiteboard";
+  // Module nav shows when we're inside a module (intro / lesson / transition / practice / etc.).
+  // Listing the module-scoped screens is shorter and safer than excluding every standalone view.
+  const MODULE_SCREENS: ReadonlySet<AppView["screen"]> = new Set([
+    "module-intro",
+    "lesson",
+    "transition",
+    "module-complete",
+    "practice",
+    "practice-problem",
+  ]);
+  const showModuleNav = activeModule && MODULE_SCREENS.has(view.screen);
 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950 font-sans">
@@ -520,23 +530,25 @@ function AppInner() {
             }}
             getProgress={getModulePickerProgress}
             onTraining={nav.training}
-            onCheatSheet={nav.cheatsheet}
-            onFlowchart={nav.flowchart}
-            onLanguages={nav.languages}
-            onPython={nav.python}
-            onComplexityViz={nav.complexityViz}
-            onSandbox={nav.sandbox}
-            onPythonDP={nav.pythonDP}
-            onStats={nav.stats}
-            onGotchas={nav.gotchas}
-            onStateFinder={nav.stateFinder}
-            onRecurrenceBuilder={nav.recurrenceBuilder}
-            onStringDP={nav.stringDP}
-            onIntervalDP={nav.intervalDP}
-            onBitmaskDP={nav.bitmaskDP}
-            onTreeDP={nav.treeDP}
-            onPatternRecognizer={nav.patternRecognizer}
-            onWhiteboard={nav.whiteboard}
+            tools={{
+              cheatsheet: nav.cheatsheet,
+              flowchart: nav.flowchart,
+              languages: nav.languages,
+              python: nav.python,
+              complexityViz: nav.complexityViz,
+              sandbox: nav.sandbox,
+              pythonDP: nav.pythonDP,
+              stats: nav.stats,
+              gotchas: nav.gotchas,
+              stateFinder: nav.stateFinder,
+              recurrenceBuilder: nav.recurrenceBuilder,
+              stringDP: nav.stringDP,
+              intervalDP: nav.intervalDP,
+              bitmaskDP: nav.bitmaskDP,
+              treeDP: nav.treeDP,
+              patternRecognizer: nav.patternRecognizer,
+              whiteboard: nav.whiteboard,
+            }}
           />
           </>
         )}
