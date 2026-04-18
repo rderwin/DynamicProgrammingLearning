@@ -454,13 +454,15 @@ def lengthOfLIS(nums):
 
 interface Props {
   onBack: () => void;
+  onLessonComplete?: (lessonId: string) => void;
 }
 
-export default function PythonDPTrainer({ onBack }: Props) {
+export default function PythonDPTrainer({ onBack, onLessonComplete }: Props) {
   const [idx, setIdx] = useState(0);
   const [showSolution, setShowSolution] = useState<"none" | "top-down" | "bottom-up">("none");
   const [solved, setSolved] = useState(false);
   const [hintIdx, setHintIdx] = useState(0);
+  const [awarded, setAwarded] = useState<Set<string>>(new Set());
 
   const lesson = lessons[idx];
   const total = lessons.length;
@@ -579,7 +581,13 @@ export default function PythonDPTrainer({ onBack }: Props) {
           testCases={lesson.testCases}
           starterJS=""
           starterPython={lesson.starter}
-          onPass={() => setSolved(true)}
+          onPass={() => {
+            setSolved(true);
+            if (!awarded.has(lesson.id)) {
+              setAwarded((prev) => new Set(prev).add(lesson.id));
+              onLessonComplete?.(lesson.id);
+            }
+          }}
         />
 
         {/* Controls */}

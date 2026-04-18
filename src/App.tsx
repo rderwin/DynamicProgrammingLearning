@@ -643,7 +643,7 @@ function AppInner() {
 
         {/* Python Trainer */}
         {view.screen === "python" && (
-          <PythonTrainer onBack={nav.home} />
+          <PythonTrainer onBack={nav.home} onLessonComplete={() => awardXP(XP_REWARDS.trainerLessonComplete)} />
         )}
 
         {/* Complexity Visualizer */}
@@ -658,7 +658,7 @@ function AppInner() {
 
         {/* Python DP Trainer */}
         {view.screen === "python-dp" && (
-          <PythonDPTrainer onBack={nav.home} />
+          <PythonDPTrainer onBack={nav.home} onLessonComplete={() => awardXP(XP_REWARDS.trainerLessonComplete)} />
         )}
 
         {/* Stats Dashboard */}
@@ -673,42 +673,42 @@ function AppInner() {
 
         {/* DP State Finder */}
         {view.screen === "state-finder" && (
-          <DPStateFinder onBack={nav.home} />
+          <DPStateFinder onBack={nav.home} onCorrectAnswer={() => awardXP(XP_REWARDS.quizCorrect)} />
         )}
 
         {/* Recurrence Builder */}
         {view.screen === "recurrence-builder" && (
-          <RecurrenceBuilder onBack={nav.home} />
+          <RecurrenceBuilder onBack={nav.home} onDrillComplete={() => awardXP(XP_REWARDS.drillCompleted)} />
         )}
 
         {/* String DP Masterclass */}
         {view.screen === "string-dp" && (
-          <StringDPTrainer onBack={nav.home} />
+          <StringDPTrainer onBack={nav.home} onLessonComplete={() => awardXP(XP_REWARDS.trainerLessonComplete)} />
         )}
 
         {/* Interval DP Masterclass */}
         {view.screen === "interval-dp" && (
-          <IntervalDPTrainer onBack={nav.home} />
+          <IntervalDPTrainer onBack={nav.home} onLessonComplete={() => awardXP(XP_REWARDS.trainerLessonComplete)} />
         )}
 
         {/* Bitmask DP Masterclass */}
         {view.screen === "bitmask-dp" && (
-          <BitmaskDPTrainer onBack={nav.home} />
+          <BitmaskDPTrainer onBack={nav.home} onLessonComplete={() => awardXP(XP_REWARDS.trainerLessonComplete)} />
         )}
 
         {/* Tree DP Masterclass */}
         {view.screen === "tree-dp" && (
-          <TreeDPTrainer onBack={nav.home} />
+          <TreeDPTrainer onBack={nav.home} onLessonComplete={() => awardXP(XP_REWARDS.trainerLessonComplete)} />
         )}
 
         {/* DP Pattern Recognizer */}
         {view.screen === "pattern-recognizer" && (
-          <DPPatternRecognizer onBack={nav.home} />
+          <DPPatternRecognizer onBack={nav.home} onCorrectAnswer={() => awardXP(XP_REWARDS.quizCorrect)} />
         )}
 
         {/* Whiteboard Mode */}
         {view.screen === "whiteboard" && (
-          <WhiteboardMode onBack={nav.home} />
+          <WhiteboardMode onBack={nav.home} onDrillComplete={() => awardXP(XP_REWARDS.drillCompleted)} />
         )}
 
         {/* Training Center */}

@@ -7,6 +7,9 @@ export const XP_REWARDS = {
   practiceMedium: 60,
   practiceHard: 100,
   dailyStreak: 15,             // bonus per day of streak
+  trainerLessonComplete: 40,   // passing a masterclass trainer lesson
+  quizCorrect: 5,              // per correct answer in short quizzes
+  drillCompleted: 25,          // finishing a whiteboard / recurrence drill
 } as const;
 
 export interface Level {

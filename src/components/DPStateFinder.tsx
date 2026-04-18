@@ -151,9 +151,10 @@ const challenges: StateChallenge[] = [
 
 interface Props {
   onBack: () => void;
+  onCorrectAnswer?: () => void;
 }
 
-export default function DPStateFinder({ onBack }: Props) {
+export default function DPStateFinder({ onBack, onCorrectAnswer }: Props) {
   const [idx, setIdx] = useState(0);
   const [selected, setSelected] = useState<number | null>(null);
   const [revealed, setRevealed] = useState(false);
@@ -167,7 +168,10 @@ export default function DPStateFinder({ onBack }: Props) {
   function handleReveal() {
     if (selected === null) return;
     setRevealed(true);
-    if (isCorrect) setScore((s) => s + 1);
+    if (isCorrect) {
+      setScore((s) => s + 1);
+      onCorrectAnswer?.();
+    }
   }
 
   function handleNext() {

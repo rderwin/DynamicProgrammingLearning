@@ -289,15 +289,17 @@ def lengthOfLIS_fast(nums):
 
 interface Props {
   onBack: () => void;
+  onDrillComplete?: (problemId: string) => void;
 }
 
-export default function WhiteboardMode({ onBack }: Props) {
+export default function WhiteboardMode({ onBack, onDrillComplete }: Props) {
   const [problemIdx, setProblemIdx] = useState(0);
   const [stepIdx, setStepIdx] = useState(0);
   const [userAnswer, setUserAnswer] = useState("");
   const [revealed, setRevealed] = useState<boolean[]>([]);
   const [finished, setFinished] = useState(false);
   const [hintShown, setHintShown] = useState(false);
+  const [awarded, setAwarded] = useState<Set<string>>(new Set());
 
   const problem = problems[problemIdx];
   const step = problem.steps[stepIdx];
@@ -315,6 +317,10 @@ export default function WhiteboardMode({ onBack }: Props) {
       setHintShown(false);
     } else {
       setFinished(true);
+      if (!awarded.has(problem.id)) {
+        setAwarded((prev) => new Set(prev).add(problem.id));
+        onDrillComplete?.(problem.id);
+      }
     }
   }
 

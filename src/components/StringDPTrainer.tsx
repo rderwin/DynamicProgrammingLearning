@@ -477,13 +477,17 @@ def longestPalindromeSubseq_lcs(s):
 
 interface Props {
   onBack: () => void;
+  /** Called the first time the user passes each lesson's tests. Lesson ID is passed so callers can dedupe. */
+  onLessonComplete?: (lessonId: string) => void;
 }
 
-export default function StringDPTrainer({ onBack }: Props) {
+export default function StringDPTrainer({ onBack, onLessonComplete }: Props) {
   const [idx, setIdx] = useState(0);
   const [showSolution, setShowSolution] = useState(false);
   const [solved, setSolved] = useState(false);
   const [hintIdx, setHintIdx] = useState(0);
+  // Track which lessons have been awarded so we only fire XP once per lesson.
+  const [awarded, setAwarded] = useState<Set<string>>(new Set());
 
   const lesson = lessons[idx];
   const total = lessons.length;
@@ -618,7 +622,13 @@ export default function StringDPTrainer({ onBack }: Props) {
           testCases={lesson.testCases}
           starterJS=""
           starterPython={lesson.starter}
-          onPass={() => setSolved(true)}
+          onPass={() => {
+            setSolved(true);
+            if (!awarded.has(lesson.id)) {
+              setAwarded((prev) => new Set(prev).add(lesson.id));
+              onLessonComplete?.(lesson.id);
+            }
+          }}
         />
 
         {/* Controls */}

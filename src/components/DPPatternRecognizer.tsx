@@ -169,9 +169,11 @@ const questions: Question[] = [
 
 interface Props {
   onBack: () => void;
+  /** Called once per correct answer. */
+  onCorrectAnswer?: () => void;
 }
 
-export default function DPPatternRecognizer({ onBack }: Props) {
+export default function DPPatternRecognizer({ onBack, onCorrectAnswer }: Props) {
   const [idx, setIdx] = useState(0);
   const [selected, setSelected] = useState<number[]>([]);
   const [revealed, setRevealed] = useState(false);
@@ -197,7 +199,10 @@ export default function DPPatternRecognizer({ onBack }: Props) {
     const selSet = new Set(selected);
     const corrSet = new Set(correctIndices);
     const isCorrect = selSet.size === corrSet.size && [...selSet].every((x) => corrSet.has(x));
-    if (isCorrect) setScore((s) => s + 1);
+    if (isCorrect) {
+      setScore((s) => s + 1);
+      onCorrectAnswer?.();
+    }
     setRevealed(true);
   }
 

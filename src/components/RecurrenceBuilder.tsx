@@ -170,14 +170,17 @@ const problems: Problem[] = [
 
 interface Props {
   onBack: () => void;
+  /** Called once per problem when the user completes all its steps. */
+  onDrillComplete?: (problemId: string) => void;
 }
 
-export default function RecurrenceBuilder({ onBack }: Props) {
+export default function RecurrenceBuilder({ onBack, onDrillComplete }: Props) {
   const [problemIdx, setProblemIdx] = useState(0);
   const [stepIdx, setStepIdx] = useState(0);
   const [selected, setSelected] = useState<number | null>(null);
   const [revealed, setRevealed] = useState(false);
   const [finished, setFinished] = useState(false);
+  const [awarded, setAwarded] = useState<Set<string>>(new Set());
 
   const problem = problems[problemIdx];
   const step = problem.steps[stepIdx];
@@ -195,6 +198,10 @@ export default function RecurrenceBuilder({ onBack }: Props) {
       setRevealed(false);
     } else {
       setFinished(true);
+      if (!awarded.has(problem.id)) {
+        setAwarded((prev) => new Set(prev).add(problem.id));
+        onDrillComplete?.(problem.id);
+      }
     }
   }
 

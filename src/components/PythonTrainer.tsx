@@ -348,14 +348,16 @@ bisect.insort(arr, 6)
 
 interface Props {
   onBack: () => void;
+  onLessonComplete?: (lessonId: string) => void;
 }
 
-export default function PythonTrainer({ onBack }: Props) {
+export default function PythonTrainer({ onBack, onLessonComplete }: Props) {
   const [idx, setIdx] = useState(0);
   const [showHints, setShowHints] = useState(false);
   const [hintIdx, setHintIdx] = useState(0);
   const [showSolution, setShowSolution] = useState(false);
   const [solved, setSolved] = useState(false);
+  const [awarded, setAwarded] = useState<Set<string>>(new Set());
 
   const lesson = lessons[idx];
   const total = lessons.length;
@@ -464,7 +466,13 @@ export default function PythonTrainer({ onBack }: Props) {
           testCases={lesson.testCases}
           starterJS=""
           starterPython={lesson.starterPython}
-          onPass={() => setSolved(true)}
+          onPass={() => {
+            setSolved(true);
+            if (!awarded.has(lesson.id)) {
+              setAwarded((prev) => new Set(prev).add(lesson.id));
+              onLessonComplete?.(lesson.id);
+            }
+          }}
         />
 
         {/* Hint/solution buttons */}
