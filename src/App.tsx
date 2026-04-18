@@ -16,6 +16,7 @@ import PythonTrainer from "./components/PythonTrainer";
 import ComplexityVisualizer from "./components/ComplexityVisualizer";
 import DataStructureSandbox from "./components/DataStructureSandbox";
 import PythonDPTrainer from "./components/PythonDPTrainer";
+import StatsDashboard from "./components/StatsDashboard";
 import ProgressBar from "./components/ProgressBar";
 import DailyChallenge from "./components/DailyChallenge";
 import { dailyProblems } from "./content/dailyProblems";
@@ -43,6 +44,7 @@ import {
   saveLocalData,
   getModuleProgress,
   updateModuleProgress,
+  recordTrainingScore,
   type UserData,
   type LessonProgress,
 } from "./services/userDataService";
@@ -76,7 +78,8 @@ type AppView =
   | { screen: "python" }
   | { screen: "complexity-viz" }
   | { screen: "sandbox" }
-  | { screen: "python-dp" };
+  | { screen: "python-dp" }
+  | { screen: "stats" };
 
 const DEFAULT_DATA: UserData = { modules: {}, gamification: { xp: 0, achievementsUnlocked: [], activityDates: [] } };
 
@@ -290,6 +293,7 @@ function AppInner() {
     complexityViz: () => setView({ screen: "complexity-viz" }),
     sandbox: () => setView({ screen: "sandbox" }),
     pythonDP: () => setView({ screen: "python-dp" }),
+    stats: () => setView({ screen: "stats" }),
   };
 
   // Get progress for module picker
@@ -356,7 +360,7 @@ function AppInner() {
     );
   }
 
-  const showModuleNav = activeModule && view.screen !== "home" && view.screen !== "account" && view.screen !== "training" && view.screen !== "cheatsheet" && view.screen !== "flowchart" && view.screen !== "languages" && view.screen !== "python" && view.screen !== "complexity-viz" && view.screen !== "sandbox" && view.screen !== "python-dp";
+  const showModuleNav = activeModule && view.screen !== "home" && view.screen !== "account" && view.screen !== "training" && view.screen !== "cheatsheet" && view.screen !== "flowchart" && view.screen !== "languages" && view.screen !== "python" && view.screen !== "complexity-viz" && view.screen !== "sandbox" && view.screen !== "python-dp" && view.screen !== "stats";
 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950 font-sans">
@@ -496,6 +500,7 @@ function AppInner() {
             onComplexityViz={nav.complexityViz}
             onSandbox={nav.sandbox}
             onPythonDP={nav.pythonDP}
+            onStats={nav.stats}
           />
           </>
         )}
@@ -608,11 +613,23 @@ function AppInner() {
           <PythonDPTrainer onBack={nav.home} />
         )}
 
+        {/* Stats Dashboard */}
+        {view.screen === "stats" && (
+          <StatsDashboard userData={userData} moduleConfigs={allModuleConfigs} onBack={nav.home} />
+        )}
+
         {/* Training Center */}
         {view.screen === "training" && (
           <TrainingCenter
             onBack={nav.home}
             onXP={awardXP}
+            onRecordScore={(activityId, score, total) => {
+              setUserData((prev) => {
+                const next = recordTrainingScore(prev, activityId, score, total);
+                persist(next);
+                return next;
+              });
+            }}
           />
         )}
 

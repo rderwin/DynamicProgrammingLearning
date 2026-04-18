@@ -20,6 +20,7 @@ import { refactorChallenges } from "../content/refactorChallenges";
 interface Props {
   onBack: () => void;
   onXP: (amount: number) => void;
+  onRecordScore?: (activityId: string, score: number, total: number) => void;
 }
 
 type Mode = "menu" | "quiz-dp" | "quiz-graphs" | "quiz-mixed" | "bugs-dp" | "bugs-graphs" | "speed" | "cards" | "complexity" | "interview" | "predict" | "race" | "refactor";
@@ -39,7 +40,7 @@ const activities = [
   { id: "interview" as Mode, icon: "🎤", title: "Mock Interview", desc: "Full flow: read → identify → plan → code → analyze", xp: 75, color: "from-indigo-500 to-blue-600" },
 ];
 
-export default function TrainingCenter({ onBack, onXP }: Props) {
+export default function TrainingCenter({ onBack, onXP, onRecordScore }: Props) {
   const [mode, setMode] = useState<Mode>("menu");
 
   function handleQuizComplete(score: number, total: number) {
@@ -48,6 +49,7 @@ export default function TrainingCenter({ onBack, onXP }: Props) {
     const baseXP = activity?.xp ?? 20;
     const xp = Math.round(baseXP * pct);
     if (xp > 0) onXP(xp);
+    if (onRecordScore && mode !== "menu") onRecordScore(mode, score, total);
   }
 
   if (mode === "quiz-dp") return <div className="max-w-2xl mx-auto"><BackBtn onClick={() => setMode("menu")} /><PatternQuiz questions={dpPatternQuiz} onComplete={handleQuizComplete} title="DP Pattern Recognition" /></div>;

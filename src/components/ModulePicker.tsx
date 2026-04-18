@@ -12,9 +12,10 @@ interface Props {
   onComplexityViz?: () => void;
   onSandbox?: () => void;
   onPythonDP?: () => void;
+  onStats?: () => void;
 }
 
-export default function ModulePicker({ modules, onSelectModule, getProgress, onTraining, onCheatSheet, onFlowchart, onLanguages, onPython, onComplexityViz, onSandbox, onPythonDP }: Props) {
+export default function ModulePicker({ modules, onSelectModule, getProgress, onTraining, onCheatSheet, onFlowchart, onLanguages, onPython, onComplexityViz, onSandbox, onPythonDP, onStats }: Props) {
   return (
     <div className="max-w-4xl mx-auto animate-fade-in">
       {/* Hero */}
@@ -167,6 +168,9 @@ export default function ModulePicker({ modules, onSelectModule, getProgress, onT
             )}
             {onSandbox && (
               <ToolCard onClick={onSandbox} icon="🎮" title="Data Structure Sandbox" desc="Play with stack, queue, heap, map, set" color="from-teal-500 to-cyan-600" />
+            )}
+            {onStats && (
+              <ToolCard onClick={onStats} icon="📊" title="My Stats" desc="All your progress across the app" color="from-blue-500 to-violet-600" />
             )}
           </div>
         </div>

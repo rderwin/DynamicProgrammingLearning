@@ -17,9 +17,17 @@ export interface ModuleProgress {
   practiceCode: Record<string, { js: string; py: string }>;
 }
 
+export interface TrainingScore {
+  best: number;   // best score (out of total)
+  total: number;  // total items in the activity
+  attempts: number;
+  lastAttemptAt: number; // timestamp
+}
+
 export interface UserData {
   modules: Partial<Record<ModuleId, ModuleProgress>>;
   gamification: GamificationData;
+  trainingScores?: Record<string, TrainingScore>;
 }
 
 const DEFAULT_MODULE: ModuleProgress = {
@@ -62,6 +70,28 @@ function migrateUserData(raw: Record<string, unknown>): UserData {
 
 export function getModuleProgress(data: UserData, moduleId: ModuleId): ModuleProgress {
   return data.modules[moduleId] ?? { ...DEFAULT_MODULE, lessonProgress: {}, practiceCompleted: [], practiceCode: {} };
+}
+
+export function recordTrainingScore(
+  data: UserData,
+  activityId: string,
+  score: number,
+  total: number
+): UserData {
+  const existing = data.trainingScores?.[activityId];
+  const newScore: TrainingScore = {
+    best: Math.max(existing?.best ?? 0, score),
+    total,
+    attempts: (existing?.attempts ?? 0) + 1,
+    lastAttemptAt: Date.now(),
+  };
+  return {
+    ...data,
+    trainingScores: {
+      ...(data.trainingScores ?? {}),
+      [activityId]: newScore,
+    },
+  };
 }
 
 export function updateModuleProgress(
