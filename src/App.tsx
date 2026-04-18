@@ -551,6 +551,7 @@ function AppInner() {
               }
             }}
             getProgress={getModulePickerProgress}
+            getTrainerProgress={(trainerId) => (userData.trainerCompletions?.[trainerId]?.length ?? 0)}
             onTraining={nav.training}
             tools={{
               cheatsheet: nav.cheatsheet,

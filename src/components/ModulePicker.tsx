@@ -34,24 +34,29 @@ interface ToolMeta {
   desc: string;
   color: string;
   section: Section;
+  /**
+   * If set, links this tool to a trackable trainer. Used to render a
+   * progress badge like "3/6" on the card based on trainerCompletions.
+   */
+  progress?: { trainerId: string; total: number };
 }
 
 const TOOLS: ToolMeta[] = [
   // DP Deep Dives — sustained hands-on trainers, one topic each
-  { key: "pythonDP", icon: "🧮", title: "Python DP Masterclass", desc: "6 hands-on DP lessons in Python", color: "from-violet-500 to-blue-600", section: "dp-deep-dives" },
-  { key: "stringDP", icon: "📝", title: "String DP Masterclass", desc: "LCS, Edit Distance, Palindromes — the string DP patterns", color: "from-rose-500 to-orange-600", section: "dp-deep-dives" },
-  { key: "intervalDP", icon: "⏏️", title: "Interval DP Masterclass", desc: "Split-the-range — Matrix Chain, Burst Balloons, Stone Game", color: "from-indigo-500 to-pink-600", section: "dp-deep-dives" },
-  { key: "bitmaskDP", icon: "🎛️", title: "Bitmask DP Masterclass", desc: "Subset as state — TSP, Assignment, Can I Win", color: "from-cyan-500 to-emerald-600", section: "dp-deep-dives" },
-  { key: "treeDP", icon: "🌳", title: "Tree DP Masterclass", desc: "Post-order DFS + rerooting — Diameter, Max Path", color: "from-green-500 to-teal-600", section: "dp-deep-dives" },
+  { key: "pythonDP", icon: "🧮", title: "Python DP Masterclass", desc: "6 hands-on DP lessons in Python", color: "from-violet-500 to-blue-600", section: "dp-deep-dives", progress: { trainerId: "python-dp", total: 6 } },
+  { key: "stringDP", icon: "📝", title: "String DP Masterclass", desc: "LCS, Edit Distance, Palindromes — the string DP patterns", color: "from-rose-500 to-orange-600", section: "dp-deep-dives", progress: { trainerId: "string-dp", total: 6 } },
+  { key: "intervalDP", icon: "⏏️", title: "Interval DP Masterclass", desc: "Split-the-range — Matrix Chain, Burst Balloons, Stone Game", color: "from-indigo-500 to-pink-600", section: "dp-deep-dives", progress: { trainerId: "interval-dp", total: 5 } },
+  { key: "bitmaskDP", icon: "🎛️", title: "Bitmask DP Masterclass", desc: "Subset as state — TSP, Assignment, Can I Win", color: "from-cyan-500 to-emerald-600", section: "dp-deep-dives", progress: { trainerId: "bitmask-dp", total: 5 } },
+  { key: "treeDP", icon: "🌳", title: "Tree DP Masterclass", desc: "Post-order DFS + rerooting — Diameter, Max Path", color: "from-green-500 to-teal-600", section: "dp-deep-dives", progress: { trainerId: "tree-dp", total: 5 } },
 
   // DP Skill Drills — short interactive tools that build specific DP skills
   { key: "stateFinder", icon: "🧠", title: "DP State Finder", desc: "Practice identifying the state — the hardest part of DP", color: "from-violet-500 to-fuchsia-600", section: "dp-skill-drills" },
-  { key: "recurrenceBuilder", icon: "🔁", title: "Recurrence Builder", desc: "Derive the DP recurrence step by step", color: "from-pink-500 to-rose-600", section: "dp-skill-drills" },
+  { key: "recurrenceBuilder", icon: "🔁", title: "Recurrence Builder", desc: "Derive the DP recurrence step by step", color: "from-pink-500 to-rose-600", section: "dp-skill-drills", progress: { trainerId: "recurrence-builder", total: 3 } },
   { key: "patternRecognizer", icon: "🎯", title: "DP Pattern Recognizer", desc: "Given a problem, identify the DP pattern that fits", color: "from-purple-500 to-red-600", section: "dp-skill-drills" },
-  { key: "whiteboard", icon: "📋", title: "Whiteboard Mode", desc: "Sketch the approach before coding — interview discipline", color: "from-slate-700 to-slate-900", section: "dp-skill-drills" },
+  { key: "whiteboard", icon: "📋", title: "Whiteboard Mode", desc: "Sketch the approach before coding — interview discipline", color: "from-slate-700 to-slate-900", section: "dp-skill-drills", progress: { trainerId: "whiteboard", total: 5 } },
 
   // General interview prep — not DP specific
-  { key: "python", icon: "🐍", title: "Python for Interviews", desc: "Hands-on lessons for Python tricks", color: "from-blue-500 to-yellow-500", section: "general" },
+  { key: "python", icon: "🐍", title: "Python for Interviews", desc: "Hands-on lessons for Python tricks", color: "from-blue-500 to-yellow-500", section: "general", progress: { trainerId: "python", total: 8 } },
   { key: "gotchas", icon: "⚠️", title: "Python Gotchas", desc: "The weird behaviors that bite in interviews", color: "from-red-500 to-orange-600", section: "general" },
   { key: "flowchart", icon: "🧭", title: "Pattern Finder", desc: "Identify the right algorithm for any problem", color: "from-indigo-500 to-purple-600", section: "general" },
   { key: "languages", icon: "💬", title: "Language Guide", desc: "Pick the best language for your interview", color: "from-fuchsia-500 to-purple-600", section: "general" },
@@ -81,9 +86,14 @@ interface Props {
    * Map of tool key → handler. Only keys with handlers render.
    */
   tools?: Partial<Record<ToolKey, () => void>>;
+  /**
+   * For trainers with persistent completion tracking, map trainerId → number
+   * of lessons the user has completed. Rendered as a "3/6" badge.
+   */
+  getTrainerProgress?: (trainerId: string) => number;
 }
 
-export default function ModulePicker({ modules, onSelectModule, getProgress, onTraining, tools = {} }: Props) {
+export default function ModulePicker({ modules, onSelectModule, getProgress, onTraining, tools = {}, getTrainerProgress }: Props) {
   // Group the tools that have handlers into their sections
   const toolsBySection: Record<Section, ToolMeta[]> = {
     "dp-deep-dives": [],
@@ -242,16 +252,22 @@ export default function ModulePicker({ modules, onSelectModule, getProgress, onT
                   </span>
                 </div>
                 <div className="grid sm:grid-cols-2 gap-3">
-                  {items.map((t) => (
-                    <ToolCard
-                      key={t.key}
-                      onClick={tools[t.key]!}
-                      icon={t.icon}
-                      title={t.title}
-                      desc={t.desc}
-                      color={t.color}
-                    />
-                  ))}
+                  {items.map((t) => {
+                    const done = t.progress && getTrainerProgress ? getTrainerProgress(t.progress.trainerId) : undefined;
+                    const total = t.progress?.total;
+                    return (
+                      <ToolCard
+                        key={t.key}
+                        onClick={tools[t.key]!}
+                        icon={t.icon}
+                        title={t.title}
+                        desc={t.desc}
+                        color={t.color}
+                        progressDone={done}
+                        progressTotal={total}
+                      />
+                    );
+                  })}
                 </div>
               </section>
             );
@@ -262,11 +278,29 @@ export default function ModulePicker({ modules, onSelectModule, getProgress, onT
   );
 }
 
-function ToolCard({ onClick, icon, title, desc, color }: { onClick: () => void; icon: string; title: string; desc: string; color: string }) {
+function ToolCard({
+  onClick,
+  icon,
+  title,
+  desc,
+  color,
+  progressDone,
+  progressTotal,
+}: {
+  onClick: () => void;
+  icon: string;
+  title: string;
+  desc: string;
+  color: string;
+  progressDone?: number;
+  progressTotal?: number;
+}) {
+  const showBadge = typeof progressDone === "number" && typeof progressTotal === "number" && progressDone > 0;
+  const isComplete = showBadge && progressDone === progressTotal;
   return (
     <button
       onClick={onClick}
-      aria-label={`Open ${title}`}
+      aria-label={`Open ${title}${showBadge ? ` (${progressDone} of ${progressTotal} complete)` : ""}`}
       className="text-left bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl p-4 hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 group focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-slate-950"
     >
       <div className="flex items-center gap-3">
@@ -274,7 +308,20 @@ function ToolCard({ onClick, icon, title, desc, color }: { onClick: () => void; 
           <span className="text-lg">{icon}</span>
         </div>
         <div className="flex-1 min-w-0">
-          <h3 className="text-sm font-bold text-slate-800 dark:text-slate-100 truncate">{title}</h3>
+          <div className="flex items-center gap-2">
+            <h3 className="text-sm font-bold text-slate-800 dark:text-slate-100 truncate">{title}</h3>
+            {showBadge && (
+              <span
+                className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full flex-shrink-0 ${
+                  isComplete
+                    ? "bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-400"
+                    : "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300"
+                }`}
+              >
+                {isComplete ? "✓ done" : `${progressDone}/${progressTotal}`}
+              </span>
+            )}
+          </div>
           <p className="text-[11px] text-slate-500 dark:text-slate-400 truncate">{desc}</p>
         </div>
         <svg aria-hidden="true" className="w-4 h-4 text-slate-300 dark:text-slate-600 group-hover:text-slate-500 transition-all group-hover:translate-x-1 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
