@@ -25,6 +25,18 @@ const trainingActivityLabels: Record<string, { name: string; icon: string }> = {
   "interview": { name: "Mock Interview", icon: "🎤" },
 };
 
+// Metadata for standalone trainers & drills that track lesson completions.
+const TRAINER_META: { id: string; name: string; icon: string; total: number; color: string }[] = [
+  { id: "python-dp",           name: "Python DP Masterclass",   icon: "🧮", total: 6, color: "from-violet-500 to-blue-600" },
+  { id: "string-dp",           name: "String DP Masterclass",   icon: "📝", total: 6, color: "from-rose-500 to-orange-600" },
+  { id: "interval-dp",         name: "Interval DP Masterclass", icon: "⏏️", total: 5, color: "from-indigo-500 to-pink-600" },
+  { id: "bitmask-dp",          name: "Bitmask DP Masterclass",  icon: "🎛️", total: 5, color: "from-cyan-500 to-emerald-600" },
+  { id: "tree-dp",             name: "Tree DP Masterclass",     icon: "🌳", total: 5, color: "from-green-500 to-teal-600" },
+  { id: "python",              name: "Python for Interviews",   icon: "🐍", total: 8, color: "from-blue-500 to-yellow-500" },
+  { id: "recurrence-builder",  name: "Recurrence Builder",      icon: "🔁", total: 3, color: "from-pink-500 to-rose-600" },
+  { id: "whiteboard",          name: "Whiteboard Mode",         icon: "📋", total: 5, color: "from-slate-700 to-slate-900" },
+];
+
 export default function StatsDashboard({ userData, moduleConfigs, onBack }: Props) {
   const stats = useMemo(() => {
     // Gamification
@@ -200,6 +212,47 @@ export default function StatsDashboard({ userData, moduleConfigs, onBack }: Prop
           ))}
         </div>
       </div>
+
+      {/* Trainer completions */}
+      {(() => {
+        const trainers = TRAINER_META.map((t) => {
+          const done = userData.trainerCompletions?.[t.id]?.length ?? 0;
+          return { ...t, done, pct: t.total > 0 ? (done / t.total) * 100 : 0 };
+        });
+        const hasAny = trainers.some((t) => t.done > 0);
+        if (!hasAny) return null;
+        return (
+          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-2xl p-5 mb-6">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-sm font-bold text-slate-700 dark:text-slate-300">Masterclass & Drill Progress</h3>
+              <span className="text-xs text-slate-400 dark:text-slate-500">
+                {trainers.reduce((s, t) => s + t.done, 0)}/{trainers.reduce((s, t) => s + t.total, 0)} lessons done
+              </span>
+            </div>
+            <div className="space-y-3">
+              {trainers.filter((t) => t.done > 0).map((t) => (
+                <div key={t.id}>
+                  <div className="flex items-center justify-between mb-1.5">
+                    <div className="flex items-center gap-2">
+                      <div className={`w-6 h-6 rounded-md bg-gradient-to-br ${t.color} flex items-center justify-center flex-shrink-0`}>
+                        <span className="text-xs">{t.icon}</span>
+                      </div>
+                      <span className="text-sm font-medium text-slate-700 dark:text-slate-300">{t.name}</span>
+                      {t.done === t.total && (
+                        <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-400">✓ complete</span>
+                      )}
+                    </div>
+                    <span className="text-xs text-slate-500 dark:text-slate-400 font-mono">{t.done}/{t.total}</span>
+                  </div>
+                  <div className="w-full bg-slate-100 dark:bg-slate-800 rounded-full h-2 overflow-hidden">
+                    <div className={`h-full bg-gradient-to-r ${t.color} transition-all duration-500`} style={{ width: `${t.pct}%` }} />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        );
+      })()}
 
       {/* Training scores */}
       {stats.trainingEntries.length > 0 && (
