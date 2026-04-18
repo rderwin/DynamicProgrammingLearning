@@ -21,6 +21,7 @@ import PythonGotchas from "./components/PythonGotchas";
 import DPStateFinder from "./components/DPStateFinder";
 import RecurrenceBuilder from "./components/RecurrenceBuilder";
 import StringDPTrainer from "./components/StringDPTrainer";
+import IntervalDPTrainer from "./components/IntervalDPTrainer";
 import ProgressBar from "./components/ProgressBar";
 import DailyChallenge from "./components/DailyChallenge";
 import { dailyProblems } from "./content/dailyProblems";
@@ -87,7 +88,8 @@ type AppView =
   | { screen: "gotchas" }
   | { screen: "state-finder" }
   | { screen: "recurrence-builder" }
-  | { screen: "string-dp" };
+  | { screen: "string-dp" }
+  | { screen: "interval-dp" };
 
 const DEFAULT_DATA: UserData = { modules: {}, gamification: { xp: 0, achievementsUnlocked: [], activityDates: [] } };
 
@@ -306,6 +308,7 @@ function AppInner() {
     stateFinder: () => setView({ screen: "state-finder" }),
     recurrenceBuilder: () => setView({ screen: "recurrence-builder" }),
     stringDP: () => setView({ screen: "string-dp" }),
+    intervalDP: () => setView({ screen: "interval-dp" }),
   };
 
   // Get progress for module picker
@@ -372,7 +375,7 @@ function AppInner() {
     );
   }
 
-  const showModuleNav = activeModule && view.screen !== "home" && view.screen !== "account" && view.screen !== "training" && view.screen !== "cheatsheet" && view.screen !== "flowchart" && view.screen !== "languages" && view.screen !== "python" && view.screen !== "complexity-viz" && view.screen !== "sandbox" && view.screen !== "python-dp" && view.screen !== "stats" && view.screen !== "gotchas" && view.screen !== "state-finder" && view.screen !== "recurrence-builder" && view.screen !== "string-dp";
+  const showModuleNav = activeModule && view.screen !== "home" && view.screen !== "account" && view.screen !== "training" && view.screen !== "cheatsheet" && view.screen !== "flowchart" && view.screen !== "languages" && view.screen !== "python" && view.screen !== "complexity-viz" && view.screen !== "sandbox" && view.screen !== "python-dp" && view.screen !== "stats" && view.screen !== "gotchas" && view.screen !== "state-finder" && view.screen !== "recurrence-builder" && view.screen !== "string-dp" && view.screen !== "interval-dp";
 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950 font-sans">
@@ -517,6 +520,7 @@ function AppInner() {
             onStateFinder={nav.stateFinder}
             onRecurrenceBuilder={nav.recurrenceBuilder}
             onStringDP={nav.stringDP}
+            onIntervalDP={nav.intervalDP}
           />
           </>
         )}
@@ -652,6 +656,11 @@ function AppInner() {
         {/* String DP Masterclass */}
         {view.screen === "string-dp" && (
           <StringDPTrainer onBack={nav.home} />
+        )}
+
+        {/* Interval DP Masterclass */}
+        {view.screen === "interval-dp" && (
+          <IntervalDPTrainer onBack={nav.home} />
         )}
 
         {/* Training Center */}

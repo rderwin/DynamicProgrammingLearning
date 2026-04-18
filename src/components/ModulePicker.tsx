@@ -17,9 +17,10 @@ interface Props {
   onStateFinder?: () => void;
   onRecurrenceBuilder?: () => void;
   onStringDP?: () => void;
+  onIntervalDP?: () => void;
 }
 
-export default function ModulePicker({ modules, onSelectModule, getProgress, onTraining, onCheatSheet, onFlowchart, onLanguages, onPython, onComplexityViz, onSandbox, onPythonDP, onStats, onGotchas, onStateFinder, onRecurrenceBuilder, onStringDP }: Props) {
+export default function ModulePicker({ modules, onSelectModule, getProgress, onTraining, onCheatSheet, onFlowchart, onLanguages, onPython, onComplexityViz, onSandbox, onPythonDP, onStats, onGotchas, onStateFinder, onRecurrenceBuilder, onStringDP, onIntervalDP }: Props) {
   return (
     <div className="max-w-4xl mx-auto animate-fade-in">
       {/* Hero */}
@@ -187,6 +188,9 @@ export default function ModulePicker({ modules, onSelectModule, getProgress, onT
             )}
             {onStringDP && (
               <ToolCard onClick={onStringDP} icon="📝" title="String DP Masterclass" desc="LCS, Edit Distance, Palindromes — the string DP patterns" color="from-rose-500 to-orange-600" />
+            )}
+            {onIntervalDP && (
+              <ToolCard onClick={onIntervalDP} icon="⏏️" title="Interval DP Masterclass" desc="Split-the-range pattern — Matrix Chain, Burst Balloons, Stone Game" color="from-indigo-500 to-pink-600" />
             )}
           </div>
         </div>
