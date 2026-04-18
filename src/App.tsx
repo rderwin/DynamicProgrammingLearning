@@ -54,6 +54,7 @@ import {
   getModuleProgress,
   updateModuleProgress,
   recordTrainingScore,
+  recordTrainerCompletion,
   type UserData,
   type LessonProgress,
 } from "./services/userDataService";
@@ -283,6 +284,25 @@ function AppInner() {
       });
     },
     [persist]
+  );
+
+  /**
+   * Persistently records a trainer-lesson completion and awards XP only the
+   * first time. Trainers just call with their id and lesson id; this handles
+   * dedup across sessions via Firestore.
+   */
+  const completeTrainerLesson = useCallback(
+    (trainerId: string, lessonId: string, xp: number) => {
+      setUserData((prev) => {
+        const { data, firstTime } = recordTrainerCompletion(prev, trainerId, lessonId);
+        if (!firstTime) return prev;
+        persist(data);
+        // Award XP as a side effect — call after state update cycle.
+        setTimeout(() => awardXP(xp), 0);
+        return data;
+      });
+    },
+    [persist, awardXP]
   );
 
   const resetAllProgress = useCallback(() => {
@@ -645,7 +665,10 @@ function AppInner() {
 
         {/* Python Trainer */}
         {view.screen === "python" && (
-          <PythonTrainer onBack={nav.home} onLessonComplete={() => awardXP(XP_REWARDS.trainerLessonComplete)} />
+          <PythonTrainer
+            onBack={nav.home}
+            onLessonComplete={(id) => completeTrainerLesson("python", id, XP_REWARDS.trainerLessonComplete)}
+          />
         )}
 
         {/* Complexity Visualizer */}
@@ -660,7 +683,10 @@ function AppInner() {
 
         {/* Python DP Trainer */}
         {view.screen === "python-dp" && (
-          <PythonDPTrainer onBack={nav.home} onLessonComplete={() => awardXP(XP_REWARDS.trainerLessonComplete)} />
+          <PythonDPTrainer
+            onBack={nav.home}
+            onLessonComplete={(id) => completeTrainerLesson("python-dp", id, XP_REWARDS.trainerLessonComplete)}
+          />
         )}
 
         {/* Stats Dashboard */}
@@ -680,27 +706,42 @@ function AppInner() {
 
         {/* Recurrence Builder */}
         {view.screen === "recurrence-builder" && (
-          <RecurrenceBuilder onBack={nav.home} onDrillComplete={() => awardXP(XP_REWARDS.drillCompleted)} />
+          <RecurrenceBuilder
+            onBack={nav.home}
+            onDrillComplete={(id) => completeTrainerLesson("recurrence-builder", id, XP_REWARDS.drillCompleted)}
+          />
         )}
 
         {/* String DP Masterclass */}
         {view.screen === "string-dp" && (
-          <StringDPTrainer onBack={nav.home} onLessonComplete={() => awardXP(XP_REWARDS.trainerLessonComplete)} />
+          <StringDPTrainer
+            onBack={nav.home}
+            onLessonComplete={(id) => completeTrainerLesson("string-dp", id, XP_REWARDS.trainerLessonComplete)}
+          />
         )}
 
         {/* Interval DP Masterclass */}
         {view.screen === "interval-dp" && (
-          <IntervalDPTrainer onBack={nav.home} onLessonComplete={() => awardXP(XP_REWARDS.trainerLessonComplete)} />
+          <IntervalDPTrainer
+            onBack={nav.home}
+            onLessonComplete={(id) => completeTrainerLesson("interval-dp", id, XP_REWARDS.trainerLessonComplete)}
+          />
         )}
 
         {/* Bitmask DP Masterclass */}
         {view.screen === "bitmask-dp" && (
-          <BitmaskDPTrainer onBack={nav.home} onLessonComplete={() => awardXP(XP_REWARDS.trainerLessonComplete)} />
+          <BitmaskDPTrainer
+            onBack={nav.home}
+            onLessonComplete={(id) => completeTrainerLesson("bitmask-dp", id, XP_REWARDS.trainerLessonComplete)}
+          />
         )}
 
         {/* Tree DP Masterclass */}
         {view.screen === "tree-dp" && (
-          <TreeDPTrainer onBack={nav.home} onLessonComplete={() => awardXP(XP_REWARDS.trainerLessonComplete)} />
+          <TreeDPTrainer
+            onBack={nav.home}
+            onLessonComplete={(id) => completeTrainerLesson("tree-dp", id, XP_REWARDS.trainerLessonComplete)}
+          />
         )}
 
         {/* DP Pattern Recognizer */}
@@ -710,7 +751,10 @@ function AppInner() {
 
         {/* Whiteboard Mode */}
         {view.screen === "whiteboard" && (
-          <WhiteboardMode onBack={nav.home} onDrillComplete={() => awardXP(XP_REWARDS.drillCompleted)} />
+          <WhiteboardMode
+            onBack={nav.home}
+            onDrillComplete={(id) => completeTrainerLesson("whiteboard", id, XP_REWARDS.drillCompleted)}
+          />
         )}
 
         {/* Training Center */}

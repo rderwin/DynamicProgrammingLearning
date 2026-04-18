@@ -28,6 +28,13 @@ export interface UserData {
   modules: Partial<Record<ModuleId, ModuleProgress>>;
   gamification: GamificationData;
   trainingScores?: Record<string, TrainingScore>;
+  /**
+   * Persistent completion tracker for standalone trainers and drills
+   * (masterclasses, whiteboard, recurrence builder, etc.). Keyed by a
+   * trainer id; value is the list of lesson/drill ids completed. Used
+   * so XP is only awarded ONCE per completion, even across sessions.
+   */
+  trainerCompletions?: Record<string, string[]>;
 }
 
 const DEFAULT_MODULE: ModuleProgress = {
@@ -92,6 +99,36 @@ export function recordTrainingScore(
       [activityId]: newScore,
     },
   };
+}
+
+/**
+ * Record a completed lesson/drill inside a trainer (e.g. "string-dp", "whiteboard").
+ * Returns a NEW UserData plus a boolean `awarded` indicating whether this was
+ * the first completion (i.e. XP should fire).
+ */
+export function recordTrainerCompletion(
+  data: UserData,
+  trainerId: string,
+  lessonId: string
+): { data: UserData; firstTime: boolean } {
+  const current = data.trainerCompletions?.[trainerId] ?? [];
+  if (current.includes(lessonId)) {
+    return { data, firstTime: false };
+  }
+  return {
+    data: {
+      ...data,
+      trainerCompletions: {
+        ...(data.trainerCompletions ?? {}),
+        [trainerId]: [...current, lessonId],
+      },
+    },
+    firstTime: true,
+  };
+}
+
+export function getTrainerCompletions(data: UserData, trainerId: string): string[] {
+  return data.trainerCompletions?.[trainerId] ?? [];
 }
 
 export function updateModuleProgress(
