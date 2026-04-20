@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, lazy, Suspense } from "react";
 import { AuthProvider, useAuth } from "./contexts/AuthContext";
 import { ThemeProvider, useTheme } from "./contexts/ThemeContext";
 import ModulePicker from "./components/ModulePicker";
@@ -6,27 +6,31 @@ import TransitionLesson from "./components/TransitionLesson";
 import CompletionScreen from "./components/CompletionScreen";
 import PracticeHub from "./components/PracticeHub";
 import PracticeProblemView from "./components/PracticeProblemView";
-import AccountPage from "./components/AccountPage";
 import ComingSoonScreen from "./components/ComingSoonScreen";
-import TrainingCenter from "./components/TrainingCenter";
-import CheatSheet from "./components/CheatSheet";
-import PatternFlowchart from "./components/PatternFlowchart";
-import LanguageGuide from "./components/LanguageGuide";
-import PythonTrainer from "./components/PythonTrainer";
-import ComplexityVisualizer from "./components/ComplexityVisualizer";
-import DataStructureSandbox from "./components/DataStructureSandbox";
-import PythonDPTrainer from "./components/PythonDPTrainer";
-import StatsDashboard from "./components/StatsDashboard";
-import PythonGotchas from "./components/PythonGotchas";
-import DPStateFinder from "./components/DPStateFinder";
-import RecurrenceBuilder from "./components/RecurrenceBuilder";
-import StringDPTrainer from "./components/StringDPTrainer";
-import IntervalDPTrainer from "./components/IntervalDPTrainer";
-import BitmaskDPTrainer from "./components/BitmaskDPTrainer";
-import TreeDPTrainer from "./components/TreeDPTrainer";
-import DPPatternRecognizer from "./components/DPPatternRecognizer";
-import WhiteboardMode from "./components/WhiteboardMode";
 import ProgressBar from "./components/ProgressBar";
+
+// Lazy-loaded secondary screens — each becomes its own chunk so the
+// initial load only pulls ~200KB of home-view code instead of the full
+// bundle. The rest loads in the background as users navigate.
+const AccountPage           = lazy(() => import("./components/AccountPage"));
+const TrainingCenter        = lazy(() => import("./components/TrainingCenter"));
+const CheatSheet            = lazy(() => import("./components/CheatSheet"));
+const PatternFlowchart      = lazy(() => import("./components/PatternFlowchart"));
+const LanguageGuide         = lazy(() => import("./components/LanguageGuide"));
+const PythonTrainer         = lazy(() => import("./components/PythonTrainer"));
+const ComplexityVisualizer  = lazy(() => import("./components/ComplexityVisualizer"));
+const DataStructureSandbox  = lazy(() => import("./components/DataStructureSandbox"));
+const PythonDPTrainer       = lazy(() => import("./components/PythonDPTrainer"));
+const StatsDashboard        = lazy(() => import("./components/StatsDashboard"));
+const PythonGotchas         = lazy(() => import("./components/PythonGotchas"));
+const DPStateFinder         = lazy(() => import("./components/DPStateFinder"));
+const RecurrenceBuilder     = lazy(() => import("./components/RecurrenceBuilder"));
+const StringDPTrainer       = lazy(() => import("./components/StringDPTrainer"));
+const IntervalDPTrainer     = lazy(() => import("./components/IntervalDPTrainer"));
+const BitmaskDPTrainer      = lazy(() => import("./components/BitmaskDPTrainer"));
+const TreeDPTrainer         = lazy(() => import("./components/TreeDPTrainer"));
+const DPPatternRecognizer   = lazy(() => import("./components/DPPatternRecognizer"));
+const WhiteboardMode        = lazy(() => import("./components/WhiteboardMode"));
 import DailyChallenge from "./components/DailyChallenge";
 import { dailyProblems } from "./content/dailyProblems";
 import Confetti from "./components/Confetti";
@@ -571,6 +575,7 @@ function AppInner() {
       {xpToast && <XPToast amount={xpToast.amount} instanceId={xpToast.id} />}
 
       <main className="max-w-6xl mx-auto px-6 py-8">
+        <Suspense fallback={<LazyLoadingFallback />}>
         {/* Home / Module Picker */}
         {view.screen === "home" && (
           <>
@@ -853,7 +858,18 @@ function AppInner() {
             onHome={nav.home}
           />
         )}
+        </Suspense>
       </main>
+    </div>
+  );
+}
+
+/** Fallback shown while a lazy-loaded screen's chunk is downloading. */
+function LazyLoadingFallback() {
+  return (
+    <div className="flex flex-col items-center justify-center py-24 gap-3">
+      <div className="w-8 h-8 border-2 border-blue-200 dark:border-blue-900 border-t-blue-500 rounded-full animate-spin" />
+      <p className="text-xs text-slate-400 dark:text-slate-500">Loading…</p>
     </div>
   );
 }
