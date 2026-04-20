@@ -38,6 +38,8 @@ import AchievementToast from "./components/AchievementToast";
 import XPToast from "./components/XPToast";
 import ResumeCard from "./components/ResumeCard";
 import KeyboardShortcutsModal from "./components/KeyboardShortcutsModal";
+import CommandPalette from "./components/CommandPalette";
+import type { CommandItem } from "./components/CommandPalette";
 import { useKeyboardShortcuts } from "./hooks/useKeyboardShortcuts";
 import { modules as allModuleConfigs } from "./modules/registry";
 import { dpModule } from "./modules/dp";
@@ -137,6 +139,7 @@ function AppInner() {
   // XP toast: bump `xpToast.id` to retrigger the animation for rapid awards.
   const [xpToast, setXpToast] = useState<{ amount: number; id: number } | null>(null);
   const [showShortcuts, setShowShortcuts] = useState(false);
+  const [showPalette, setShowPalette] = useState(false);
 
   // Load data on auth change
   useEffect(() => {
@@ -405,8 +408,11 @@ function AppInner() {
     [
       { keys: "?", description: "Show keyboard shortcuts", handler: () => setShowShortcuts(true) },
       { keys: "shift+/", description: "Show keyboard shortcuts", handler: () => setShowShortcuts(true) },
+      { keys: "mod+k", description: "Open command palette", handler: () => setShowPalette(true), allowInInput: true },
+      { keys: "/", description: "Open command palette", handler: () => setShowPalette(true) },
       { keys: "Escape", description: "Go home / close dialog", handler: () => {
-        if (showShortcuts) setShowShortcuts(false);
+        if (showPalette) setShowPalette(false);
+        else if (showShortcuts) setShowShortcuts(false);
         else if (view.screen !== "home") setView({ screen: "home" });
       } },
       { keys: "g h", description: "Go home", handler: () => setView({ screen: "home" }) },
@@ -415,11 +421,43 @@ function AppInner() {
       { keys: "g c", description: "Open cheat sheet", handler: () => setView({ screen: "cheatsheet" }) },
       { keys: "t", description: "Toggle theme", handler: toggleTheme },
     ],
-    // Allow on every screen except when the modal is open (Escape dismisses it)
     true
   );
   // Silence theme unused warning in case of future refactor
   void theme;
+
+  // Command palette items — keep declarative so we can iterate cheaply.
+  const commandItems: CommandItem[] = [
+    // Modules
+    { id: "home",             label: "Home / Module picker",       category: "Navigation",  icon: "🏠", handler: () => setView({ screen: "home" }) },
+    { id: "dp-module",        label: "Dynamic Programming",         category: "Module",      icon: "🎯", keywords: ["dp"], handler: () => setView({ screen: "module-intro", moduleId: "dp" }) },
+    { id: "graphs-module",    label: "Graph Algorithms",            category: "Module",      icon: "🕸️", keywords: ["bfs", "dfs", "dijkstra"], handler: () => setView({ screen: "module-intro", moduleId: "graphs" }) },
+    // DP masterclasses
+    { id: "python-dp",        label: "Python DP Masterclass",       category: "DP Deep Dive", icon: "🧮", keywords: ["memoization", "lru_cache"], handler: () => setView({ screen: "python-dp" }) },
+    { id: "string-dp",        label: "String DP Masterclass",       category: "DP Deep Dive", icon: "📝", keywords: ["lcs", "edit distance", "palindrome", "word break"], handler: () => setView({ screen: "string-dp" }) },
+    { id: "interval-dp",      label: "Interval DP Masterclass",     category: "DP Deep Dive", icon: "⏏️", keywords: ["matrix chain", "burst balloons", "stone game"], handler: () => setView({ screen: "interval-dp" }) },
+    { id: "bitmask-dp",       label: "Bitmask DP Masterclass",      category: "DP Deep Dive", icon: "🎛️", keywords: ["tsp", "subset", "traveling salesman"], handler: () => setView({ screen: "bitmask-dp" }) },
+    { id: "tree-dp",          label: "Tree DP Masterclass",         category: "DP Deep Dive", icon: "🌳", keywords: ["diameter", "rerooting", "post-order"], handler: () => setView({ screen: "tree-dp" }) },
+    // DP drills
+    { id: "state-finder",     label: "DP State Finder",             category: "DP Drill",    icon: "🧠", keywords: ["state", "quiz"], handler: () => setView({ screen: "state-finder" }) },
+    { id: "recurrence",       label: "Recurrence Builder",          category: "DP Drill",    icon: "🔁", keywords: ["derive", "transition"], handler: () => setView({ screen: "recurrence-builder" }) },
+    { id: "pattern-quiz",     label: "DP Pattern Recognizer",       category: "DP Drill",    icon: "🎯", keywords: ["quiz", "identify"], handler: () => setView({ screen: "pattern-recognizer" }) },
+    { id: "whiteboard",       label: "Whiteboard Mode",             category: "DP Drill",    icon: "📋", keywords: ["sketch", "approach", "interview"], handler: () => setView({ screen: "whiteboard" }) },
+    // General
+    { id: "python-trainer",   label: "Python for Interviews",       category: "Interview Prep", icon: "🐍", keywords: ["list comprehension", "counter", "enumerate"], handler: () => setView({ screen: "python" }) },
+    { id: "gotchas",          label: "Python Gotchas",              category: "Interview Prep", icon: "⚠️", keywords: ["mutable default", "integer division"], handler: () => setView({ screen: "gotchas" }) },
+    { id: "flowchart",        label: "Pattern Finder",              category: "Interview Prep", icon: "🧭", keywords: ["algorithm", "identify"], handler: () => setView({ screen: "flowchart" }) },
+    { id: "languages",        label: "Language Guide",              category: "Interview Prep", icon: "💬", keywords: ["python", "java", "c++"], handler: () => setView({ screen: "languages" }) },
+    { id: "sandbox",          label: "Data Structure Sandbox",      category: "Interview Prep", icon: "🎮", keywords: ["stack", "queue", "heap", "map", "set"], handler: () => setView({ screen: "sandbox" }) },
+    { id: "training",         label: "Training Center",             category: "Interview Prep", icon: "⚡", keywords: ["quiz", "bug hunt", "drill"], handler: () => setView({ screen: "training" }) },
+    // Reference
+    { id: "cheatsheet",       label: "Cheat Sheet",                 category: "Reference",   icon: "📋", keywords: ["complexity", "big o", "patterns"], handler: () => setView({ screen: "cheatsheet" }) },
+    { id: "complexity",       label: "Complexity Visualizer",       category: "Reference",   icon: "📈", keywords: ["big o", "log", "exponential"], handler: () => setView({ screen: "complexity-viz" }) },
+    { id: "stats",            label: "My Stats",                    category: "Reference",   icon: "📊", keywords: ["xp", "progress", "achievements"], handler: () => setView({ screen: "stats" }) },
+    { id: "account",          label: "Account",                     category: "Reference",   icon: "👤", keywords: ["sign out", "reset"], handler: () => setView({ screen: "account" }) },
+    // Actions
+    { id: "toggle-theme",     label: `Toggle theme (${theme === "light" ? "light → dark" : "dark → light"})`, category: "Action", icon: "🌓", handler: toggleTheme },
+  ];
 
   // Get progress for module picker
   function getModulePickerProgress(id: ModuleId) {
@@ -611,6 +649,7 @@ function AppInner() {
       {toastAchievement && <AchievementToast achievement={toastAchievement} />}
       {xpToast && <XPToast amount={xpToast.amount} instanceId={xpToast.id} />}
       <KeyboardShortcutsModal open={showShortcuts} onClose={() => setShowShortcuts(false)} />
+      <CommandPalette open={showPalette} onClose={() => setShowPalette(false)} items={commandItems} />
 
       <main className="max-w-6xl mx-auto px-6 py-8">
         <Suspense fallback={<LazyLoadingFallback />}>

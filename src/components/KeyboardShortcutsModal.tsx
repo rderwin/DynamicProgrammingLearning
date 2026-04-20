@@ -7,6 +7,13 @@ interface Section {
 
 const SECTIONS: Section[] = [
   {
+    title: "Search",
+    items: [
+      { keys: "mod+k", description: "Open command palette" },
+      { keys: "/", description: "Open command palette" },
+    ],
+  },
+  {
     title: "Navigation",
     items: [
       { keys: "g h", description: "Go home" },
@@ -17,15 +24,15 @@ const SECTIONS: Section[] = [
     ],
   },
   {
-    title: "Help",
-    items: [
-      { keys: "?", description: "Show this dialog" },
-    ],
-  },
-  {
     title: "Theme",
     items: [
       { keys: "t", description: "Toggle dark / light mode" },
+    ],
+  },
+  {
+    title: "Help",
+    items: [
+      { keys: "?", description: "Show this dialog" },
     ],
   },
 ];
@@ -97,12 +104,41 @@ export default function KeyboardShortcutsModal({ open, onClose }: Props) {
 }
 
 function KeyCombo({ combo }: { combo: string }) {
+  // Sequence ("g h") shown as [g] then [h]; modifier combo ("mod+k") shown
+  // as [⌘]/[Ctrl] + [K] depending on platform.
+  const isMac = typeof navigator !== "undefined" && /Mac|iPhone|iPad/.test(navigator.platform);
+
+  function render(part: string): string {
+    if (part === "Escape") return "Esc";
+    if (part === "ArrowLeft") return "←";
+    if (part === "ArrowRight") return "→";
+    if (part === "mod") return isMac ? "⌘" : "Ctrl";
+    if (part === "shift") return "Shift";
+    return part.length === 1 ? part.toUpperCase() : part;
+  }
+
+  // Modifier combo: split on "+", render as [mod] + [k]
+  if (combo.includes("+")) {
+    const keys = combo.split("+");
+    return (
+      <div className="flex items-center gap-1">
+        {keys.map((k, i) => (
+          <span key={i} className="inline-flex items-center gap-1">
+            <Kbd>{render(k)}</Kbd>
+            {i < keys.length - 1 && <span className="text-[10px] text-slate-400">+</span>}
+          </span>
+        ))}
+      </div>
+    );
+  }
+
+  // Sequence: split on " ", render with "then" separator
   const parts = combo.includes(" ") ? combo.split(" ") : [combo];
   return (
     <div className="flex items-center gap-1">
       {parts.map((p, i) => (
         <span key={i} className="inline-flex items-center gap-1">
-          <Kbd>{p === "Escape" ? "Esc" : p === "ArrowLeft" ? "←" : p === "ArrowRight" ? "→" : p}</Kbd>
+          <Kbd>{render(p)}</Kbd>
           {i < parts.length - 1 && <span className="text-[10px] text-slate-400">then</span>}
         </span>
       ))}
