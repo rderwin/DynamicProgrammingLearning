@@ -31,6 +31,8 @@ import DailyChallenge from "./components/DailyChallenge";
 import { dailyProblems } from "./content/dailyProblems";
 import Confetti from "./components/Confetti";
 import AchievementToast from "./components/AchievementToast";
+import XPToast from "./components/XPToast";
+import ResumeCard from "./components/ResumeCard";
 import { modules as allModuleConfigs } from "./modules/registry";
 import { dpModule } from "./modules/dp";
 import { graphsModule } from "./modules/graphs";
@@ -38,6 +40,8 @@ import type { ModuleId, ModuleExport, ProblemEntry } from "./modules/types";
 import {
   XP_REWARDS,
   ACHIEVEMENTS,
+  TRAINER_COMPLETION_ACHIEVEMENTS,
+  DP_MASTERCLASS_TRAINER_IDS,
   addXP,
   unlockAchievement,
   recordActivity,
@@ -102,6 +106,21 @@ type AppView =
 
 const DEFAULT_DATA: UserData = { modules: {}, gamification: { xp: 0, achievementsUnlocked: [], activityDates: [] } };
 
+/**
+ * Total lessons per standalone trainer. Used for completion-achievement
+ * checks in `completeTrainerLesson`. Keep in sync with trainer lesson counts.
+ */
+const TRAINER_TOTALS: Record<string, number> = {
+  "python":             8,
+  "python-dp":          6,
+  "string-dp":          6,
+  "interval-dp":        5,
+  "bitmask-dp":         5,
+  "tree-dp":            5,
+  "recurrence-builder": 3,
+  "whiteboard":         5,
+};
+
 function AppInner() {
   const { user, loading, signIn } = useAuth();
   const [view, setView] = useState<AppView>({ screen: "home" });
@@ -109,6 +128,8 @@ function AppInner() {
   const [dataLoaded, setDataLoaded] = useState(false);
   const [showConfetti, setShowConfetti] = useState(false);
   const [toastAchievement, setToastAchievement] = useState<Achievement | null>(null);
+  // XP toast: bump `xpToast.id` to retrigger the animation for rapid awards.
+  const [xpToast, setXpToast] = useState<{ amount: number; id: number } | null>(null);
 
   // Load data on auth change
   useEffect(() => {
@@ -150,6 +171,12 @@ function AppInner() {
 
   const awardXP = useCallback(
     (amount: number) => {
+      if (amount <= 0) return;
+      // Fire a transient "+N XP" toast on every award. Using a fresh id each
+      // time retriggers the animation even if two awards land back-to-back.
+      setXpToast({ amount, id: Date.now() });
+      setTimeout(() => setXpToast(null), 1700);
+
       setUserData((prev) => {
         const oldLevel = getLevel(prev.gamification.xp);
         let gam = addXP(prev.gamification, amount);
@@ -289,20 +316,42 @@ function AppInner() {
   /**
    * Persistently records a trainer-lesson completion and awards XP only the
    * first time. Trainers just call with their id and lesson id; this handles
-   * dedup across sessions via Firestore.
+   * dedup across sessions via Firestore. When the completion fills up the
+   * trainer's total, the trainer-completion achievement also unlocks.
    */
   const completeTrainerLesson = useCallback(
-    (trainerId: string, lessonId: string, xp: number) => {
+    (trainerId: string, lessonId: string, xp: number, trainerTotal?: number) => {
       setUserData((prev) => {
         const { data, firstTime } = recordTrainerCompletion(prev, trainerId, lessonId);
         if (!firstTime) return prev;
         persist(data);
-        // Award XP as a side effect — call after state update cycle.
+
+        // XP after state update cycle.
         setTimeout(() => awardXP(xp), 0);
+
+        // Check for trainer-completion achievement.
+        if (trainerTotal !== undefined) {
+          const doneCount = data.trainerCompletions?.[trainerId]?.length ?? 0;
+          if (doneCount === trainerTotal) {
+            const achievementId = TRAINER_COMPLETION_ACHIEVEMENTS[trainerId];
+            if (achievementId) {
+              setTimeout(() => tryUnlockAchievement(achievementId), 0);
+            }
+            // Meta achievement: if all DP masterclasses are complete.
+            if (DP_MASTERCLASS_TRAINER_IDS.includes(trainerId)) {
+              const allDone = DP_MASTERCLASS_TRAINER_IDS.every((tid) => {
+                const tDone = tid === trainerId ? doneCount : data.trainerCompletions?.[tid]?.length ?? 0;
+                const tTotal = TRAINER_TOTALS[tid] ?? 0;
+                return tDone >= tTotal && tTotal > 0;
+              });
+              if (allDone) setTimeout(() => tryUnlockAchievement("trainer-all-dp"), 0);
+            }
+          }
+        }
         return data;
       });
     },
-    [persist, awardXP]
+    [persist, awardXP, tryUnlockAchievement]
   );
 
   const resetAllProgress = useCallback(() => {
@@ -516,9 +565,10 @@ function AppInner() {
       </header>
 
       {/* Main content */}
-      {/* Confetti + Achievement Toast */}
+      {/* Confetti + Achievement Toast + XP Toast */}
       {showConfetti && <Confetti />}
       {toastAchievement && <AchievementToast achievement={toastAchievement} />}
+      {xpToast && <XPToast amount={xpToast.amount} instanceId={xpToast.id} />}
 
       <main className="max-w-6xl mx-auto px-6 py-8">
         {/* Home / Module Picker */}
@@ -529,6 +579,27 @@ function AppInner() {
               <ProgressBar data={userData.gamification} />
             </div>
           )}
+          {/* Pick up where you left off (only shows when there's something to resume) */}
+          <div className="mb-6">
+            <ResumeCard
+              userData={userData}
+              onGoLesson={(m, p) => nav.lesson(m, p)}
+              onGoPractice={(m) => nav.practice(m)}
+              onGoTrainer={(trainerId) => {
+                const handler: Record<string, () => void> = {
+                  "python":             nav.python,
+                  "python-dp":          nav.pythonDP,
+                  "string-dp":          nav.stringDP,
+                  "interval-dp":        nav.intervalDP,
+                  "bitmask-dp":         nav.bitmaskDP,
+                  "tree-dp":            nav.treeDP,
+                  "recurrence-builder": nav.recurrenceBuilder,
+                  "whiteboard":         nav.whiteboard,
+                };
+                handler[trainerId]?.();
+              }}
+            />
+          </div>
           <div className="mb-6">
             <DailyChallenge
               problems={dailyProblems}
@@ -668,7 +739,7 @@ function AppInner() {
         {view.screen === "python" && (
           <PythonTrainer
             onBack={nav.home}
-            onLessonComplete={(id) => completeTrainerLesson("python", id, XP_REWARDS.trainerLessonComplete)}
+            onLessonComplete={(id) => completeTrainerLesson("python", id, XP_REWARDS.trainerLessonComplete, TRAINER_TOTALS["python"])}
           />
         )}
 
@@ -686,7 +757,7 @@ function AppInner() {
         {view.screen === "python-dp" && (
           <PythonDPTrainer
             onBack={nav.home}
-            onLessonComplete={(id) => completeTrainerLesson("python-dp", id, XP_REWARDS.trainerLessonComplete)}
+            onLessonComplete={(id) => completeTrainerLesson("python-dp", id, XP_REWARDS.trainerLessonComplete, TRAINER_TOTALS["python-dp"])}
           />
         )}
 
@@ -709,7 +780,7 @@ function AppInner() {
         {view.screen === "recurrence-builder" && (
           <RecurrenceBuilder
             onBack={nav.home}
-            onDrillComplete={(id) => completeTrainerLesson("recurrence-builder", id, XP_REWARDS.drillCompleted)}
+            onDrillComplete={(id) => completeTrainerLesson("recurrence-builder", id, XP_REWARDS.drillCompleted, TRAINER_TOTALS["recurrence-builder"])}
           />
         )}
 
@@ -717,7 +788,7 @@ function AppInner() {
         {view.screen === "string-dp" && (
           <StringDPTrainer
             onBack={nav.home}
-            onLessonComplete={(id) => completeTrainerLesson("string-dp", id, XP_REWARDS.trainerLessonComplete)}
+            onLessonComplete={(id) => completeTrainerLesson("string-dp", id, XP_REWARDS.trainerLessonComplete, TRAINER_TOTALS["string-dp"])}
           />
         )}
 
@@ -725,7 +796,7 @@ function AppInner() {
         {view.screen === "interval-dp" && (
           <IntervalDPTrainer
             onBack={nav.home}
-            onLessonComplete={(id) => completeTrainerLesson("interval-dp", id, XP_REWARDS.trainerLessonComplete)}
+            onLessonComplete={(id) => completeTrainerLesson("interval-dp", id, XP_REWARDS.trainerLessonComplete, TRAINER_TOTALS["interval-dp"])}
           />
         )}
 
@@ -733,7 +804,7 @@ function AppInner() {
         {view.screen === "bitmask-dp" && (
           <BitmaskDPTrainer
             onBack={nav.home}
-            onLessonComplete={(id) => completeTrainerLesson("bitmask-dp", id, XP_REWARDS.trainerLessonComplete)}
+            onLessonComplete={(id) => completeTrainerLesson("bitmask-dp", id, XP_REWARDS.trainerLessonComplete, TRAINER_TOTALS["bitmask-dp"])}
           />
         )}
 
@@ -741,7 +812,7 @@ function AppInner() {
         {view.screen === "tree-dp" && (
           <TreeDPTrainer
             onBack={nav.home}
-            onLessonComplete={(id) => completeTrainerLesson("tree-dp", id, XP_REWARDS.trainerLessonComplete)}
+            onLessonComplete={(id) => completeTrainerLesson("tree-dp", id, XP_REWARDS.trainerLessonComplete, TRAINER_TOTALS["tree-dp"])}
           />
         )}
 
@@ -754,7 +825,7 @@ function AppInner() {
         {view.screen === "whiteboard" && (
           <WhiteboardMode
             onBack={nav.home}
-            onDrillComplete={(id) => completeTrainerLesson("whiteboard", id, XP_REWARDS.drillCompleted)}
+            onDrillComplete={(id) => completeTrainerLesson("whiteboard", id, XP_REWARDS.drillCompleted, TRAINER_TOTALS["whiteboard"])}
           />
         )}
 

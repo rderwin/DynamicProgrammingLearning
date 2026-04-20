@@ -87,6 +87,42 @@ export const ACHIEVEMENTS: Achievement[] = [
   { id: "no-hints", title: "No Training Wheels", description: "Solve a problem without using any hints", icon: "🚀", xpReward: 40 },
   { id: "speed-demon", title: "Speed Demon", description: "Solve a practice problem in under 2 minutes", icon: "⏱️", xpReward: 30 },
   { id: "polyglot", title: "Polyglot", description: "Solve the same problem in both JS and Python", icon: "🌐", xpReward: 25 },
+
+  // Masterclass completions — one per trainer
+  { id: "trainer-python",              title: "Snake Charmer",      description: "Finish every lesson in Python for Interviews",   icon: "🐍", xpReward: 75 },
+  { id: "trainer-python-dp",           title: "DP in Python",       description: "Finish every lesson in the Python DP Masterclass", icon: "🧮", xpReward: 100 },
+  { id: "trainer-string-dp",           title: "Word Wizard",        description: "Finish every lesson in the String DP Masterclass", icon: "📝", xpReward: 100 },
+  { id: "trainer-interval-dp",         title: "Interval Champion",  description: "Finish every lesson in the Interval DP Masterclass", icon: "⏏️", xpReward: 125 },
+  { id: "trainer-bitmask-dp",          title: "Bit Bender",         description: "Finish every lesson in the Bitmask DP Masterclass", icon: "🎛️", xpReward: 125 },
+  { id: "trainer-tree-dp",             title: "Forest Ranger",      description: "Finish every lesson in the Tree DP Masterclass",  icon: "🌳", xpReward: 125 },
+  { id: "trainer-recurrence-builder",  title: "Recurrence Ready",   description: "Derive every recurrence in Recurrence Builder",    icon: "🔁", xpReward: 60 },
+  { id: "trainer-whiteboard",          title: "Board Sketcher",     description: "Complete every Whiteboard Mode problem",           icon: "📋", xpReward: 75 },
+  { id: "trainer-all-dp",              title: "DP Grandmaster",     description: "Complete every DP masterclass",                    icon: "🏆", xpReward: 250 },
+];
+
+/**
+ * Map trainerId → achievement unlocked when all its lessons are completed.
+ * Used by App.tsx to fire the achievement right after trainerCompletions
+ * reaches the trainer's total.
+ */
+export const TRAINER_COMPLETION_ACHIEVEMENTS: Record<string, string> = {
+  "python":             "trainer-python",
+  "python-dp":          "trainer-python-dp",
+  "string-dp":          "trainer-string-dp",
+  "interval-dp":        "trainer-interval-dp",
+  "bitmask-dp":         "trainer-bitmask-dp",
+  "tree-dp":            "trainer-tree-dp",
+  "recurrence-builder": "trainer-recurrence-builder",
+  "whiteboard":         "trainer-whiteboard",
+};
+
+/** Trainers that count toward the "DP Grandmaster" meta-achievement. */
+export const DP_MASTERCLASS_TRAINER_IDS: string[] = [
+  "python-dp",
+  "string-dp",
+  "interval-dp",
+  "bitmask-dp",
+  "tree-dp",
 ];
 
 // ─── Streak ───
