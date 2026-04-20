@@ -37,6 +37,8 @@ import Confetti from "./components/Confetti";
 import AchievementToast from "./components/AchievementToast";
 import XPToast from "./components/XPToast";
 import ResumeCard from "./components/ResumeCard";
+import KeyboardShortcutsModal from "./components/KeyboardShortcutsModal";
+import { useKeyboardShortcuts } from "./hooks/useKeyboardShortcuts";
 import { modules as allModuleConfigs } from "./modules/registry";
 import { dpModule } from "./modules/dp";
 import { graphsModule } from "./modules/graphs";
@@ -134,6 +136,7 @@ function AppInner() {
   const [toastAchievement, setToastAchievement] = useState<Achievement | null>(null);
   // XP toast: bump `xpToast.id` to retrigger the animation for rapid awards.
   const [xpToast, setXpToast] = useState<{ amount: number; id: number } | null>(null);
+  const [showShortcuts, setShowShortcuts] = useState(false);
 
   // Load data on auth change
   useEffect(() => {
@@ -396,6 +399,28 @@ function AppInner() {
     whiteboard: () => setView({ screen: "whiteboard" }),
   };
 
+  // Keyboard shortcuts (global). Skipped when the user is typing in an input.
+  const { theme, toggle: toggleTheme } = useTheme();
+  useKeyboardShortcuts(
+    [
+      { keys: "?", description: "Show keyboard shortcuts", handler: () => setShowShortcuts(true) },
+      { keys: "shift+/", description: "Show keyboard shortcuts", handler: () => setShowShortcuts(true) },
+      { keys: "Escape", description: "Go home / close dialog", handler: () => {
+        if (showShortcuts) setShowShortcuts(false);
+        else if (view.screen !== "home") setView({ screen: "home" });
+      } },
+      { keys: "g h", description: "Go home", handler: () => setView({ screen: "home" }) },
+      { keys: "g s", description: "Go to stats", handler: () => setView({ screen: "stats" }) },
+      { keys: "g t", description: "Go to training", handler: () => setView({ screen: "training" }) },
+      { keys: "g c", description: "Open cheat sheet", handler: () => setView({ screen: "cheatsheet" }) },
+      { keys: "t", description: "Toggle theme", handler: toggleTheme },
+    ],
+    // Allow on every screen except when the modal is open (Escape dismisses it)
+    true
+  );
+  // Silence theme unused warning in case of future refactor
+  void theme;
+
   // Get progress for module picker
   function getModulePickerProgress(id: ModuleId) {
     const mod = getModuleProgress(userData, id);
@@ -531,6 +556,18 @@ function AppInner() {
               </nav>
             )}
 
+            {/* Keyboard shortcuts */}
+            <button
+              onClick={() => setShowShortcuts(true)}
+              aria-label="Show keyboard shortcuts"
+              title="Keyboard shortcuts (?)"
+              className="hidden sm:flex w-8 h-8 rounded-lg items-center justify-center text-slate-400 hover:text-slate-600 dark:text-slate-500 dark:hover:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+            >
+              <svg aria-hidden="true" className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093M12 17h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </button>
+
             {/* Theme toggle */}
             <ThemeToggle />
 
@@ -569,10 +606,11 @@ function AppInner() {
       </header>
 
       {/* Main content */}
-      {/* Confetti + Achievement Toast + XP Toast */}
+      {/* Confetti + Achievement Toast + XP Toast + Shortcuts modal */}
       {showConfetti && <Confetti />}
       {toastAchievement && <AchievementToast achievement={toastAchievement} />}
       {xpToast && <XPToast amount={xpToast.amount} instanceId={xpToast.id} />}
+      <KeyboardShortcutsModal open={showShortcuts} onClose={() => setShowShortcuts(false)} />
 
       <main className="max-w-6xl mx-auto px-6 py-8">
         <Suspense fallback={<LazyLoadingFallback />}>
